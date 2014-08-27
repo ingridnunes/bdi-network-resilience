@@ -40,10 +40,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 
 import bdi4jade.core.AbstractBDIAgent;
+import bdi4jade.core.Capability;
 import bdi4jade.examples.BDI4JADEExamplesPanel;
 import br.ufrgs.inf.bdinetr.capability.LinkMonitorCapability;
 import br.ufrgs.inf.bdinetr.capability.RateLimiterCapability;
 import br.ufrgs.inf.bdinetr.domain.Device;
+import br.ufrgs.inf.bdinetr.domain.IpAddress;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.Network;
 
@@ -58,7 +60,8 @@ public class BDINetRApp {
 			Random random = new Random(System.currentTimeMillis());
 			log.info("Updating link usage");
 			for (Link link : NETWORK.getLinks()) {
-				link.setUsedBandwidth(random.nextDouble() * link.getBandwidth());
+				link.setUsedBandwidth(random.nextDouble()
+						* link.getActualBandwidth());
 			}
 			log.info("Restarting agents");
 			for (AbstractBDIAgent agent : AGENTS.values()) {
@@ -67,7 +70,7 @@ public class BDINetRApp {
 		}
 	}
 
-	private static final Map<String, AbstractBDIAgent> AGENTS;
+	private static final Map<IpAddress, AbstractBDIAgent> AGENTS;
 
 	private static final Network NETWORK;
 
@@ -76,35 +79,38 @@ public class BDINetRApp {
 				.getResource("log4j.properties"));
 
 		NETWORK = new Network();
-		Device firewall1 = new Device("Firewall 1");
+		Device firewall1 = new Device(new IpAddress("Firewall 1"));
 		NETWORK.addDevice(firewall1);
-		Device firewall2 = new Device("Firewall 2");
+		/*Device firewall2 = new Device(new IpAddress("Firewall 2"));
 		NETWORK.addDevice(firewall2);
-		Device firewall3 = new Device("Firewall 3");
-		NETWORK.addDevice(firewall3);
-		Device rateLimiter1 = new Device("Rate Limiter 1");
+		Device firewall3 = new Device(new IpAddress("Firewall 3"));
+		NETWORK.addDevice(firewall3);*/
+		Device rateLimiter1 = new Device(new IpAddress("Rate Limiter 1"));
 		NETWORK.addDevice(rateLimiter1);
-		Device rateLimiter2 = new Device("Rate Limiter 2");
-		NETWORK.addDevice(rateLimiter2);
+		/*Device rateLimiter2 = new Device(new IpAddress("Rate Limiter 2"));
+		NETWORK.addDevice(rateLimiter2);*/
 
 		NETWORK.addLink(new Link("F1_RL1", 10.0, firewall1, rateLimiter1));
-		NETWORK.addLink(new Link("F2_RL2", 8.0, firewall2, rateLimiter2));
+		/*NETWORK.addLink(new Link("F2_RL2", 8.0, firewall2, rateLimiter2));
 		NETWORK.addLink(new Link("F3_RL1", 7.0, firewall3, rateLimiter1));
 		NETWORK.addLink(new Link("F1_RL2", 7.0, firewall1, rateLimiter2));
 		NETWORK.addLink(new Link("F2_RL1", 8.0, firewall2, rateLimiter1));
-		NETWORK.addLink(new Link("F3_RL2", 10.0, firewall3, rateLimiter2));
+		NETWORK.addLink(new Link("F3_RL2", 10.0, firewall3, rateLimiter2));*/
 
 		AGENTS = new HashMap<>();
-		AGENTS.put(firewall1.getId(), new BDINetRAgent(firewall1,
-				new LinkMonitorCapability()));
-		AGENTS.put(firewall2.getId(), new BDINetRAgent(firewall2,
-				new LinkMonitorCapability()));
-		AGENTS.put(firewall3.getId(), new BDINetRAgent(firewall3,
-				new LinkMonitorCapability()));
-		AGENTS.put(rateLimiter1.getId(), new BDINetRAgent(rateLimiter1,
+		AGENTS.put(firewall1.getIp(), new BDINetRAgent(firewall1,
+				new Capability[] { new LinkMonitorCapability(),
+						new RateLimiterCapability() }));
+		/*AGENTS.put(firewall2.getIp(), new BDINetRAgent(firewall2,
+				new Capability[] { new LinkMonitorCapability(),
+						new RateLimiterCapability() }));
+		AGENTS.put(firewall3.getIp(), new BDINetRAgent(firewall3,
+				new Capability[] { new LinkMonitorCapability(),
+						new RateLimiterCapability() }));*/
+		AGENTS.put(rateLimiter1.getIp(), new BDINetRAgent(rateLimiter1,
 				new RateLimiterCapability()));
-		AGENTS.put(rateLimiter2.getId(), new BDINetRAgent(rateLimiter2,
-				new RateLimiterCapability()));
+		/*AGENTS.put(rateLimiter2.getIp(), new BDINetRAgent(rateLimiter2,
+				new RateLimiterCapability()));*/
 
 	}
 
@@ -134,10 +140,11 @@ public class BDINetRApp {
 		PlatformController controller = runtime
 				.createMainContainer(bootProfile);
 
-		for (String agentName : AGENTS.keySet()) {
+		for (IpAddress agentName : AGENTS.keySet()) {
 			try {
 				AgentController ac = ((AgentContainer) controller)
-						.acceptNewAgent(agentName, AGENTS.get(agentName));
+						.acceptNewAgent(agentName.toString(),
+								AGENTS.get(agentName));
 				ac.start();
 			} catch (Exception e) {
 				log.error(e);

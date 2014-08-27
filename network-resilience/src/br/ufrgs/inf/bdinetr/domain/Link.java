@@ -28,6 +28,7 @@ public class Link {
 
 	private Double bandwidth;
 	private final String id;
+	private Double limitedBandwidth;
 	private Device source;
 	private Device target;
 	private Double usedBandwidth;
@@ -39,6 +40,7 @@ public class Link {
 	public Link(String id, Double bandwidth, Device source, Device target) {
 		this(id);
 		this.bandwidth = bandwidth;
+		this.limitedBandwidth = null;
 		this.usedBandwidth = 0.0;
 		setSource(source);
 		setTarget(target);
@@ -53,8 +55,16 @@ public class Link {
 		return false;
 	}
 
+	public Double getActualBandwidth() {
+		return limitedBandwidth == null ? bandwidth : limitedBandwidth;
+	}
+
 	public Double getBandwidth() {
 		return bandwidth;
+	}
+
+	public Double getLimitedBandwidth() {
+		return limitedBandwidth;
 	}
 
 	public Device getSource() {
@@ -80,6 +90,12 @@ public class Link {
 
 	public void setBandwidth(Double bandwidth) {
 		this.bandwidth = bandwidth;
+	}
+
+	public void setLimitedBandwidth(Double limitedBandwidth) {
+		if (limitedBandwidth > bandwidth)
+			return;
+		this.limitedBandwidth = limitedBandwidth;
 	}
 
 	public void setSource(Device source) {

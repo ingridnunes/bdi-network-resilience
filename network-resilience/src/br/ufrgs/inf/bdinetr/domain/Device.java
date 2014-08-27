@@ -30,10 +30,10 @@ import java.util.Set;
 public class Device {
 
 	private final Set<Link> connectedLinks;
-	private final String id;
+	private final IpAddress ip;
 
-	public Device(final String id) {
-		this.id = id;
+	public Device(final IpAddress id) {
+		this.ip = id;
 		this.connectedLinks = new HashSet<>();
 	}
 
@@ -49,7 +49,7 @@ public class Device {
 	public boolean equals(Object obj) {
 		if (obj instanceof Device) {
 			Device d = (Device) obj;
-			return this.id.equals(d.id);
+			return this.ip.equals(d.ip);
 		}
 		return false;
 	}
@@ -58,18 +58,18 @@ public class Device {
 		return connectedLinks;
 	}
 
-	public String getId() {
-		return id;
+	public IpAddress getIp() {
+		return ip;
 	}
 
 	@Override
 	public int hashCode() {
-		return id == null ? 0 : id.hashCode();
+		return ip == null ? 0 : ip.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return id;
+		return ip.toString();
 	}
 
 }

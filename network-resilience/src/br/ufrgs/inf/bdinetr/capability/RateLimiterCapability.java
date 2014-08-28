@@ -30,7 +30,8 @@ import bdi4jade.belief.PropositionalBelief;
 import bdi4jade.belief.TransientPropositionalBelief;
 import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
-import bdi4jade.goal.BeliefValueGoal;
+import bdi4jade.goal.BeliefGoal;
+import bdi4jade.goal.Goal;
 import bdi4jade.goal.GoalTemplateFactory;
 import bdi4jade.goal.PropositionalBeliefValueGoal;
 import bdi4jade.plan.DefaultPlan;
@@ -41,6 +42,7 @@ import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.AttackPrevented;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.FullyOperational;
+import br.ufrgs.inf.bdinetr.domain.LinkProposition.OverUsage;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.RegularUsage;
 
 /**
@@ -110,12 +112,53 @@ public class RateLimiterCapability extends Capability {
 		}
 	}
 
+	public static class RestoreLinkRate extends BeliefGoalPlanBody {
+		private static final long serialVersionUID = -3493377510830902961L;
+
+		private Link link;
+
+		@Override
+		public void execute() {
+			link.setLimitedBandwidth(null);
+			getBeliefBase().addOrUpdateBelief(
+					new TransientPropositionalBelief<FullyOperational>(
+							new FullyOperational(link), Boolean.TRUE));
+			getCapability()
+					.getWholeCapability()
+					.getBeliefBase()
+					.addOrUpdateBelief(
+							new TransientPropositionalBelief<AttackPrevented>(
+									new AttackPrevented(link), null));
+			log.info(getGoal());
+		}
+
+		@Parameter(direction = Direction.IN)
+		public void setBeliefName(FullyOperational fullyOperational) {
+			this.link = fullyOperational.getLink();
+		}
+	}
+
+	@bdi4jade.annotation.Plan
+	private Plan restoreLinkRate = new DefaultPlan(
+			GoalTemplateFactory.hasValueForBeliefOfType(FullyOperational.class,
+					Boolean.TRUE), RestoreLinkRate.class) {
+		public boolean isContextApplicable(Goal goal) {
+			BeliefGoal<FullyOperational> bg = (BeliefGoal<FullyOperational>) goal;
+			PropositionalBelief<RegularUsage> regularUsage = (PropositionalBelief<RegularUsage>) getBeliefBase()
+					.getBelief(new RegularUsage(bg.getBeliefName().getLink()));
+			return (regularUsage != null && regularUsage.getValue());
+		};
+	};
+
 	@bdi4jade.annotation.Plan
 	private Plan limitLinkRate = new DefaultPlan(
 			GoalTemplateFactory.hasValueForBeliefOfType(AttackPrevented.class,
 					Boolean.TRUE), LimitLinkRatePlan.class) {
-		public boolean isContextApplicable(bdi4jade.goal.Goal goal) {
-			return true;
+		public boolean isContextApplicable(Goal goal) {
+			BeliefGoal<AttackPrevented> bg = (BeliefGoal<AttackPrevented>) goal;
+			PropositionalBelief<OverUsage> overUsage = (PropositionalBelief<OverUsage>) getBeliefBase()
+					.getBelief(new OverUsage(bg.getBeliefName().getLink()));
+			return (overUsage != null && overUsage.getValue());
 		};
 	};
 

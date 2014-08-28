@@ -29,7 +29,7 @@ import bdi4jade.belief.TransientBelief;
 import bdi4jade.belief.TransientPropositionalBelief;
 import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
-import bdi4jade.goal.BeliefGoal;
+import bdi4jade.goal.BeliefPresentGoal;
 import bdi4jade.goal.PropositionalBeliefValueGoal;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.BeliefRevisionStrategy;
@@ -38,7 +38,6 @@ import br.ufrgs.inf.bdinetr.BDINetRAgent.RootCapability;
 import br.ufrgs.inf.bdinetr.domain.Device;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.AttackPrevented;
-import br.ufrgs.inf.bdinetr.domain.LinkProposition.FullyOperational;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.OverUsage;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.RegularUsage;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.Usage;
@@ -73,8 +72,9 @@ public class LinkMonitorCapability extends Capability {
 								+ overUsage.getName().getLink() + "))");
 						getMyAgent().addGoal(
 								LinkMonitorCapability.this,
-								new BeliefGoal<RegularUsage>(new RegularUsage(
-										overUsage.getName().getLink())));
+								new BeliefPresentGoal<RegularUsage>(
+										new RegularUsage(overUsage.getName()
+												.getLink())));
 						log.debug("goal(?regularUsage("
 								+ overUsage.getName().getLink() + "))");
 					}

@@ -30,6 +30,7 @@ import bdi4jade.belief.PropositionalBelief;
 import bdi4jade.belief.TransientPropositionalBelief;
 import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
+import bdi4jade.goal.BeliefValueGoal;
 import bdi4jade.goal.GoalTemplateFactory;
 import bdi4jade.goal.PropositionalBeliefValueGoal;
 import bdi4jade.plan.DefaultPlan;
@@ -111,8 +112,12 @@ public class RateLimiterCapability extends Capability {
 
 	@bdi4jade.annotation.Plan
 	private Plan limitLinkRate = new DefaultPlan(
-			GoalTemplateFactory.beliefValueGoal(AttackPrevented.class,
-					Boolean.TRUE), LimitLinkRatePlan.class);
+			GoalTemplateFactory.hasValueForBeliefOfType(AttackPrevented.class,
+					Boolean.TRUE), LimitLinkRatePlan.class) {
+		public boolean isContextApplicable(bdi4jade.goal.Goal goal) {
+			return true;
+		};
+	};
 
 	public RateLimiterCapability() {
 		ReasoningStrategy strategy = new ReasoningStrategy();

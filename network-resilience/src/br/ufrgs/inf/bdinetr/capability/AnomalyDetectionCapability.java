@@ -27,7 +27,7 @@ import bdi4jade.belief.Belief;
 import bdi4jade.belief.PropositionalBelief;
 import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
-import bdi4jade.goal.BeliefGoal;
+import bdi4jade.goal.BeliefPresentGoal;
 import bdi4jade.goal.PropositionalBeliefValueGoal;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
@@ -59,7 +59,7 @@ public class AnomalyDetectionCapability extends Capability {
 							+ "))");
 					getMyAgent().addGoal(
 							AnomalyDetectionCapability.this,
-							new BeliefGoal<Benign>(new Benign(anomalous
+							new BeliefPresentGoal<Benign>(new Benign(anomalous
 									.getName().getIp())));
 					log.debug("goal(?benign(" + anomalous.getName().getIp()
 							+ "))");

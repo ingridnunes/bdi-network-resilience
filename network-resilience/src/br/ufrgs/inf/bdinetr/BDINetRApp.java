@@ -41,7 +41,6 @@ import org.apache.log4j.PropertyConfigurator;
 
 import bdi4jade.core.AbstractBDIAgent;
 import bdi4jade.core.Capability;
-import bdi4jade.examples.BDI4JADEExamplesPanel;
 import br.ufrgs.inf.bdinetr.capability.LinkMonitorCapability;
 import br.ufrgs.inf.bdinetr.capability.RateLimiterCapability;
 import br.ufrgs.inf.bdinetr.domain.Device;
@@ -81,36 +80,44 @@ public class BDINetRApp {
 		NETWORK = new Network();
 		Device firewall1 = new Device(new IpAddress("Firewall 1"));
 		NETWORK.addDevice(firewall1);
-		/*Device firewall2 = new Device(new IpAddress("Firewall 2"));
-		NETWORK.addDevice(firewall2);
-		Device firewall3 = new Device(new IpAddress("Firewall 3"));
-		NETWORK.addDevice(firewall3);*/
+		/*
+		 * Device firewall2 = new Device(new IpAddress("Firewall 2"));
+		 * NETWORK.addDevice(firewall2); Device firewall3 = new Device(new
+		 * IpAddress("Firewall 3")); NETWORK.addDevice(firewall3);
+		 */
 		Device rateLimiter1 = new Device(new IpAddress("Rate Limiter 1"));
 		NETWORK.addDevice(rateLimiter1);
-		/*Device rateLimiter2 = new Device(new IpAddress("Rate Limiter 2"));
-		NETWORK.addDevice(rateLimiter2);*/
+		/*
+		 * Device rateLimiter2 = new Device(new IpAddress("Rate Limiter 2"));
+		 * NETWORK.addDevice(rateLimiter2);
+		 */
 
 		NETWORK.addLink(new Link("F1_RL1", 10.0, firewall1, rateLimiter1));
-		/*NETWORK.addLink(new Link("F2_RL2", 8.0, firewall2, rateLimiter2));
-		NETWORK.addLink(new Link("F3_RL1", 7.0, firewall3, rateLimiter1));
-		NETWORK.addLink(new Link("F1_RL2", 7.0, firewall1, rateLimiter2));
-		NETWORK.addLink(new Link("F2_RL1", 8.0, firewall2, rateLimiter1));
-		NETWORK.addLink(new Link("F3_RL2", 10.0, firewall3, rateLimiter2));*/
+		/*
+		 * NETWORK.addLink(new Link("F2_RL2", 8.0, firewall2, rateLimiter2));
+		 * NETWORK.addLink(new Link("F3_RL1", 7.0, firewall3, rateLimiter1));
+		 * NETWORK.addLink(new Link("F1_RL2", 7.0, firewall1, rateLimiter2));
+		 * NETWORK.addLink(new Link("F2_RL1", 8.0, firewall2, rateLimiter1));
+		 * NETWORK.addLink(new Link("F3_RL2", 10.0, firewall3, rateLimiter2));
+		 */
 
 		AGENTS = new HashMap<>();
 		AGENTS.put(firewall1.getIp(), new BDINetRAgent(firewall1,
 				new Capability[] { new LinkMonitorCapability(),
 						new RateLimiterCapability() }));
-		/*AGENTS.put(firewall2.getIp(), new BDINetRAgent(firewall2,
-				new Capability[] { new LinkMonitorCapability(),
-						new RateLimiterCapability() }));
-		AGENTS.put(firewall3.getIp(), new BDINetRAgent(firewall3,
-				new Capability[] { new LinkMonitorCapability(),
-						new RateLimiterCapability() }));*/
+		/*
+		 * AGENTS.put(firewall2.getIp(), new BDINetRAgent(firewall2, new
+		 * Capability[] { new LinkMonitorCapability(), new
+		 * RateLimiterCapability() })); AGENTS.put(firewall3.getIp(), new
+		 * BDINetRAgent(firewall3, new Capability[] { new
+		 * LinkMonitorCapability(), new RateLimiterCapability() }));
+		 */
 		AGENTS.put(rateLimiter1.getIp(), new BDINetRAgent(rateLimiter1,
 				new RateLimiterCapability()));
-		/*AGENTS.put(rateLimiter2.getIp(), new BDINetRAgent(rateLimiter2,
-				new RateLimiterCapability()));*/
+		/*
+		 * AGENTS.put(rateLimiter2.getIp(), new BDINetRAgent(rateLimiter2, new
+		 * RateLimiterCapability()));
+		 */
 
 	}
 

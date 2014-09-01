@@ -26,11 +26,7 @@ import java.util.Set;
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.PropositionalBelief;
 import bdi4jade.belief.TransientBelief;
-import bdi4jade.belief.TransientPropositionalBelief;
-import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
-import bdi4jade.goal.BeliefPresentGoal;
-import bdi4jade.goal.PropositionalBeliefValueGoal;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.BeliefRevisionStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
@@ -45,7 +41,7 @@ import br.ufrgs.inf.bdinetr.domain.LinkProposition.Usage;
 /**
  * @author Ingrid Nunes
  */
-public class LinkMonitorCapability extends Capability {
+public class LinkMonitorCapability extends BDINetRAppCapability {
 
 	private class ReasoningStrategy extends AbstractReasoningStrategy implements
 			BeliefRevisionStrategy, OptionGenerationFunction {
@@ -61,22 +57,9 @@ public class LinkMonitorCapability extends Capability {
 									new AttackPrevented(overUsage.getName()
 											.getLink()));
 					if (attackPrevented == null || !attackPrevented.getValue()) {
-						getMyAgent()
-								.addGoal(
-										LinkMonitorCapability.this,
-										new PropositionalBeliefValueGoal<AttackPrevented>(
-												new AttackPrevented(overUsage
-														.getName().getLink()),
-												Boolean.TRUE));
-						log.debug("goal(attackPrevented("
-								+ overUsage.getName().getLink() + "))");
-						getMyAgent().addGoal(
-								LinkMonitorCapability.this,
-								new BeliefPresentGoal<RegularUsage>(
-										new RegularUsage(overUsage.getName()
-												.getLink())));
-						log.debug("goal(?regularUsage("
-								+ overUsage.getName().getLink() + "))");
+						goal(new AttackPrevented(overUsage.getName().getLink()),
+								Boolean.TRUE);
+						goal(new RegularUsage(overUsage.getName().getLink()));
 					}
 				}
 			}
@@ -88,35 +71,21 @@ public class LinkMonitorCapability extends Capability {
 					.getBeliefsByType(Usage.class);
 			for (Belief<?, ?> belief : linkUsageBeliefs) {
 				Belief<Usage, Double> linkUsage = (Belief<Usage, Double>) belief;
+				OverUsage overUsage = new OverUsage(linkUsage.getName()
+						.getLink());
 				double percentageUsed = linkUsage.getName().getLink()
 						.getUsedBandwidthPercentage();
 				linkUsage.setValue(percentageUsed);
 				if (percentageUsed > overUsageThreshold.getValue()) {
-					PropositionalBelief<OverUsage> overUsage = (PropositionalBelief<OverUsage>) getBeliefBase()
-							.getBelief(
-									new OverUsage(linkUsage.getName().getLink()));
-					if (overUsage == null || !overUsage.getValue()) {
-						getBeliefBase().addOrUpdateBelief(
-								new TransientPropositionalBelief<OverUsage>(
-										new OverUsage(linkUsage.getName()
-												.getLink()), Boolean.TRUE));
-						log.debug("belief(overUsage("
-								+ linkUsage.getName().getLink() + "))");
-						getBeliefBase()
-								.removeBelief(
-										new RegularUsage(linkUsage.getName()
-												.getLink()));
-						log.debug("belief(~regularUsage("
-								+ linkUsage.getName().getLink() + "))");
+					PropositionalBelief<OverUsage> overUsageBelief = (PropositionalBelief<OverUsage>) getBeliefBase()
+							.getBelief(overUsage);
+					if (overUsageBelief == null || !overUsageBelief.getValue()) {
+						belief(overUsage, true);
+						belief(new RegularUsage(linkUsage.getName().getLink()),
+								null);
 					}
 				} else {
-					getBeliefBase()
-							.addOrUpdateBelief(
-									new TransientPropositionalBelief<OverUsage>(
-											new OverUsage(linkUsage.getName()
-													.getLink()), Boolean.FALSE));
-					log.debug("belief(not overUsage("
-							+ linkUsage.getName().getLink() + "))");
+					belief(overUsage, false);
 				}
 			}
 		}

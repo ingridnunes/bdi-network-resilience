@@ -67,9 +67,17 @@ public class Device {
 		return ip == null ? 0 : ip.hashCode();
 	}
 
+	public void limitIp(IpAddress ip, double rate) {
+		// TODO
+	}
+
 	@Override
 	public String toString() {
 		return ip.toString();
+	}
+
+	public void unlimitIp(IpAddress ip) {
+		// TODO
 	}
 
 }

@@ -21,11 +21,38 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.capability;
 
+import bdi4jade.belief.TransientPropositionalBelief;
+import bdi4jade.core.Capability;
+import bdi4jade.goal.BeliefPresentGoal;
+import bdi4jade.goal.PropositionalBeliefValueGoal;
+
 /**
  * @author Ingrid Nunes
  */
-public class FlowExporterCapability extends BDINetRAppCapability {
+public class BDINetRAppCapability extends Capability {
 
-	private static final long serialVersionUID = -1705728861020677126L;
+	private static final long serialVersionUID = -3491170777812144486L;
+
+	protected void belief(Object proposition, Boolean value) {
+		if (value == null) {
+			getWholeCapability().getBeliefBase().removeBelief(proposition);
+			log.debug("belief(~" + proposition + "))");
+		} else {
+			getWholeCapability().getBeliefBase().addOrUpdateBelief(
+					new TransientPropositionalBelief(proposition, value));
+			log.debug("belief(" + (value ? "" : "not ") + proposition + ")");
+		}
+	}
+
+	protected void goal(Object proposition) {
+		getMyAgent().addGoal(this, new BeliefPresentGoal(proposition));
+		log.debug("goal(?" + proposition + "))");
+	}
+
+	protected void goal(Object proposition, Boolean value) {
+		getMyAgent().addGoal(this,
+				new PropositionalBeliefValueGoal(proposition, value));
+		log.debug("goal(" + (value ? "" : "not ") + proposition + "))");
+	}
 
 }

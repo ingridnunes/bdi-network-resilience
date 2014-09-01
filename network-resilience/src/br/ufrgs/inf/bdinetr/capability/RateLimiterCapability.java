@@ -27,18 +27,22 @@ import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.PropositionalBelief;
-import bdi4jade.belief.TransientPropositionalBelief;
-import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.goal.BeliefGoal;
 import bdi4jade.goal.Goal;
 import bdi4jade.goal.GoalTemplateFactory;
-import bdi4jade.goal.PropositionalBeliefValueGoal;
 import bdi4jade.plan.DefaultPlan;
 import bdi4jade.plan.Plan;
 import bdi4jade.plan.planbody.BeliefGoalPlanBody;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
+import br.ufrgs.inf.bdinetr.BDINetRAgent.RootCapability;
+import br.ufrgs.inf.bdinetr.domain.Device;
+import br.ufrgs.inf.bdinetr.domain.IpAddress;
+import br.ufrgs.inf.bdinetr.domain.IpPreposition.Anomalous;
+import br.ufrgs.inf.bdinetr.domain.IpPreposition.Benign;
+import br.ufrgs.inf.bdinetr.domain.IpPreposition.RateLimited;
+import br.ufrgs.inf.bdinetr.domain.IpPreposition.Restricted;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.AttackPrevented;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.FullyOperational;
@@ -48,8 +52,69 @@ import br.ufrgs.inf.bdinetr.domain.LinkProposition.RegularUsage;
 /**
  * @author Ingrid Nunes
  */
-public class RateLimiterCapability extends Capability {
+public class RateLimiterCapability extends BDINetRAppCapability {
 
+	public class LimitIPRatePlan extends BeliefGoalPlanBody {
+		private static final long serialVersionUID = -3493377510830902961L;
+
+		@bdi4jade.annotation.Belief(name = RootCapability.DEVICE_BELIEF)
+		private Belief<String, Device> device;
+		private IpAddress ip;
+
+		@Override
+		public void execute() {
+			device.getValue().limitIp(ip, IP_LIMIT_RATE);
+			belief(new RateLimited(ip), true);
+			belief(new Restricted(ip), true);
+
+			boolean exists = false;
+			Set<Belief<?, ?>> anomalousBeliefs = getBeliefBase()
+					.getBeliefsByType(Anomalous.class);
+			for (Belief<?, ?> belief : anomalousBeliefs) {
+				PropositionalBelief<Anomalous> anomalous = (PropositionalBelief<Anomalous>) belief;
+				if (anomalous.getValue()) {
+					PropositionalBelief<Restricted> restricted = (PropositionalBelief<Restricted>) getBeliefBase()
+							.getBelief(
+									new Restricted(anomalous.getName().getIp()));
+					if (restricted == null || !restricted.getValue()) {
+						exists = true;
+					}
+
+				}
+			}
+			if (!exists) {
+				// FIXME
+				belief(new RegularUsage(new Link("")), true);
+			}
+
+			log.info(getGoal());
+		}
+
+		@Parameter(direction = Direction.IN)
+		public void setBeliefName(Restricted restricted) {
+			this.ip = restricted.getIp();
+		}
+	}
+
+	public class LimitLinkRatePlan extends BeliefGoalPlanBody {
+		private static final long serialVersionUID = -3493377510830902961L;
+
+		private Link link;
+
+		@Override
+		public void execute() {
+			link.setLimitedBandwidth(LINK_LIMIT_RATE * link.getBandwidth());
+			belief(new FullyOperational(link), false);
+			belief(new AttackPrevented(link), true);
+			log.info(getGoal());
+		}
+
+		@Parameter(direction = Direction.IN)
+		public void setBeliefName(AttackPrevented attackPrevented) {
+			this.link = attackPrevented.getLink();
+		}
+	}
+	
 	private class ReasoningStrategy extends AbstractReasoningStrategy implements
 			OptionGenerationFunction {
 		@Override
@@ -64,17 +129,8 @@ public class RateLimiterCapability extends Capability {
 									new RegularUsage(fullyOperational.getName()
 											.getLink()));
 					if (regularUsage != null && regularUsage.getValue()) {
-						getMyAgent()
-								.addGoal(
-										RateLimiterCapability.this,
-										new PropositionalBeliefValueGoal<FullyOperational>(
-												new FullyOperational(
-														fullyOperational
-																.getName()
-																.getLink()),
-												Boolean.TRUE));
-						log.debug("goal(fullyOperational("
-								+ fullyOperational.getName().getLink() + "))");
+						goal(new FullyOperational(fullyOperational.getName()
+								.getLink()), true);
 					}
 
 				}
@@ -82,37 +138,29 @@ public class RateLimiterCapability extends Capability {
 		}
 	}
 
-	public static final double LINK_LIMIT_RATE = 0.5;
-
-	private static final long serialVersionUID = -1705728861020677126L;
-
-	public static class LimitLinkRatePlan extends BeliefGoalPlanBody {
+	public class RestoreIPRatePlan extends BeliefGoalPlanBody {
 		private static final long serialVersionUID = -3493377510830902961L;
 
-		private Link link;
+		@bdi4jade.annotation.Belief(name = RootCapability.DEVICE_BELIEF)
+		private Belief<String, Device> device;
+		private IpAddress ip;
 
 		@Override
 		public void execute() {
-			link.setLimitedBandwidth(LINK_LIMIT_RATE * link.getBandwidth());
-			getBeliefBase().addOrUpdateBelief(
-					new TransientPropositionalBelief<FullyOperational>(
-							new FullyOperational(link), Boolean.FALSE));
-			getCapability()
-					.getWholeCapability()
-					.getBeliefBase()
-					.addOrUpdateBelief(
-							new TransientPropositionalBelief<AttackPrevented>(
-									new AttackPrevented(link), Boolean.TRUE));
+			device.getValue().unlimitIp(ip);
+			belief(new RateLimited(ip), false);
+			belief(new Restricted(ip), false);
+			belief(new Anomalous(ip), null);
 			log.info(getGoal());
 		}
 
 		@Parameter(direction = Direction.IN)
-		public void setBeliefName(AttackPrevented attackPrevented) {
-			this.link = attackPrevented.getLink();
+		public void setBeliefName(Restricted restricted) {
+			this.ip = restricted.getIp();
 		}
 	}
 
-	public static class RestoreLinkRate extends BeliefGoalPlanBody {
+	public class RestoreLinkRate extends BeliefGoalPlanBody {
 		private static final long serialVersionUID = -3493377510830902961L;
 
 		private Link link;
@@ -120,15 +168,8 @@ public class RateLimiterCapability extends Capability {
 		@Override
 		public void execute() {
 			link.setLimitedBandwidth(null);
-			getBeliefBase().addOrUpdateBelief(
-					new TransientPropositionalBelief<FullyOperational>(
-							new FullyOperational(link), Boolean.TRUE));
-			getCapability()
-					.getWholeCapability()
-					.getBeliefBase()
-					.addOrUpdateBelief(
-							new TransientPropositionalBelief<AttackPrevented>(
-									new AttackPrevented(link), null));
+			belief(new FullyOperational(link), true);
+			belief(new AttackPrevented(link), null);
 			log.info(getGoal());
 		}
 
@@ -138,15 +179,20 @@ public class RateLimiterCapability extends Capability {
 		}
 	}
 
+	public static final double IP_LIMIT_RATE = 0.5;
+	public static final double LINK_LIMIT_RATE = 0.5;
+
+	private static final long serialVersionUID = -1705728861020677126L;
+
 	@bdi4jade.annotation.Plan
-	private Plan restoreLinkRate = new DefaultPlan(
-			GoalTemplateFactory.hasValueForBeliefOfType(FullyOperational.class,
-					Boolean.TRUE), RestoreLinkRate.class) {
+	private Plan limitIpRate = new DefaultPlan(
+			GoalTemplateFactory.hasValueForBeliefOfType(Restricted.class,
+					Boolean.TRUE), LimitIPRatePlan.class) {
 		public boolean isContextApplicable(Goal goal) {
-			BeliefGoal<FullyOperational> bg = (BeliefGoal<FullyOperational>) goal;
-			PropositionalBelief<RegularUsage> regularUsage = (PropositionalBelief<RegularUsage>) getBeliefBase()
-					.getBelief(new RegularUsage(bg.getBeliefName().getLink()));
-			return (regularUsage != null && regularUsage.getValue());
+			BeliefGoal<Restricted> bg = (BeliefGoal<Restricted>) goal;
+			PropositionalBelief<Anomalous> anomalous = (PropositionalBelief<Anomalous>) getBeliefBase()
+					.getBelief(new Anomalous(bg.getBeliefName().getIp()));
+			return (anomalous != null && anomalous.getValue());
 		};
 	};
 
@@ -159,6 +205,33 @@ public class RateLimiterCapability extends Capability {
 			PropositionalBelief<OverUsage> overUsage = (PropositionalBelief<OverUsage>) getBeliefBase()
 					.getBelief(new OverUsage(bg.getBeliefName().getLink()));
 			return (overUsage != null && overUsage.getValue());
+		};
+	};
+
+	@bdi4jade.annotation.Plan
+	private Plan restoreIpRate = new DefaultPlan(
+			GoalTemplateFactory.hasValueForBeliefOfType(Restricted.class,
+					Boolean.FALSE), RestoreIPRatePlan.class) {
+		public boolean isContextApplicable(Goal goal) {
+			BeliefGoal<Restricted> bg = (BeliefGoal<Restricted>) goal;
+			PropositionalBelief<Benign> benign = (PropositionalBelief<Benign>) getBeliefBase()
+					.getBelief(new Benign(bg.getBeliefName().getIp()));
+			PropositionalBelief<RateLimited> rateLimited = (PropositionalBelief<RateLimited>) getBeliefBase()
+					.getBelief(new RateLimited(bg.getBeliefName().getIp()));
+			return (benign != null && benign.getValue())
+					&& (rateLimited != null && rateLimited.getValue());
+		};
+	};
+
+	@bdi4jade.annotation.Plan
+	private Plan restoreLinkRate = new DefaultPlan(
+			GoalTemplateFactory.hasValueForBeliefOfType(FullyOperational.class,
+					Boolean.TRUE), RestoreLinkRate.class) {
+		public boolean isContextApplicable(Goal goal) {
+			BeliefGoal<FullyOperational> bg = (BeliefGoal<FullyOperational>) goal;
+			PropositionalBelief<RegularUsage> regularUsage = (PropositionalBelief<RegularUsage>) getBeliefBase()
+					.getBelief(new RegularUsage(bg.getBeliefName().getLink()));
+			return (regularUsage != null && regularUsage.getValue());
 		};
 	};
 

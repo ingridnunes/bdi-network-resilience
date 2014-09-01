@@ -25,9 +25,7 @@ import java.util.Set;
 
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.PropositionalBelief;
-import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
-import bdi4jade.goal.PropositionalBeliefValueGoal;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.FlowPreposition.Threat;
@@ -36,7 +34,7 @@ import br.ufrgs.inf.bdinetr.domain.FlowPreposition.ThreatResponded;
 /**
  * @author Ingrid Nunes
  */
-public class ClassifierCapability extends Capability {
+public class ClassifierCapability extends BDINetRAppCapability {
 
 	private class ReasoningStrategy extends AbstractReasoningStrategy implements
 			OptionGenerationFunction {
@@ -47,13 +45,7 @@ public class ClassifierCapability extends Capability {
 			for (Belief<?, ?> belief : threatBeliefs) {
 				PropositionalBelief<Threat> threat = (PropositionalBelief<Threat>) belief;
 				if (threat.getValue()) {
-					getMyAgent().addGoal(
-							ClassifierCapability.this,
-							new PropositionalBeliefValueGoal<ThreatResponded>(
-									new ThreatResponded(threat.getName()
-											.getFlow()), Boolean.TRUE));
-					log.debug("goal(threatResponded("
-							+ threat.getName().getFlow() + "))");
+					goal(new ThreatResponded(threat.getName().getFlow()), true);
 				}
 			}
 		}

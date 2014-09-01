@@ -25,10 +25,7 @@ import java.util.Set;
 
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.PropositionalBelief;
-import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
-import bdi4jade.goal.BeliefPresentGoal;
-import bdi4jade.goal.PropositionalBeliefValueGoal;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.IpPreposition.Anomalous;
@@ -38,7 +35,7 @@ import br.ufrgs.inf.bdinetr.domain.IpPreposition.Restricted;
 /**
  * @author Ingrid Nunes
  */
-public class AnomalyDetectionCapability extends Capability {
+public class AnomalyDetectionCapability extends BDINetRAppCapability {
 
 	private class ReasoningStrategy extends AbstractReasoningStrategy implements
 			OptionGenerationFunction {
@@ -49,20 +46,8 @@ public class AnomalyDetectionCapability extends Capability {
 			for (Belief<?, ?> belief : anomalousIpBeliefs) {
 				PropositionalBelief<Anomalous> anomalous = (PropositionalBelief<Anomalous>) belief;
 				if (anomalous.getValue()) {
-					getMyAgent()
-							.addGoal(
-									AnomalyDetectionCapability.this,
-									new PropositionalBeliefValueGoal<Restricted>(
-											new Restricted(anomalous.getName()
-													.getIp()), Boolean.TRUE));
-					log.debug("goal(restricted(" + anomalous.getName().getIp()
-							+ "))");
-					getMyAgent().addGoal(
-							AnomalyDetectionCapability.this,
-							new BeliefPresentGoal<Benign>(new Benign(anomalous
-									.getName().getIp())));
-					log.debug("goal(?benign(" + anomalous.getName().getIp()
-							+ "))");
+					goal(new Restricted(anomalous.getName().getIp()), true);
+					goal(new Benign(anomalous.getName().getIp()));
 				}
 			}
 
@@ -75,15 +60,9 @@ public class AnomalyDetectionCapability extends Capability {
 							.getBelief(
 									new Anomalous(restricted.getName().getIp()));
 					if (anomalous != null && !anomalous.getValue()) {
-						getMyAgent().addGoal(
-								AnomalyDetectionCapability.this,
-								new PropositionalBeliefValueGoal<Restricted>(
-										new Restricted(restricted.getName()
-												.getIp()), Boolean.FALSE));
-						log.debug("goal(not restricted("
-								+ restricted.getName().getIp() + "))");
+						goal(new Restricted(restricted.getName().getIp()),
+								false);
 					}
-
 				}
 			}
 		}

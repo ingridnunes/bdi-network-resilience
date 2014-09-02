@@ -29,28 +29,28 @@ import java.util.Set;
  */
 public class Network {
 
-	private final Set<Device> devices;
 	private final Set<Link> links;
+	private final Set<PReSETRouter> router;
 
 	public Network() {
-		this.devices = new HashSet<>();
+		this.router = new HashSet<>();
 		this.links = new HashSet<>();
-	}
-
-	public void addDevice(Device device) {
-		this.devices.add(device);
 	}
 
 	public void addLink(Link link) {
 		this.links.add(link);
 	}
 
-	public Set<Device> getDevices() {
-		return devices;
+	public void addRouter(PReSETRouter router) {
+		this.router.add(router);
 	}
 
 	public Set<Link> getLinks() {
 		return links;
+	}
+
+	public Set<PReSETRouter> getRouters() {
+		return router;
 	}
 
 }

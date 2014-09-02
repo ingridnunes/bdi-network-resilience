@@ -26,24 +26,10 @@ package br.ufrgs.inf.bdinetr.domain;
  */
 public class Link {
 
-	private Double bandwidth;
 	private final String id;
-	private Double limitedBandwidth;
-	private Device source;
-	private Device target;
-	private Double usedBandwidth;
 
 	public Link(String id) {
 		this.id = id;
-	}
-
-	public Link(String id, Double bandwidth, Device source, Device target) {
-		this(id);
-		this.bandwidth = bandwidth;
-		this.limitedBandwidth = null;
-		this.usedBandwidth = 0.0;
-		setSource(source);
-		setTarget(target);
 	}
 
 	@Override
@@ -55,67 +41,9 @@ public class Link {
 		return false;
 	}
 
-	public Double getActualBandwidth() {
-		return limitedBandwidth == null ? bandwidth : limitedBandwidth;
-	}
-
-	public Double getBandwidth() {
-		return bandwidth;
-	}
-
-	public Double getLimitedBandwidth() {
-		return limitedBandwidth;
-	}
-
-	public Device getSource() {
-		return source;
-	}
-
-	public Device getTarget() {
-		return target;
-	}
-
-	public Double getUsedBandwidth() {
-		return usedBandwidth;
-	}
-
-	public Double getUsedBandwidthPercentage() {
-		return usedBandwidth / bandwidth;
-	}
-
 	@Override
 	public int hashCode() {
 		return id == null ? 0 : id.hashCode();
-	}
-
-	public void setBandwidth(Double bandwidth) {
-		this.bandwidth = bandwidth;
-	}
-
-	public void setLimitedBandwidth(Double limitedBandwidth) {
-		if (limitedBandwidth > bandwidth)
-			return;
-		this.limitedBandwidth = limitedBandwidth;
-	}
-
-	public void setSource(Device source) {
-		if (this.source != null) {
-			this.source.disconnectLink(this);
-		}
-		this.source = source;
-		this.source.connectLink(this);
-	}
-
-	public void setTarget(Device target) {
-		if (this.target != null) {
-			this.target.disconnectLink(this);
-		}
-		this.target = source;
-		this.target.connectLink(this);
-	}
-
-	public void setUsedBandwidth(Double usedBandwidth) {
-		this.usedBandwidth = usedBandwidth;
 	}
 
 	@Override

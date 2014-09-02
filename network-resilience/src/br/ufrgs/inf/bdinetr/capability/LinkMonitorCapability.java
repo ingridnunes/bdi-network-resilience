@@ -31,12 +31,12 @@ import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.BeliefRevisionStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.BDINetRAgent.RootCapability;
-import br.ufrgs.inf.bdinetr.domain.Device;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.AttackPrevented;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.OverUsage;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.RegularUsage;
 import br.ufrgs.inf.bdinetr.domain.LinkProposition.Usage;
+import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
 
 /**
  * @author Ingrid Nunes
@@ -73,8 +73,9 @@ public class LinkMonitorCapability extends BDINetRAppCapability {
 				Belief<Usage, Double> linkUsage = (Belief<Usage, Double>) belief;
 				OverUsage overUsage = new OverUsage(linkUsage.getName()
 						.getLink());
-				double percentageUsed = linkUsage.getName().getLink()
-						.getUsedBandwidthPercentage();
+				double percentageUsed = 0;
+				// FIXME
+				// linkUsage.getName().getLink().getUsedBandwidthPercentage();
 				linkUsage.setValue(percentageUsed);
 				if (percentageUsed > overUsageThreshold.getValue()) {
 					PropositionalBelief<OverUsage> overUsageBelief = (PropositionalBelief<OverUsage>) getBeliefBase()
@@ -107,13 +108,14 @@ public class LinkMonitorCapability extends BDINetRAppCapability {
 
 	@Override
 	protected void setup() {
-		Belief<String, Device> device = (Belief<String, Device>) getBeliefBase()
-				.getBelief(RootCapability.DEVICE_BELIEF);
-		for (Link link : device.getValue().getConnectedLinks()) {
-			getBeliefBase().addBelief(
-					new TransientBelief<Usage, Double>(new Usage(link), link
-							.getUsedBandwidthPercentage()));
-		}
+		Belief<String, PReSETRouter> device = (Belief<String, PReSETRouter>) getBeliefBase()
+				.getBelief(RootCapability.ROUTER_BELIEF);
+		// FIXME
+//		for (Link link : device.getValue().getConnectedLinks()) {
+//			getBeliefBase().addBelief(
+//					new TransientBelief<Usage, Double>(new Usage(link), link
+//							.getUsedBandwidthPercentage()));
+//		}
 	}
 
 }

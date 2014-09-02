@@ -21,45 +21,49 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Ingrid Nunes
  */
-public class Device {
+public class PReSETRouter {
 
-	private final Set<Link> connectedLinks;
 	private final IpAddress ip;
+	private final Map<PReSETRole, AbstractPReSETRole> roles;
 
-	public Device(final IpAddress id) {
+	public PReSETRouter(final IpAddress id, int roles) {
 		this.ip = id;
-		this.connectedLinks = new HashSet<>();
-	}
-
-	public void connectLink(Link link) {
-		connectedLinks.add(link);
-	}
-
-	public void disconnectLink(Link link) {
-		connectedLinks.remove(link);
+		this.roles = new HashMap<>();
+		if (PReSETRole.LINK_MONITOR.isPresent(roles)) {
+			this.roles.put(PReSETRole.LINK_MONITOR, new LinkMonitor(this));
+		} else if (PReSETRole.ANOMALY_DETECTION.isPresent(roles)) {
+			this.roles.put(PReSETRole.ANOMALY_DETECTION, new AnomalyDetection(
+					this));
+		} else if (PReSETRole.RATE_LIMITER.isPresent(roles)) {
+			this.roles.put(PReSETRole.RATE_LIMITER, new RateLimiter(this));
+		} else if (PReSETRole.FLOW_EXPORTER.isPresent(roles)) {
+			this.roles.put(PReSETRole.FLOW_EXPORTER, new FlowExporter(this));
+		} else if (PReSETRole.CLASSIFIER.isPresent(roles)) {
+			this.roles.put(PReSETRole.CLASSIFIER, new Classifier(this));
+		}
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof Device) {
-			Device d = (Device) obj;
+		if (obj instanceof PReSETRouter) {
+			PReSETRouter d = (PReSETRouter) obj;
 			return this.ip.equals(d.ip);
 		}
 		return false;
 	}
 
-	public Set<Link> getConnectedLinks() {
-		return connectedLinks;
-	}
-
 	public IpAddress getIp() {
 		return ip;
+	}
+
+	public AbstractPReSETRole getRole(PReSETRole role) {
+		return roles.get(role);
 	}
 
 	@Override
@@ -67,17 +71,13 @@ public class Device {
 		return ip == null ? 0 : ip.hashCode();
 	}
 
-	public void limitIp(IpAddress ip, double rate) {
-		// TODO
+	public boolean hasRole(PReSETRole role) {
+		return roles.containsKey(role);
 	}
 
 	@Override
 	public String toString() {
 		return ip.toString();
-	}
-
-	public void unlimitIp(IpAddress ip) {
-		// TODO
 	}
 
 }

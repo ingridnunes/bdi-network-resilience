@@ -22,25 +22,36 @@
 package br.ufrgs.inf.bdinetr.domain;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * event at:
  * 
  * "load" put: (factory/event create: #( "value_name" "value_index" ));
  * 
- * --> value_name: ???
- * --> value_index: id do link
+ * --> value_name: ??? --> value_index: id do link
  * 
  * @author Ingrid Nunes
  */
-public class LinkMonitor extends AbstractPReSETRole {
+public class LinkMonitor extends PReSETRole {
 
+	private final Set<Observer> observers;
 	private final Map<Link, Boolean> overUsageLinks;
 
 	public LinkMonitor(PReSETRouter router) {
 		super(router);
 		this.overUsageLinks = new HashMap<>();
+		this.observers = new HashSet<>();
+	}
+
+	public void attachObserver(Observer observer) {
+		this.observers.add(observer);
+	}
+
+	public Set<Link> getLinks() {
+		return overUsageLinks.keySet();
 	}
 
 	public boolean isOverUsage(Link link) {
@@ -50,8 +61,15 @@ public class LinkMonitor extends AbstractPReSETRole {
 		return overUsage;
 	}
 
+	private void notifyObservers(Object arg) {
+		for (Observer observer : observers) {
+			observer.update(this, arg);
+		}
+	}
+
 	public void setOverUsage(Link link, boolean overUsage) {
 		this.overUsageLinks.put(link, overUsage);
+		notifyObservers(link);
 	}
 
 }

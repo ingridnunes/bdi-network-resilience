@@ -19,7 +19,7 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.capability;
+package br.ufrgs.inf.bdinetr.agent;
 
 import java.util.Set;
 
@@ -30,18 +30,19 @@ import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.BeliefRevisionStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
-import br.ufrgs.inf.bdinetr.BDINetRAgent.RootCapability;
 import br.ufrgs.inf.bdinetr.domain.Link;
-import br.ufrgs.inf.bdinetr.domain.LinkProposition.AttackPrevented;
-import br.ufrgs.inf.bdinetr.domain.LinkProposition.OverUsage;
-import br.ufrgs.inf.bdinetr.domain.LinkProposition.RegularUsage;
-import br.ufrgs.inf.bdinetr.domain.LinkProposition.Usage;
-import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
+import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
+import br.ufrgs.inf.bdinetr.domain.Observer;
+import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
+import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.AttackPrevented;
+import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.OverUsage;
+import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.RegularUsage;
 
 /**
  * @author Ingrid Nunes
  */
-public class LinkMonitorCapability extends BDINetRAppCapability {
+public class LinkMonitorCapability extends RouterAgentCapability implements
+		Observer {
 
 	private class ReasoningStrategy extends AbstractReasoningStrategy implements
 			BeliefRevisionStrategy, OptionGenerationFunction {
@@ -67,26 +68,21 @@ public class LinkMonitorCapability extends BDINetRAppCapability {
 
 		@Override
 		public void reviewBeliefs() {
-			Set<Belief<?, ?>> linkUsageBeliefs = getBeliefBase()
-					.getBeliefsByType(Usage.class);
-			for (Belief<?, ?> belief : linkUsageBeliefs) {
-				Belief<Usage, Double> linkUsage = (Belief<Usage, Double>) belief;
-				OverUsage overUsage = new OverUsage(linkUsage.getName()
-						.getLink());
-				double percentageUsed = 0;
-				// FIXME
-				// linkUsage.getName().getLink().getUsedBandwidthPercentage();
-				linkUsage.setValue(percentageUsed);
-				if (percentageUsed > overUsageThreshold.getValue()) {
+			LinkMonitor lm = (LinkMonitor) getPReSETRole(RoleType.LINK_MONITOR);
+
+			for (Link link : lm.getLinks()) {
+				OverUsage overUsage = new OverUsage(link);
+				boolean isOverUsage = lm.isOverUsage(link);
+
+				if (isOverUsage) {
 					PropositionalBelief<OverUsage> overUsageBelief = (PropositionalBelief<OverUsage>) getBeliefBase()
 							.getBelief(overUsage);
 					if (overUsageBelief == null || !overUsageBelief.getValue()) {
 						belief(overUsage, true);
-						belief(new RegularUsage(linkUsage.getName().getLink()),
-								null);
+						belief(new RegularUsage(link), null);
 					}
 				} else {
-					belief(overUsage, false);
+					belief(overUsage, null);
 				}
 			}
 		}
@@ -104,18 +100,14 @@ public class LinkMonitorCapability extends BDINetRAppCapability {
 		ReasoningStrategy strategy = new ReasoningStrategy();
 		setBeliefRevisionStrategy(strategy);
 		setOptionGenerationFunction(strategy);
+
+		LinkMonitor lm = (LinkMonitor) getPReSETRole(RoleType.LINK_MONITOR);
+		lm.attachObserver(this);
 	}
 
 	@Override
-	protected void setup() {
-		Belief<String, PReSETRouter> device = (Belief<String, PReSETRouter>) getBeliefBase()
-				.getBelief(RootCapability.ROUTER_BELIEF);
-		// FIXME
-//		for (Link link : device.getValue().getConnectedLinks()) {
-//			getBeliefBase().addBelief(
-//					new TransientBelief<Usage, Double>(new Usage(link), link
-//							.getUsedBandwidthPercentage()));
-//		}
+	public void update(Object o, Object arg) {
+		getMyAgent().restart();
 	}
 
 }

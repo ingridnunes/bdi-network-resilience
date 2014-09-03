@@ -19,48 +19,62 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain;
+package br.ufrgs.inf.bdinetr.domain.logic;
+
+import br.ufrgs.inf.bdinetr.domain.IpAddress;
 
 /**
  * @author Ingrid Nunes
  */
-public class FlowPreposition {
-	
-	public static class FlowRateLimited extends FlowPreposition {
-		public FlowRateLimited(Flow flow) {
-			super(flow);
-		}
-	}
-	
-	public static class Threat extends FlowPreposition {
-		public Threat(Flow flow) {
-			super(flow);
-		}
-	}
-	
-	public static class ThreatResponded extends FlowPreposition {
-		public ThreatResponded(Flow flow) {
-			super(flow);
+public class IpPreposition {
+
+	public static class Anomalous extends IpPreposition {
+		public Anomalous(IpAddress ip) {
+			super(ip);
 		}
 	}
 
-	protected Flow flow;
+	public static class Benign extends IpPreposition {
+		public Benign(IpAddress ip) {
+			super(ip);
+		}
+	}
 
-	public FlowPreposition(Flow flow) {
-		this.flow = flow;
+	public static class FlowRecord extends IpPreposition {
+		public FlowRecord(IpAddress ip) {
+			super(ip);
+		}
+	}
+
+	public static class RateLimited extends IpPreposition {
+		public RateLimited(IpAddress ip) {
+			super(ip);
+		}
+	}
+
+	public static class Restricted extends IpPreposition {
+		public Restricted(IpAddress ip) {
+			super(ip);
+		}
+	}
+
+	protected IpAddress ip;
+
+	public IpPreposition(IpAddress ip) {
+		this.ip = ip;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj != null && this.getClass().equals(obj.getClass())) {
-			FlowPreposition fp = (FlowPreposition) obj;
-			return this.flow.equals(fp.flow);
+			IpPreposition lp = (IpPreposition) obj;
+			return this.ip.equals(lp.ip);
 		}
 		return false;
 	}
 
-	public Flow getFlow() {
-		return flow;
+	public IpAddress getIp() {
+		return ip;
 	}
 
 	@Override
@@ -69,7 +83,7 @@ public class FlowPreposition {
 		int result = 1;
 		result = prime * result
 				+ ((this.getClass() == null) ? 0 : this.getClass().hashCode());
-		result = prime * result + ((flow == null) ? 0 : flow.hashCode());
+		result = prime * result + ((ip == null) ? 0 : ip.hashCode());
 		return result;
 	}
 
@@ -77,7 +91,7 @@ public class FlowPreposition {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(this.getClass().getSimpleName());
-		sb.append("(").append(flow).append(")");
+		sb.append("(").append(ip).append(")");
 		return sb.toString();
 	}
 

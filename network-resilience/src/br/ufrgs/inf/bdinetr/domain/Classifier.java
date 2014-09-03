@@ -21,7 +21,12 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
+ * flowexporter addOperation: "victim:flow:idle:" remoteName: "setthreshold".
+ * 
  * event at:
  * 
  * "classification" put: (factory/event create: #( "value_name" "value_source"
@@ -29,10 +34,19 @@ package br.ufrgs.inf.bdinetr.domain;
  * 
  * @author Ingrid Nunes
  */
-public class Classifier extends AbstractPReSETRole {
+public class Classifier extends PReSETRole {
 
 	public Classifier(PReSETRouter router) {
 		super(router);
+	}
+
+	public Set<Flow> classifyFlows(IpAddress ip) {
+		// FIXME
+		return new HashSet<>();
+	}
+
+	public void turnFlowExporterOn() {
+
 	}
 
 }

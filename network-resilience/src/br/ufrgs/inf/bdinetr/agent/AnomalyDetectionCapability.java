@@ -19,7 +19,7 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.capability;
+package br.ufrgs.inf.bdinetr.agent;
 
 import java.util.Set;
 
@@ -28,24 +28,41 @@ import bdi4jade.belief.PropositionalBelief;
 import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
-import br.ufrgs.inf.bdinetr.domain.FlowPreposition.Threat;
-import br.ufrgs.inf.bdinetr.domain.FlowPreposition.ThreatResponded;
+import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Anomalous;
+import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Benign;
+import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Restricted;
 
 /**
  * @author Ingrid Nunes
  */
-public class ClassifierCapability extends BDINetRAppCapability {
+public class AnomalyDetectionCapability extends RouterAgentCapability {
 
 	private class ReasoningStrategy extends AbstractReasoningStrategy implements
 			OptionGenerationFunction {
 		@Override
 		public void generateGoals(GoalUpdateSet goalUpdateSet) {
-			Set<Belief<?, ?>> threatBeliefs = getBeliefBase().getBeliefsByType(
-					Threat.class);
-			for (Belief<?, ?> belief : threatBeliefs) {
-				PropositionalBelief<Threat> threat = (PropositionalBelief<Threat>) belief;
-				if (threat.getValue()) {
-					goal(new ThreatResponded(threat.getName().getFlow()), true);
+			Set<Belief<?, ?>> anomalousIpBeliefs = getBeliefBase()
+					.getBeliefsByType(Anomalous.class);
+			for (Belief<?, ?> belief : anomalousIpBeliefs) {
+				PropositionalBelief<Anomalous> anomalous = (PropositionalBelief<Anomalous>) belief;
+				if (anomalous.getValue()) {
+					goal(new Restricted(anomalous.getName().getIp()), true);
+					goal(new Benign(anomalous.getName().getIp()));
+				}
+			}
+
+			Set<Belief<?, ?>> restrictedBeliefs = getBeliefBase()
+					.getBeliefsByType(Restricted.class);
+			for (Belief<?, ?> belief : restrictedBeliefs) {
+				PropositionalBelief<Restricted> restricted = (PropositionalBelief<Restricted>) belief;
+				if (restricted.getValue()) {
+					PropositionalBelief<Anomalous> anomalous = (PropositionalBelief<Anomalous>) getBeliefBase()
+							.getBelief(
+									new Anomalous(restricted.getName().getIp()));
+					if (anomalous != null && !anomalous.getValue()) {
+						goal(new Restricted(restricted.getName().getIp()),
+								false);
+					}
 				}
 			}
 		}
@@ -53,7 +70,7 @@ public class ClassifierCapability extends BDINetRAppCapability {
 
 	private static final long serialVersionUID = -1705728861020677126L;
 
-	public ClassifierCapability() {
+	public AnomalyDetectionCapability() {
 		ReasoningStrategy strategy = new ReasoningStrategy();
 		setOptionGenerationFunction(strategy);
 	}

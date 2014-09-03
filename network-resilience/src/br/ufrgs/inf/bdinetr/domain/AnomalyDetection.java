@@ -21,6 +21,9 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * ids
  * 
@@ -32,10 +35,15 @@ package br.ufrgs.inf.bdinetr.domain;
  * 
  * @author Ingrid Nunes
  */
-public class AnomalyDetection extends AbstractPReSETRole {
+public class AnomalyDetection extends PReSETRole {
 
 	public AnomalyDetection(PReSETRouter router) {
 		super(router);
+	}
+
+	public Set<IpAddress> detectIntrusion(Link link) {
+		// FIXME
+		return new HashSet<>();
 	}
 
 }

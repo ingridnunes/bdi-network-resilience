@@ -19,7 +19,7 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.capability;
+package br.ufrgs.inf.bdinetr.agent;
 
 import java.util.Set;
 
@@ -36,23 +36,25 @@ import bdi4jade.plan.Plan;
 import bdi4jade.plan.planbody.BeliefGoalPlanBody;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
-import br.ufrgs.inf.bdinetr.BDINetRAgent.RootCapability;
+import br.ufrgs.inf.bdinetr.agent.RouterAgent.RootCapability;
 import br.ufrgs.inf.bdinetr.domain.IpAddress;
-import br.ufrgs.inf.bdinetr.domain.IpPreposition.Anomalous;
-import br.ufrgs.inf.bdinetr.domain.IpPreposition.Benign;
-import br.ufrgs.inf.bdinetr.domain.IpPreposition.RateLimited;
-import br.ufrgs.inf.bdinetr.domain.IpPreposition.Restricted;
 import br.ufrgs.inf.bdinetr.domain.Link;
-import br.ufrgs.inf.bdinetr.domain.LinkProposition.AttackPrevented;
-import br.ufrgs.inf.bdinetr.domain.LinkProposition.FullyOperational;
-import br.ufrgs.inf.bdinetr.domain.LinkProposition.OverUsage;
-import br.ufrgs.inf.bdinetr.domain.LinkProposition.RegularUsage;
+import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
+import br.ufrgs.inf.bdinetr.domain.RateLimiter;
+import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Anomalous;
+import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Benign;
+import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.RateLimited;
+import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Restricted;
+import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.AttackPrevented;
+import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.FullyOperational;
+import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.OverUsage;
+import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.RegularUsage;
 
 /**
  * @author Ingrid Nunes
  */
-public class RateLimiterCapability extends BDINetRAppCapability {
+public class RateLimiterCapability extends RouterAgentCapability {
 
 	public class LimitIPRatePlan extends BeliefGoalPlanBody {
 		private static final long serialVersionUID = -3493377510830902961L;
@@ -63,7 +65,8 @@ public class RateLimiterCapability extends BDINetRAppCapability {
 
 		@Override
 		public void execute() {
-			// FIXME device.getValue().limitIp(ip, IP_LIMIT_RATE);
+			((RateLimiter) getPReSETRole(RoleType.RATE_LIMITER)).limitIp(ip,
+					IP_LIMIT_RATE);
 			belief(new RateLimited(ip), true);
 			belief(new Restricted(ip), true);
 
@@ -103,8 +106,8 @@ public class RateLimiterCapability extends BDINetRAppCapability {
 
 		@Override
 		public void execute() {
-			// FIXME link.setLimitedBandwidth(LINK_LIMIT_RATE *
-			// link.getBandwidth());
+			((RateLimiter) getPReSETRole(RoleType.RATE_LIMITER)).limitLink(
+					link, LINK_LIMIT_RATE);
 			belief(new FullyOperational(link), false);
 			belief(new AttackPrevented(link), true);
 			log.info(getGoal());
@@ -148,7 +151,7 @@ public class RateLimiterCapability extends BDINetRAppCapability {
 
 		@Override
 		public void execute() {
-			// FIXME device.getValue().unlimitIp(ip);
+			((RateLimiter) getPReSETRole(RoleType.RATE_LIMITER)).unlimitIp(ip);
 			belief(new RateLimited(ip), false);
 			belief(new Restricted(ip), false);
 			belief(new Anomalous(ip), null);
@@ -168,7 +171,8 @@ public class RateLimiterCapability extends BDINetRAppCapability {
 
 		@Override
 		public void execute() {
-			// FIXME link.setLimitedBandwidth(null);
+			((RateLimiter) getPReSETRole(RoleType.RATE_LIMITER))
+					.unlimitLink(link);
 			belief(new FullyOperational(link), true);
 			belief(new AttackPrevented(link), null);
 			log.info(getGoal());

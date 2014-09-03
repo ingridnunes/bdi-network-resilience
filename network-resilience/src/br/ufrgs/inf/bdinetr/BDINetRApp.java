@@ -22,6 +22,7 @@
 package br.ufrgs.inf.bdinetr;
 
 import jade.BootProfileImpl;
+import jade.core.Agent;
 import jade.core.ProfileImpl;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
@@ -31,21 +32,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 
-import bdi4jade.core.AbstractBDIAgent;
-import bdi4jade.examples.BDI4JADEExamplesPanel;
+import br.ufrgs.inf.bdinetr.agent.RouterAgent;
 import br.ufrgs.inf.bdinetr.domain.IpAddress;
-import br.ufrgs.inf.bdinetr.domain.Link;
-import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
-import br.ufrgs.inf.bdinetr.domain.Network;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole;
 import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
 
 /**
@@ -53,71 +46,29 @@ import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
  */
 public class BDINetRApp {
 
-	class LinkUsageUpdater extends TimerTask {
-		private static final double OVER_USAGE_PROBABILITY = 0.3;
-
-		@Override
-		public void run() {
-			Map<Link, Boolean> overUsage = new HashMap<>();
-			Random random = new Random(System.currentTimeMillis());
-			for (Link link : NETWORK.getLinks()) {
-				double d = random.nextDouble();
-				overUsage.put(link, d < OVER_USAGE_PROBABILITY);
-			}
-			log.info("Updating link usage");
-			for (PReSETRouter router : NETWORK.getRouters()) {
-				if (router.hasRole(PReSETRole.LINK_MONITOR)) {
-					LinkMonitor lm = (LinkMonitor) router
-							.getRole(PReSETRole.LINK_MONITOR);
-					for (Link link : overUsage.keySet()) {
-						lm.setOverUsage(link, overUsage.get(link));
-					}
-				}
-			}
-			log.info("Restarting agents");
-			for (AbstractBDIAgent agent : AGENTS.values()) {
-				agent.restart();
-			}
-		}
-	}
-
-	private static final Map<IpAddress, AbstractBDIAgent> AGENTS;
-
-	private static final Network NETWORK;
+	private static final Map<IpAddress, Agent> AGENTS;
 
 	static {
 		PropertyConfigurator.configure(BDINetRApp.class
 				.getResource("log4j.properties"));
 
-		NETWORK = new Network();
-		PReSETRouter firewall = new PReSETRouter(new IpAddress("Firewall 1"),
-				PReSETRole.RATE_LIMITER.getId());
-		NETWORK.addRouter(firewall);
-		PReSETRouter linkMonitor = new PReSETRouter(new IpAddress(
-				"Rate Limiter 1"), PReSETRole.LINK_MONITOR.getId());
-		NETWORK.addRouter(linkMonitor);
-
-		NETWORK.addLink(new Link("F1_RL1"));
-
 		AGENTS = new HashMap<>();
-		AGENTS.put(firewall.getIp(), new BDINetRAgent(firewall));
-		AGENTS.put(linkMonitor.getIp(), new BDINetRAgent(linkMonitor));
-
+		for (PReSETRouter router : Network.NETWORK.getRouters()) {
+			AGENTS.put(router.getIp(), new RouterAgent(router));
+		}
 	}
 
 	public static void main(String[] args) {
-		new BDINetRApp().run();
+		new BDINetRApp();
+		Network.NETWORK.run();
 	}
 
 	private ProfileImpl bootProfile;
 	private final Log log;
 	private jade.core.Runtime runtime;
 
-	private Timer timer;
-
 	public BDINetRApp() {
 		this.log = LogFactory.getLog(this.getClass());
-		this.timer = new Timer();
 
 		List<String> params = new ArrayList<String>();
 		params.add("-gui");
@@ -141,15 +92,6 @@ public class BDINetRApp {
 				log.error(e);
 			}
 		}
-	}
-
-	/**
-	 * Creates and shows a GUI whose content pane is an
-	 * {@link BDI4JADEExamplesPanel}.
-	 */
-	public void run() {
-		int interval = 10 * 1000;
-		this.timer.schedule(new LinkUsageUpdater(), interval, interval);
 	}
 
 }

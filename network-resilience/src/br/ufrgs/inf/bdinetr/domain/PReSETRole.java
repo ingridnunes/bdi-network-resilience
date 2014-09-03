@@ -24,23 +24,32 @@ package br.ufrgs.inf.bdinetr.domain;
 /**
  * @author Ingrid Nunes
  */
-public enum PReSETRole {
+public abstract class PReSETRole {
 
-	ANOMALY_DETECTION(1), CLASSIFIER(2), FLOW_EXPORTER(4), LINK_MONITOR(8), RATE_LIMITER(
-			16);
+	public enum RoleType {
 
-	private final int id;
+		ANOMALY_DETECTION(1), CLASSIFIER(2), LINK_MONITOR(4), RATE_LIMITER(8);
 
-	private PReSETRole(int id) {
-		this.id = id;
+		private final int id;
+
+		private RoleType(int id) {
+			this.id = id;
+		}
+
+		public int getId() {
+			return id;
+		}
+
+		public boolean isPresent(int roles) {
+			return (roles & id) != 0;
+		}
+
 	}
 
-	public int getId() {
-		return id;
-	}
+	protected final PReSETRouter router;
 
-	public boolean isPresent(int roles) {
-		return (roles & id) != 0;
+	public PReSETRole(PReSETRouter router) {
+		this.router = router;
 	}
 
 }

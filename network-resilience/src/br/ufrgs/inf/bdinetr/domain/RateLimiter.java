@@ -36,7 +36,7 @@ import java.util.Map;
  * 
  * @author Ingrid Nunes
  */
-public class RateLimiter extends AbstractPReSETRole {
+public class RateLimiter extends PReSETRole {
 
 	private final Map<Flow, Double> rateLimitedflows;
 	private final Map<IpAddress, Double> rateLimitedIps;

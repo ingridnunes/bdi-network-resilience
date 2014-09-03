@@ -19,24 +19,19 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr;
+package br.ufrgs.inf.bdinetr.agent;
 
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.TransientBelief;
 import bdi4jade.core.Capability;
 import bdi4jade.core.SingleCapabilityAgent;
-import br.ufrgs.inf.bdinetr.capability.AnomalyDetectionCapability;
-import br.ufrgs.inf.bdinetr.capability.ClassifierCapability;
-import br.ufrgs.inf.bdinetr.capability.FlowExporterCapability;
-import br.ufrgs.inf.bdinetr.capability.LinkMonitorCapability;
-import br.ufrgs.inf.bdinetr.capability.RateLimiterCapability;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole;
+import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
 
 /**
  * @author Ingrid Nunes
  */
-public class BDINetRAgent extends SingleCapabilityAgent {
+public class RouterAgent extends SingleCapabilityAgent {
 
 	public static class RootCapability extends Capability {
 
@@ -56,19 +51,16 @@ public class BDINetRAgent extends SingleCapabilityAgent {
 
 	private static final long serialVersionUID = 6534875498063013722L;
 
-	public BDINetRAgent(PReSETRouter router) {
+	public RouterAgent(PReSETRouter router) {
 		super(new RootCapability(router));
-		if (router.hasRole(PReSETRole.LINK_MONITOR)) {
+		if (router.hasRole(RoleType.LINK_MONITOR)) {
 			this.getCapability().addPartCapability(new LinkMonitorCapability());
-		} else if (router.hasRole(PReSETRole.ANOMALY_DETECTION)) {
+		} else if (router.hasRole(RoleType.ANOMALY_DETECTION)) {
 			this.getCapability().addPartCapability(
 					new AnomalyDetectionCapability());
-		} else if (router.hasRole(PReSETRole.RATE_LIMITER)) {
+		} else if (router.hasRole(RoleType.RATE_LIMITER)) {
 			this.getCapability().addPartCapability(new RateLimiterCapability());
-		} else if (router.hasRole(PReSETRole.FLOW_EXPORTER)) {
-			this.getCapability()
-					.addPartCapability(new FlowExporterCapability());
-		} else if (router.hasRole(PReSETRole.CLASSIFIER)) {
+		} else if (router.hasRole(RoleType.CLASSIFIER)) {
 			this.getCapability().addPartCapability(new ClassifierCapability());
 		}
 	}

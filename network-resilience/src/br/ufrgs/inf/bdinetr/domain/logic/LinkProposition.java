@@ -19,7 +19,9 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain;
+package br.ufrgs.inf.bdinetr.domain.logic;
+
+import br.ufrgs.inf.bdinetr.domain.Link;
 
 /**
  * @author Ingrid Nunes

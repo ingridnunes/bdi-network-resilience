@@ -26,27 +26,14 @@ package br.ufrgs.inf.bdinetr.domain;
  */
 public class Flow {
 
-	private static long id_counter = 0;
-
 	private IpAddress dstIp;
 	private int dstPort;
-	private final Long id;
 	private String protocol;
 	private IpAddress srcIp;
 	private int srcPort;
 
 	public Flow(IpAddress srcIp, int srcPort, IpAddress dstIp, int dstPort,
 			String protocol) {
-		this(++id_counter);
-	}
-
-	public Flow(Long id) {
-		this.id = id;
-	}
-
-	public Flow(Long id, IpAddress srcIp, int srcPort, IpAddress dstIp,
-			int dstPort, String protocol) {
-		this.id = id;
 		this.srcIp = srcIp;
 		this.srcPort = srcPort;
 		this.dstIp = dstIp;
@@ -56,11 +43,33 @@ public class Flow {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof Flow) {
-			Flow f = (Flow) obj;
-			return this.id.equals(f.id);
-		}
-		return false;
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof Flow))
+			return false;
+		Flow other = (Flow) obj;
+		if (dstIp == null) {
+			if (other.dstIp != null)
+				return false;
+		} else if (!dstIp.equals(other.dstIp))
+			return false;
+		if (dstPort != other.dstPort)
+			return false;
+		if (protocol == null) {
+			if (other.protocol != null)
+				return false;
+		} else if (!protocol.equals(other.protocol))
+			return false;
+		if (srcIp == null) {
+			if (other.srcIp != null)
+				return false;
+		} else if (!srcIp.equals(other.srcIp))
+			return false;
+		if (srcPort != other.srcPort)
+			return false;
+		return true;
 	}
 
 	public IpAddress getDstIp() {
@@ -69,10 +78,6 @@ public class Flow {
 
 	public int getDstPort() {
 		return dstPort;
-	}
-
-	public Long getId() {
-		return id;
 	}
 
 	public String getProtocol() {
@@ -89,7 +94,15 @@ public class Flow {
 
 	@Override
 	public int hashCode() {
-		return id == null ? 0 : id.hashCode();
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((dstIp == null) ? 0 : dstIp.hashCode());
+		result = prime * result + dstPort;
+		result = prime * result
+				+ ((protocol == null) ? 0 : protocol.hashCode());
+		result = prime * result + ((srcIp == null) ? 0 : srcIp.hashCode());
+		result = prime * result + srcPort;
+		return result;
 	}
 
 	public void setDstIp(IpAddress dstIp) {
@@ -114,7 +127,11 @@ public class Flow {
 
 	@Override
 	public String toString() {
-		return id.toString();
+		StringBuffer sb = new StringBuffer();
+		sb.append("<src=").append(srcIp).append(":").append(srcPort);
+		sb.append(", dst=").append(dstIp).append(":").append(dstPort);
+		sb.append(", protocol=").append(protocol).append(">");
+		return sb.toString();
 	}
 
 }

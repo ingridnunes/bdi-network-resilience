@@ -24,28 +24,28 @@ package br.ufrgs.inf.bdinetr.domain;
 import java.util.HashMap;
 import java.util.Map;
 
+import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
+
 /**
  * @author Ingrid Nunes
  */
 public class PReSETRouter {
 
 	private final IpAddress ip;
-	private final Map<PReSETRole, AbstractPReSETRole> roles;
+	private final Map<RoleType, PReSETRole> roles;
 
 	public PReSETRouter(final IpAddress id, int roles) {
 		this.ip = id;
 		this.roles = new HashMap<>();
-		if (PReSETRole.LINK_MONITOR.isPresent(roles)) {
-			this.roles.put(PReSETRole.LINK_MONITOR, new LinkMonitor(this));
-		} else if (PReSETRole.ANOMALY_DETECTION.isPresent(roles)) {
-			this.roles.put(PReSETRole.ANOMALY_DETECTION, new AnomalyDetection(
+		if (RoleType.LINK_MONITOR.isPresent(roles)) {
+			this.roles.put(RoleType.LINK_MONITOR, new LinkMonitor(this));
+		} else if (RoleType.ANOMALY_DETECTION.isPresent(roles)) {
+			this.roles.put(RoleType.ANOMALY_DETECTION, new AnomalyDetection(
 					this));
-		} else if (PReSETRole.RATE_LIMITER.isPresent(roles)) {
-			this.roles.put(PReSETRole.RATE_LIMITER, new RateLimiter(this));
-		} else if (PReSETRole.FLOW_EXPORTER.isPresent(roles)) {
-			this.roles.put(PReSETRole.FLOW_EXPORTER, new FlowExporter(this));
-		} else if (PReSETRole.CLASSIFIER.isPresent(roles)) {
-			this.roles.put(PReSETRole.CLASSIFIER, new Classifier(this));
+		} else if (RoleType.RATE_LIMITER.isPresent(roles)) {
+			this.roles.put(RoleType.RATE_LIMITER, new RateLimiter(this));
+		} else if (RoleType.CLASSIFIER.isPresent(roles)) {
+			this.roles.put(RoleType.CLASSIFIER, new Classifier(this));
 		}
 	}
 
@@ -62,7 +62,7 @@ public class PReSETRouter {
 		return ip;
 	}
 
-	public AbstractPReSETRole getRole(PReSETRole role) {
+	public PReSETRole getRole(RoleType role) {
 		return roles.get(role);
 	}
 
@@ -71,7 +71,7 @@ public class PReSETRouter {
 		return ip == null ? 0 : ip.hashCode();
 	}
 
-	public boolean hasRole(PReSETRole role) {
+	public boolean hasRole(RoleType role) {
 		return roles.containsKey(role);
 	}
 

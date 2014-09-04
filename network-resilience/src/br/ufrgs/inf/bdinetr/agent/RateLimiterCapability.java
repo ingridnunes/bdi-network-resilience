@@ -21,6 +21,8 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import bdi4jade.annotation.Parameter;
@@ -37,13 +39,17 @@ import bdi4jade.plan.planbody.BeliefGoalPlanBody;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.agent.RouterAgent.RootCapability;
-import br.ufrgs.inf.bdinetr.domain.IpAddress;
+import br.ufrgs.inf.bdinetr.domain.Flow;
+import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
+import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.FlowRateLimited;
+import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.Threat;
+import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.ThreatResponded;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Anomalous;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Benign;
+import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.OverUsageCause;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.RateLimited;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Restricted;
 import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.AttackPrevented;
@@ -56,38 +62,86 @@ import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.RegularUsage;
  */
 public class RateLimiterCapability extends RouterAgentCapability {
 
+	public class LimitFlowRatePlan extends BeliefGoalPlanBody {
+		private static final long serialVersionUID = -3493377510830902961L;
+
+		private Flow flow;
+
+		@Override
+		public void execute() {
+			role.limitFlow(flow, FLOW_LIMIT_RATE);
+			belief(new FlowRateLimited(flow), true);
+			belief(new ThreatResponded(flow), true);
+			belief(new Threat(flow), null);
+
+			boolean exists = false;
+			Set<Belief<?, ?>> threatBeliefs = getBeliefBase().getBeliefsByType(
+					Threat.class);
+			for (Belief<?, ?> belief : threatBeliefs) {
+				PropositionalBelief<Threat> threat = (PropositionalBelief<Threat>) belief;
+				assert threat.getValue();
+				if (flow.getDstIp().equals(
+						threat.getName().getFlow().getDstIp())) {
+					exists = true;
+					break;
+				}
+			}
+			if (!exists) {
+				belief(new Benign(flow.getDstIp()), true);
+			}
+
+			log.info(getGoal());
+		}
+
+		@Parameter(direction = Direction.IN)
+		public void setBeliefName(ThreatResponded threatResponded) {
+			this.flow = threatResponded.getFlow();
+		}
+	}
+
 	public class LimitIPRatePlan extends BeliefGoalPlanBody {
 		private static final long serialVersionUID = -3493377510830902961L;
 
 		@bdi4jade.annotation.Belief(name = RootCapability.ROUTER_BELIEF)
 		private Belief<String, PReSETRouter> device;
-		private IpAddress ip;
+		private Ip ip;
 
 		@Override
 		public void execute() {
-			((RateLimiter) getPReSETRole(RoleType.RATE_LIMITER)).limitIp(ip,
-					IP_LIMIT_RATE);
+			role.limitIp(ip, IP_LIMIT_RATE);
 			belief(new RateLimited(ip), true);
 			belief(new Restricted(ip), true);
 
-			boolean exists = false;
-			Set<Belief<?, ?>> anomalousBeliefs = getBeliefBase()
-					.getBeliefsByType(Anomalous.class);
-			for (Belief<?, ?> belief : anomalousBeliefs) {
-				PropositionalBelief<Anomalous> anomalous = (PropositionalBelief<Anomalous>) belief;
-				if (anomalous.getValue()) {
-					PropositionalBelief<Restricted> restricted = (PropositionalBelief<Restricted>) getBeliefBase()
-							.getBelief(
-									new Restricted(anomalous.getName().getIp()));
-					if (restricted == null || !restricted.getValue()) {
-						exists = true;
-					}
-
+			Set<Belief<?, ?>> overUsageCauseBeliefs = getBeliefBase()
+					.getBeliefsByType(OverUsageCause.class);
+			Set<OverUsageCause> causedByIp = new HashSet<>();
+			Iterator<Belief<?, ?>> it = overUsageCauseBeliefs.iterator();
+			while (it.hasNext()) {
+				PropositionalBelief<OverUsageCause> overUsageCause = (PropositionalBelief<OverUsageCause>) it
+						.next();
+				if (ip.equals(overUsageCause.getName().getIp())) {
+					assert overUsageCause.getValue();
+					causedByIp.add(overUsageCause.getName());
 				}
+				it.remove();
+				belief(overUsageCause.getName(), null);
 			}
-			if (!exists) {
-				// FIXME
-				belief(new RegularUsage(new Link("")), true);
+
+			for (OverUsageCause overUsageCause : causedByIp) {
+				boolean exists = false;
+				for (Belief<?, ?> belief : overUsageCauseBeliefs) {
+					PropositionalBelief<OverUsageCause> otherOverUsageCause = (PropositionalBelief<OverUsageCause>) belief;
+					if (overUsageCause.getLink().equals(
+							otherOverUsageCause.getName().getLink())) {
+						assert !overUsageCause.getIp().equals(
+								otherOverUsageCause.getName().getIp());
+						exists = true;
+						break;
+					}
+				}
+				if (!exists) {
+					belief(new RegularUsage(overUsageCause.getLink()), true);
+				}
 			}
 
 			log.info(getGoal());
@@ -106,8 +160,7 @@ public class RateLimiterCapability extends RouterAgentCapability {
 
 		@Override
 		public void execute() {
-			((RateLimiter) getPReSETRole(RoleType.RATE_LIMITER)).limitLink(
-					link, LINK_LIMIT_RATE);
+			role.limitLink(link, LINK_LIMIT_RATE);
 			belief(new FullyOperational(link), false);
 			belief(new AttackPrevented(link), true);
 			log.info(getGoal());
@@ -147,11 +200,11 @@ public class RateLimiterCapability extends RouterAgentCapability {
 
 		@bdi4jade.annotation.Belief(name = RootCapability.ROUTER_BELIEF)
 		private Belief<String, PReSETRouter> device;
-		private IpAddress ip;
+		private Ip ip;
 
 		@Override
 		public void execute() {
-			((RateLimiter) getPReSETRole(RoleType.RATE_LIMITER)).unlimitIp(ip);
+			role.unlimitIp(ip);
 			belief(new RateLimited(ip), false);
 			belief(new Restricted(ip), false);
 			belief(new Anomalous(ip), null);
@@ -171,8 +224,7 @@ public class RateLimiterCapability extends RouterAgentCapability {
 
 		@Override
 		public void execute() {
-			((RateLimiter) getPReSETRole(RoleType.RATE_LIMITER))
-					.unlimitLink(link);
+			role.unlimitLink(link);
 			belief(new FullyOperational(link), true);
 			belief(new AttackPrevented(link), null);
 			log.info(getGoal());
@@ -184,10 +236,23 @@ public class RateLimiterCapability extends RouterAgentCapability {
 		}
 	}
 
+	public static final double FLOW_LIMIT_RATE = 0.5;
 	public static final double IP_LIMIT_RATE = 0.5;
 	public static final double LINK_LIMIT_RATE = 0.5;
 
 	private static final long serialVersionUID = -1705728861020677126L;
+
+	@bdi4jade.annotation.Plan
+	private Plan limitFlowRate = new DefaultPlan(
+			GoalTemplateFactory.hasValueForBeliefOfType(ThreatResponded.class,
+					Boolean.TRUE), LimitFlowRatePlan.class) {
+		public boolean isContextApplicable(Goal goal) {
+			BeliefGoal<ThreatResponded> bg = (BeliefGoal<ThreatResponded>) goal;
+			PropositionalBelief<Threat> threat = (PropositionalBelief<Threat>) getBeliefBase()
+					.getBelief(new Threat(bg.getBeliefName().getFlow()));
+			return (threat != null && threat.getValue());
+		};
+	};
 
 	@bdi4jade.annotation.Plan
 	private Plan limitIpRate = new DefaultPlan(
@@ -240,7 +305,12 @@ public class RateLimiterCapability extends RouterAgentCapability {
 		};
 	};
 
-	public RateLimiterCapability() {
+	@bdi4jade.annotation.TransientBelief
+	private final RateLimiter role;
+
+	public RateLimiterCapability(RateLimiter rateLimiter) {
+		this.role = rateLimiter;
+
 		ReasoningStrategy strategy = new ReasoningStrategy();
 		setOptionGenerationFunction(strategy);
 	}

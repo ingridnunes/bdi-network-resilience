@@ -27,19 +27,19 @@ import br.ufrgs.inf.bdinetr.domain.Flow;
  * @author Ingrid Nunes
  */
 public class FlowPreposition {
-	
+
 	public static class FlowRateLimited extends FlowPreposition {
 		public FlowRateLimited(Flow flow) {
 			super(flow);
 		}
 	}
-	
+
 	public static class Threat extends FlowPreposition {
 		public Threat(Flow flow) {
 			super(flow);
 		}
 	}
-	
+
 	public static class ThreatResponded extends FlowPreposition {
 		public ThreatResponded(Flow flow) {
 			super(flow);

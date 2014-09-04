@@ -26,14 +26,13 @@ package br.ufrgs.inf.bdinetr.domain;
  */
 public class Flow {
 
-	private IpAddress dstIp;
+	private Ip dstIp;
 	private int dstPort;
 	private String protocol;
-	private IpAddress srcIp;
+	private Ip srcIp;
 	private int srcPort;
 
-	public Flow(IpAddress srcIp, int srcPort, IpAddress dstIp, int dstPort,
-			String protocol) {
+	public Flow(Ip srcIp, int srcPort, Ip dstIp, int dstPort, String protocol) {
 		this.srcIp = srcIp;
 		this.srcPort = srcPort;
 		this.dstIp = dstIp;
@@ -72,7 +71,7 @@ public class Flow {
 		return true;
 	}
 
-	public IpAddress getDstIp() {
+	public Ip getDstIp() {
 		return dstIp;
 	}
 
@@ -84,7 +83,7 @@ public class Flow {
 		return protocol;
 	}
 
-	public IpAddress getSrcIp() {
+	public Ip getSrcIp() {
 		return srcIp;
 	}
 
@@ -105,7 +104,7 @@ public class Flow {
 		return result;
 	}
 
-	public void setDstIp(IpAddress dstIp) {
+	public void setDstIp(Ip dstIp) {
 		this.dstIp = dstIp;
 	}
 
@@ -117,7 +116,7 @@ public class Flow {
 		this.protocol = protocol;
 	}
 
-	public void setSrcIp(IpAddress srcIp) {
+	public void setSrcIp(Ip srcIp) {
 		this.srcIp = srcIp;
 	}
 

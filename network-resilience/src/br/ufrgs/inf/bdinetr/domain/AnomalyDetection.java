@@ -41,9 +41,13 @@ public class AnomalyDetection extends PReSETRole {
 		super(router);
 	}
 
-	public Set<IpAddress> detectIntrusion(Link link) {
-		// FIXME
-		return new HashSet<>();
+	public Set<Ip> detectIntrusion(Link link) {
+		Set<Ip> intrusions = new HashSet<>();
+		if (link.getId().equals("AFFECTED_LINK")) {
+			intrusions.add(new Ip("victim1"));
+			intrusions.add(new Ip("victim2"));
+		}
+		return intrusions;
 	}
 
 }

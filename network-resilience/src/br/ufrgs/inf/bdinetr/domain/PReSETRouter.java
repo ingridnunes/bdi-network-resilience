@@ -31,10 +31,10 @@ import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
  */
 public class PReSETRouter {
 
-	private final IpAddress ip;
+	private final Ip ip;
 	private final Map<RoleType, PReSETRole> roles;
 
-	public PReSETRouter(final IpAddress id, int roles) {
+	public PReSETRouter(final Ip id, int roles) {
 		this.ip = id;
 		this.roles = new HashMap<>();
 		if (RoleType.LINK_MONITOR.isPresent(roles)) {
@@ -58,7 +58,7 @@ public class PReSETRouter {
 		return false;
 	}
 
-	public IpAddress getIp() {
+	public Ip getIp() {
 		return ip;
 	}
 

@@ -21,20 +21,17 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
-import bdi4jade.belief.Belief;
 import bdi4jade.belief.TransientPropositionalBelief;
 import bdi4jade.core.Capability;
 import bdi4jade.goal.BeliefPresentGoal;
 import bdi4jade.goal.PropositionalBeliefValueGoal;
-import br.ufrgs.inf.bdinetr.agent.RouterAgent.RootCapability;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
-import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
 
 /**
  * @author Ingrid Nunes
  */
 public class RouterAgentCapability extends Capability {
+
+	public static final String ROLE_BELIEF = "role";
 
 	private static final long serialVersionUID = -3491170777812144486L;
 
@@ -47,15 +44,6 @@ public class RouterAgentCapability extends Capability {
 					new TransientPropositionalBelief(proposition, value));
 			log.debug("belief(" + (value ? "" : "not ") + proposition + ")");
 		}
-	}
-
-	protected PReSETRole getPReSETRole(RoleType roleType) {
-		return getRouter().getRole(roleType);
-	}
-
-	protected PReSETRouter getRouter() {
-		return ((Belief<String, PReSETRouter>) getBeliefBase().getBelief(
-				RootCapability.ROUTER_BELIEF)).getValue();
 	}
 
 	protected void goal(Object proposition) {

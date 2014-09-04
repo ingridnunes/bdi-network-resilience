@@ -21,6 +21,9 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author Ingrid Nunes
  */
@@ -47,9 +50,21 @@ public abstract class PReSETRole {
 	}
 
 	protected final PReSETRouter router;
+	private final Set<Observer> observers;
 
 	public PReSETRole(PReSETRouter router) {
 		this.router = router;
+		this.observers = new HashSet<>();
+	}
+
+	public void attachObserver(Observer observer) {
+		this.observers.add(observer);
+	}
+
+	protected void notifyObservers(Object arg) {
+		for (Observer observer : observers) {
+			observer.update(this, arg);
+		}
 	}
 
 }

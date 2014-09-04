@@ -52,12 +52,6 @@ public class LinkProposition {
 		}
 	}
 
-	public static class Usage extends LinkProposition {
-		public Usage(Link link) {
-			super(link);
-		}
-	}
-
 	protected Link link;
 
 	public LinkProposition(Link link) {

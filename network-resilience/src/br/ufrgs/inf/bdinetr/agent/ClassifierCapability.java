@@ -28,6 +28,7 @@ import bdi4jade.belief.PropositionalBelief;
 import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
+import br.ufrgs.inf.bdinetr.domain.Classifier;
 import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.Threat;
 import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.ThreatResponded;
 
@@ -53,7 +54,11 @@ public class ClassifierCapability extends RouterAgentCapability {
 
 	private static final long serialVersionUID = -1705728861020677126L;
 
-	public ClassifierCapability() {
+	@bdi4jade.annotation.TransientBelief
+	private final Classifier role;
+
+	public ClassifierCapability(Classifier classifier) {
+		this.role = classifier;
 		ReasoningStrategy strategy = new ReasoningStrategy();
 		setOptionGenerationFunction(strategy);
 	}

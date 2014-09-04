@@ -38,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 
 import br.ufrgs.inf.bdinetr.agent.RouterAgent;
-import br.ufrgs.inf.bdinetr.domain.IpAddress;
+import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
 
 /**
@@ -46,7 +46,7 @@ import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
  */
 public class BDINetRApp {
 
-	private static final Map<IpAddress, Agent> AGENTS;
+	private static final Map<Ip, Agent> AGENTS;
 
 	static {
 		PropertyConfigurator.configure(BDINetRApp.class
@@ -82,7 +82,7 @@ public class BDINetRApp {
 		PlatformController controller = runtime
 				.createMainContainer(bootProfile);
 
-		for (IpAddress agentName : AGENTS.keySet()) {
+		for (Ip agentName : AGENTS.keySet()) {
 			try {
 				AgentController ac = ((AgentContainer) controller)
 						.acceptNewAgent(agentName.toString(),

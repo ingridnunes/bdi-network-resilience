@@ -21,7 +21,8 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain.logic;
 
-import br.ufrgs.inf.bdinetr.domain.IpAddress;
+import br.ufrgs.inf.bdinetr.domain.Ip;
+import br.ufrgs.inf.bdinetr.domain.Link;
 
 /**
  * @author Ingrid Nunes
@@ -29,38 +30,65 @@ import br.ufrgs.inf.bdinetr.domain.IpAddress;
 public class IpPreposition {
 
 	public static class Anomalous extends IpPreposition {
-		public Anomalous(IpAddress ip) {
+		public Anomalous(Ip ip) {
 			super(ip);
 		}
 	}
 
 	public static class Benign extends IpPreposition {
-		public Benign(IpAddress ip) {
+		public Benign(Ip ip) {
 			super(ip);
 		}
 	}
 
-	public static class FlowRecord extends IpPreposition {
-		public FlowRecord(IpAddress ip) {
+	public static class OverUsageCause extends IpPreposition {
+		private Link link;
+
+		public OverUsageCause(Ip ip, Link link) {
 			super(ip);
+			this.link = link;
 		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (!super.equals(obj))
+				return false;
+			if (obj != null && this.getClass().equals(obj.getClass())) {
+				OverUsageCause lp = (OverUsageCause) obj;
+				return this.link.equals(lp.link);
+			}
+			return false;
+		}
+
+		public Link getLink() {
+			return link;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = super.hashCode();
+			result = prime * result + ((link == null) ? 0 : link.hashCode());
+			return result;
+		}
+
 	}
 
 	public static class RateLimited extends IpPreposition {
-		public RateLimited(IpAddress ip) {
+		public RateLimited(Ip ip) {
 			super(ip);
 		}
 	}
 
 	public static class Restricted extends IpPreposition {
-		public Restricted(IpAddress ip) {
+		public Restricted(Ip ip) {
 			super(ip);
 		}
 	}
 
-	protected IpAddress ip;
+	protected Ip ip;
 
-	public IpPreposition(IpAddress ip) {
+	public IpPreposition(Ip ip) {
 		this.ip = ip;
 	}
 
@@ -73,7 +101,7 @@ public class IpPreposition {
 		return false;
 	}
 
-	public IpAddress getIp() {
+	public Ip getIp() {
 		return ip;
 	}
 

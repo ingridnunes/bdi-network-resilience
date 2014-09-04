@@ -40,9 +40,18 @@ public class Classifier extends PReSETRole {
 		super(router);
 	}
 
-	public Set<Flow> classifyFlows(IpAddress ip) {
-		// FIXME
-		return new HashSet<>();
+	public Set<Flow> classifyFlows(Ip ip) {
+		Set<Flow> flows = new HashSet<>();
+		if (ip.getAddress().equals("victim1")) {
+			flows.add(new Flow(new Ip("DDoS1"), 80, new Ip("victim1"), 80,
+					"http"));
+			flows.add(new Flow(new Ip("DDoS2"), 80, new Ip("victim1"), 80,
+					"http"));
+		} else if (ip.getAddress().equals("victim2")) {
+			flows.add(new Flow(new Ip("DDoS3"), 80, new Ip("victim2"), 80,
+					"http"));
+		}
+		return flows;
 	}
 
 	public void turnFlowExporterOn() {

@@ -24,31 +24,35 @@ package br.ufrgs.inf.bdinetr.domain;
 /**
  * @author Ingrid Nunes
  */
-public class IpAddress {
+public class Ip {
 
-	private final String id;
+	private final String address;
 
-	public IpAddress(String id) {
-		this.id = id;
+	public Ip(String address) {
+		this.address = address;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof IpAddress) {
-			IpAddress ip = (IpAddress) obj;
-			return this.id.equals(ip.id);
+		if (obj instanceof Ip) {
+			Ip ip = (Ip) obj;
+			return this.address.equals(ip.address);
 		}
 		return false;
 	}
 
+	public String getAddress() {
+		return address;
+	}
+
 	@Override
 	public int hashCode() {
-		return id == null ? 0 : id.hashCode();
+		return address == null ? 0 : address.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return id;
+		return address;
 	}
 
 }

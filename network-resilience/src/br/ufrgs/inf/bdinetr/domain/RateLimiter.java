@@ -38,8 +38,20 @@ import java.util.Map;
  */
 public class RateLimiter extends PReSETRole {
 
+	public class LimitLinkEvent {
+		private Link link;
+
+		public LimitLinkEvent(Link link) {
+			this.link = link;
+		}
+
+		public Link getLink() {
+			return link;
+		}
+	}
+
 	private final Map<Flow, Double> rateLimitedflows;
-	private final Map<IpAddress, Double> rateLimitedIps;
+	private final Map<Ip, Double> rateLimitedIps;
 	private final Map<Link, Double> rateLimitedLinks;
 
 	public RateLimiter(PReSETRouter router) {
@@ -53,19 +65,20 @@ public class RateLimiter extends PReSETRole {
 		this.rateLimitedflows.put(flow, rate);
 	}
 
-	public void limitIp(IpAddress ip, double rate) {
+	public void limitIp(Ip ip, double rate) {
 		this.rateLimitedIps.put(ip, rate);
 	}
 
 	public void limitLink(Link link, double rate) {
 		this.rateLimitedLinks.put(link, rate);
+		notifyObservers(new LimitLinkEvent(link));
 	}
 
 	public void unlimitFlow(Flow flow) {
 		this.rateLimitedflows.remove(flow);
 	}
 
-	public void unlimitIp(IpAddress ip) {
+	public void unlimitIp(Ip ip) {
 		this.rateLimitedIps.remove(ip);
 	}
 

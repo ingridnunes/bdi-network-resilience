@@ -21,6 +21,7 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import bdi4jade.belief.Belief;
@@ -33,7 +34,6 @@ import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Observer;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.AttackPrevented;
 import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.OverUsage;
 import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.RegularUsage;
@@ -68,22 +68,24 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 
 		@Override
 		public void reviewBeliefs() {
-			LinkMonitor lm = (LinkMonitor) getPReSETRole(RoleType.LINK_MONITOR);
+			synchronized (linkEvents) {
+				for (Link link : linkEvents) {
+					OverUsage overUsage = new OverUsage(link);
+					boolean isOverUsage = role.isOverUsage(link);
 
-			for (Link link : lm.getLinks()) {
-				OverUsage overUsage = new OverUsage(link);
-				boolean isOverUsage = lm.isOverUsage(link);
-
-				if (isOverUsage) {
-					PropositionalBelief<OverUsage> overUsageBelief = (PropositionalBelief<OverUsage>) getBeliefBase()
-							.getBelief(overUsage);
-					if (overUsageBelief == null || !overUsageBelief.getValue()) {
-						belief(overUsage, true);
-						belief(new RegularUsage(link), null);
+					if (isOverUsage) {
+						PropositionalBelief<OverUsage> overUsageBelief = (PropositionalBelief<OverUsage>) getBeliefBase()
+								.getBelief(overUsage);
+						if (overUsageBelief == null
+								|| !overUsageBelief.getValue()) {
+							belief(overUsage, true);
+							belief(new RegularUsage(link), null);
+						}
+					} else {
+						belief(overUsage, null);
 					}
-				} else {
-					belief(overUsage, null);
 				}
+				linkEvents.clear();
 			}
 		}
 	}
@@ -92,21 +94,31 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 
 	private static final long serialVersionUID = -1705728861020677126L;
 
+	@bdi4jade.annotation.TransientBeliefSet
+	private final Set<Link> linkEvents;
+
 	@bdi4jade.annotation.Belief
 	private Belief<String, Double> overUsageThreshold = new TransientBelief<>(
 			"threshold", OVER_USAGE_THRESHOLD);
 
-	public LinkMonitorCapability() {
+	@bdi4jade.annotation.TransientBelief
+	private LinkMonitor role;
+
+	public LinkMonitorCapability(LinkMonitor linkMonitor) {
+		this.role = linkMonitor;
+		linkMonitor.attachObserver(this);
+		this.linkEvents = new HashSet<>();
+
 		ReasoningStrategy strategy = new ReasoningStrategy();
 		setBeliefRevisionStrategy(strategy);
 		setOptionGenerationFunction(strategy);
-
-		LinkMonitor lm = (LinkMonitor) getPReSETRole(RoleType.LINK_MONITOR);
-		lm.attachObserver(this);
 	}
 
 	@Override
 	public void update(Object o, Object arg) {
+		synchronized (linkEvents) {
+			this.linkEvents.add((Link) arg);
+		}
 		getMyAgent().restart();
 	}
 

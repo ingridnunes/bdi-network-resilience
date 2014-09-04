@@ -28,6 +28,7 @@ import bdi4jade.belief.PropositionalBelief;
 import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
+import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Anomalous;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Benign;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Restricted;
@@ -70,7 +71,11 @@ public class AnomalyDetectionCapability extends RouterAgentCapability {
 
 	private static final long serialVersionUID = -1705728861020677126L;
 
-	public AnomalyDetectionCapability() {
+	@bdi4jade.annotation.TransientBelief
+	private final AnomalyDetection role;
+
+	public AnomalyDetectionCapability(AnomalyDetection anomalyDetection) {
+		this.role = anomalyDetection;
 		ReasoningStrategy strategy = new ReasoningStrategy();
 		setOptionGenerationFunction(strategy);
 	}

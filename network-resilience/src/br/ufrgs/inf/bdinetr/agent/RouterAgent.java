@@ -25,8 +25,12 @@ import bdi4jade.belief.Belief;
 import bdi4jade.belief.TransientBelief;
 import bdi4jade.core.Capability;
 import bdi4jade.core.SingleCapabilityAgent;
+import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
+import br.ufrgs.inf.bdinetr.domain.Classifier;
+import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
+import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 
 /**
  * @author Ingrid Nunes
@@ -54,14 +58,21 @@ public class RouterAgent extends SingleCapabilityAgent {
 	public RouterAgent(PReSETRouter router) {
 		super(new RootCapability(router));
 		if (router.hasRole(RoleType.LINK_MONITOR)) {
-			this.getCapability().addPartCapability(new LinkMonitorCapability());
+			this.getCapability().addPartCapability(
+					new LinkMonitorCapability((LinkMonitor) router
+							.getRole(RoleType.LINK_MONITOR)));
 		} else if (router.hasRole(RoleType.ANOMALY_DETECTION)) {
 			this.getCapability().addPartCapability(
-					new AnomalyDetectionCapability());
+					new AnomalyDetectionCapability((AnomalyDetection) router
+							.getRole(RoleType.ANOMALY_DETECTION)));
 		} else if (router.hasRole(RoleType.RATE_LIMITER)) {
-			this.getCapability().addPartCapability(new RateLimiterCapability());
+			this.getCapability().addPartCapability(
+					new RateLimiterCapability((RateLimiter) router
+							.getRole(RoleType.RATE_LIMITER)));
 		} else if (router.hasRole(RoleType.CLASSIFIER)) {
-			this.getCapability().addPartCapability(new ClassifierCapability());
+			this.getCapability().addPartCapability(
+					new ClassifierCapability((Classifier) router
+							.getRole(RoleType.CLASSIFIER)));
 		}
 	}
 

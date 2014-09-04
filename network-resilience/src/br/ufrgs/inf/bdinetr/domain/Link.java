@@ -41,6 +41,10 @@ public class Link {
 		return false;
 	}
 
+	public String getId() {
+		return id;
+	}
+
 	@Override
 	public int hashCode() {
 		return id == null ? 0 : id.hashCode();

@@ -21,67 +21,41 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import bdi4jade.examples.BDI4JADEExamplesPanel;
-import br.ufrgs.inf.bdinetr.domain.IpAddress;
+import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
+import br.ufrgs.inf.bdinetr.domain.Observer;
 import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
+import br.ufrgs.inf.bdinetr.domain.RateLimiter;
+import br.ufrgs.inf.bdinetr.domain.RateLimiter.LimitLinkEvent;
 
 /**
  * @author Ingrid Nunes
  */
-public class Network {
+public class Network implements Observer {
 
-	class LinkUsageUpdater extends TimerTask {
-		private static final double OVER_USAGE_PROBABILITY = 0.3;
-
-		@Override
-		public void run() {
-			Map<Link, Boolean> overUsage = new HashMap<>();
-			Random random = new Random(System.currentTimeMillis());
-			for (Link link : NETWORK.getLinks()) {
-				double d = random.nextDouble();
-				overUsage.put(link, d < OVER_USAGE_PROBABILITY);
-			}
-			log.info("Updating link usage");
-			for (PReSETRouter router : NETWORK.getRouters()) {
-				if (router.hasRole(RoleType.LINK_MONITOR)) {
-					LinkMonitor lm = (LinkMonitor) router
-							.getRole(RoleType.LINK_MONITOR);
-					for (Link link : overUsage.keySet()) {
-						lm.setOverUsage(link, overUsage.get(link));
-					}
-				}
-			}
-		}
-	}
-
+	public static final Link AFFECTED_LINK;
 	public static final Network NETWORK;
 
 	static {
 		NETWORK = new Network();
-		PReSETRouter firewall = new PReSETRouter(new IpAddress("Firewall"),
-				RoleType.RATE_LIMITER.getId());
-		NETWORK.addRouter(firewall);
-		PReSETRouter linkMonitor = new PReSETRouter(new IpAddress(
-				"Rate Limiter"), RoleType.LINK_MONITOR.getId());
-		NETWORK.addRouter(linkMonitor);
+		NETWORK.addRouter(new PReSETRouter(new Ip("Router"),
+				RoleType.RATE_LIMITER.getId() | RoleType.CLASSIFIER.getId()
+						| RoleType.ANOMALY_DETECTION.getId()
+						| RoleType.LINK_MONITOR.getId()));
 
+		AFFECTED_LINK = new Link("AFFECTED_LINK");
+		NETWORK.addLink(AFFECTED_LINK);
 		NETWORK.addLink(new Link("LINK_01"));
 		NETWORK.addLink(new Link("LINK_02"));
-		NETWORK.addLink(new Link("LINK_03"));
 	}
 
 	private final Set<Link> links;
@@ -94,6 +68,13 @@ public class Network {
 		this.router = new HashSet<>();
 		this.links = new HashSet<>();
 		this.timer = new Timer();
+
+		for (PReSETRouter router : NETWORK.getRouters()) {
+			if (router.hasRole(RoleType.RATE_LIMITER)) {
+				((RateLimiter) router.getRole(RoleType.RATE_LIMITER))
+						.attachObserver(this);
+			}
+		}
 	}
 
 	public void addLink(Link link) {
@@ -117,8 +98,30 @@ public class Network {
 	 * {@link BDI4JADEExamplesPanel}.
 	 */
 	public void run() {
-		int interval = 10 * 1000;
-		this.timer.schedule(new LinkUsageUpdater(), interval, interval);
+		log.info("Updating link usage");
+		for (PReSETRouter router : NETWORK.getRouters()) {
+			if (router.hasRole(RoleType.LINK_MONITOR)) {
+				LinkMonitor lm = (LinkMonitor) router
+						.getRole(RoleType.LINK_MONITOR);
+				lm.setOverUsage(AFFECTED_LINK, true);
+			}
+		}
+	}
+
+	@Override
+	public void update(Object o, Object arg) {
+		if (arg instanceof LimitLinkEvent) {
+			LimitLinkEvent event = (LimitLinkEvent) arg;
+			for (PReSETRouter router : NETWORK.getRouters()) {
+				if (router.hasRole(RoleType.LINK_MONITOR)) {
+					LinkMonitor lm = (LinkMonitor) router
+							.getRole(RoleType.LINK_MONITOR);
+					if (lm.isOverUsage(event.getLink())) {
+						lm.setOverUsage(event.getLink(), false);
+					}
+				}
+			}
+		}
 	}
 
 }

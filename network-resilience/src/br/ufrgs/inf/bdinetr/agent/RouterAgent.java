@@ -21,10 +21,24 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.MessageTemplate.MatchExpression;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.TransientBelief;
+import bdi4jade.core.BDIAgent;
 import bdi4jade.core.Capability;
 import bdi4jade.core.SingleCapabilityAgent;
+import bdi4jade.goal.BeliefGoal;
+import bdi4jade.goal.Goal;
+import bdi4jade.plan.DefaultPlan;
+import bdi4jade.plan.Plan;
+import bdi4jade.reasoning.AgentPlanSelectionStrategy;
 import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
 import br.ufrgs.inf.bdinetr.domain.Classifier;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
@@ -35,7 +49,8 @@ import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 /**
  * @author Ingrid Nunes
  */
-public class RouterAgent extends SingleCapabilityAgent {
+public class RouterAgent extends SingleCapabilityAgent implements
+		AgentPlanSelectionStrategy {
 
 	public static class RootCapability extends Capability {
 
@@ -43,12 +58,32 @@ public class RouterAgent extends SingleCapabilityAgent {
 
 		private static final long serialVersionUID = -2156730094556459899L;
 
+		@bdi4jade.annotation.Plan
+		private final Plan requestBeliefGoalPlan;
+		@bdi4jade.annotation.Plan
+		private final Plan respondBeliefGoalPlan;
 		@bdi4jade.annotation.Belief
-		private Belief<String, PReSETRouter> router = new TransientBelief<>(
-				ROUTER_BELIEF);
+		private final Belief<String, PReSETRouter> router;
 
 		public RootCapability(PReSETRouter router) {
-			this.router.setValue(router);
+			this.router = new TransientBelief<>(ROUTER_BELIEF, router);
+			this.requestBeliefGoalPlan = new DefaultPlan(BeliefGoal.class,
+					RequestBeliefGoalPlanBody.class);
+			this.respondBeliefGoalPlan = new DefaultPlan(new MessageTemplate(
+					new MatchExpression() {
+						private static final long serialVersionUID = -3581014512390059387L;
+
+						@Override
+						public boolean match(ACLMessage msg) {
+							try {
+								return (msg.getContentObject() != null && msg
+										.getContentObject() instanceof BeliefGoal<?>);
+							} catch (Exception exc) {
+								log.error(exc);
+								return false;
+							}
+						}
+					}), RespondBeliefGoalPlanBody.class);
 		}
 
 	}
@@ -61,18 +96,52 @@ public class RouterAgent extends SingleCapabilityAgent {
 			this.getCapability().addPartCapability(
 					new LinkMonitorCapability((LinkMonitor) router
 							.getRole(RoleType.LINK_MONITOR)));
-		} else if (router.hasRole(RoleType.ANOMALY_DETECTION)) {
+		}
+		if (router.hasRole(RoleType.ANOMALY_DETECTION)) {
 			this.getCapability().addPartCapability(
 					new AnomalyDetectionCapability((AnomalyDetection) router
 							.getRole(RoleType.ANOMALY_DETECTION)));
-		} else if (router.hasRole(RoleType.RATE_LIMITER)) {
+		}
+		if (router.hasRole(RoleType.RATE_LIMITER)) {
 			this.getCapability().addPartCapability(
 					new RateLimiterCapability((RateLimiter) router
 							.getRole(RoleType.RATE_LIMITER)));
-		} else if (router.hasRole(RoleType.CLASSIFIER)) {
+		}
+		if (router.hasRole(RoleType.CLASSIFIER)) {
 			this.getCapability().addPartCapability(
 					new ClassifierCapability((Classifier) router
 							.getRole(RoleType.CLASSIFIER)));
+		}
+	}
+
+	@Override
+	public Plan selectPlan(Goal goal, Map<Capability, Set<Plan>> capabilityPlans) {
+		Set<Plan> preselectedPlans = new HashSet<>();
+		for (Capability capability : capabilityPlans.keySet()) {
+			if (!getCapability().equals(capability)) {
+				Plan preselectedPlan = capability.getPlanSelectionStrategy()
+						.selectPlan(goal, capabilityPlans.get(capability));
+				if (preselectedPlan != null) {
+					preselectedPlans.add(preselectedPlan);
+				}
+			}
+		}
+
+		if (preselectedPlans.isEmpty()) {
+			Set<Plan> candidatePlans = capabilityPlans.get(getCapability());
+			return (candidatePlans == null) ? null : getCapability()
+					.getPlanSelectionStrategy()
+					.selectPlan(goal, candidatePlans);
+		} else {
+			return preselectedPlans.iterator().next();
+		}
+	}
+
+	@Override
+	public void setAgent(BDIAgent agent) {
+		if (!this.equals(agent)) {
+			throw new IllegalArgumentException(
+					"This reasoning strategy is already associated with another agent.");
 		}
 	}
 

@@ -72,6 +72,14 @@ public class IpPreposition {
 			return result;
 		}
 
+		@Override
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			sb.append(this.getClass().getSimpleName());
+			sb.append("(").append(ip).append(",").append(link).append(")");
+			return sb.toString();
+		}
+
 	}
 
 	public static class RateLimited extends IpPreposition {

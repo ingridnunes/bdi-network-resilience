@@ -39,12 +39,15 @@ public class PReSETRouter {
 		this.roles = new HashMap<>();
 		if (RoleType.LINK_MONITOR.isPresent(roles)) {
 			this.roles.put(RoleType.LINK_MONITOR, new LinkMonitor(this));
-		} else if (RoleType.ANOMALY_DETECTION.isPresent(roles)) {
+		}
+		if (RoleType.ANOMALY_DETECTION.isPresent(roles)) {
 			this.roles.put(RoleType.ANOMALY_DETECTION, new AnomalyDetection(
 					this));
-		} else if (RoleType.RATE_LIMITER.isPresent(roles)) {
+		}
+		if (RoleType.RATE_LIMITER.isPresent(roles)) {
 			this.roles.put(RoleType.RATE_LIMITER, new RateLimiter(this));
-		} else if (RoleType.CLASSIFIER.isPresent(roles)) {
+		}
+		if (RoleType.CLASSIFIER.isPresent(roles)) {
 			this.roles.put(RoleType.CLASSIFIER, new Classifier(this));
 		}
 	}

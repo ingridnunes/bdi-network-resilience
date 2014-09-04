@@ -30,8 +30,10 @@ import jade.wrapper.PlatformController;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +41,8 @@ import org.apache.log4j.PropertyConfigurator;
 
 import br.ufrgs.inf.bdinetr.agent.RouterAgent;
 import br.ufrgs.inf.bdinetr.domain.Ip;
+import br.ufrgs.inf.bdinetr.domain.Link;
+import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
 
 /**
@@ -47,20 +51,40 @@ import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
 public class BDINetRApp {
 
 	private static final Map<Ip, Agent> AGENTS;
+	private static final Network NETWORK;
 
 	static {
 		PropertyConfigurator.configure(BDINetRApp.class
 				.getResource("log4j.properties"));
 
+		Set<PReSETRouter> routers = new HashSet<>();
+		routers.add(new PReSETRouter(new Ip("Router"), RoleType.RATE_LIMITER
+				.getId()
+				| RoleType.CLASSIFIER.getId()
+				| RoleType.ANOMALY_DETECTION.getId()
+				| RoleType.LINK_MONITOR.getId()));
+
+		Link affectedLink = new Link("AFFECTED_LINK");
+
+		Set<Link> links = new HashSet<>();
+		links.add(affectedLink);
+		links.add(new Link("LINK_01"));
+		links.add(new Link("LINK_02"));
+
+		Set<Link> affectedLinks = new HashSet<>();
+		affectedLinks.add(affectedLink);
+
+		NETWORK = new Network(routers, links, affectedLinks);
+
 		AGENTS = new HashMap<>();
-		for (PReSETRouter router : Network.NETWORK.getRouters()) {
+		for (PReSETRouter router : NETWORK.getRouters()) {
 			AGENTS.put(router.getIp(), new RouterAgent(router));
 		}
 	}
 
 	public static void main(String[] args) {
 		new BDINetRApp();
-		Network.NETWORK.run();
+		NETWORK.run();
 	}
 
 	private ProfileImpl bootProfile;

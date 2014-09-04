@@ -29,6 +29,7 @@ import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.PropositionalBelief;
+import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.goal.BeliefGoal;
 import bdi4jade.goal.Goal;
@@ -36,7 +37,6 @@ import bdi4jade.goal.GoalTemplateFactory;
 import bdi4jade.plan.DefaultPlan;
 import bdi4jade.plan.Plan;
 import bdi4jade.plan.planbody.BeliefGoalPlanBody;
-import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.agent.RouterAgent.RootCapability;
 import br.ufrgs.inf.bdinetr.domain.Flow;
@@ -60,7 +60,8 @@ import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.RegularUsage;
 /**
  * @author Ingrid Nunes
  */
-public class RateLimiterCapability extends RouterAgentCapability {
+public class RateLimiterCapability extends RouterAgentCapability implements
+		OptionGenerationFunction {
 
 	public class LimitFlowRatePlan extends BeliefGoalPlanBody {
 		private static final long serialVersionUID = -3493377510830902961L;
@@ -89,8 +90,6 @@ public class RateLimiterCapability extends RouterAgentCapability {
 			if (!exists) {
 				belief(new Benign(flow.getDstIp()), true);
 			}
-
-			log.info(getGoal());
 		}
 
 		@Parameter(direction = Direction.IN)
@@ -122,9 +121,9 @@ public class RateLimiterCapability extends RouterAgentCapability {
 				if (ip.equals(overUsageCause.getName().getIp())) {
 					assert overUsageCause.getValue();
 					causedByIp.add(overUsageCause.getName());
+					it.remove();
+					belief(overUsageCause.getName(), null);
 				}
-				it.remove();
-				belief(overUsageCause.getName(), null);
 			}
 
 			for (OverUsageCause overUsageCause : causedByIp) {
@@ -143,8 +142,6 @@ public class RateLimiterCapability extends RouterAgentCapability {
 					belief(new RegularUsage(overUsageCause.getLink()), true);
 				}
 			}
-
-			log.info(getGoal());
 		}
 
 		@Parameter(direction = Direction.IN)
@@ -163,35 +160,11 @@ public class RateLimiterCapability extends RouterAgentCapability {
 			role.limitLink(link, LINK_LIMIT_RATE);
 			belief(new FullyOperational(link), false);
 			belief(new AttackPrevented(link), true);
-			log.info(getGoal());
 		}
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(AttackPrevented attackPrevented) {
 			this.link = attackPrevented.getLink();
-		}
-	}
-
-	private class ReasoningStrategy extends AbstractReasoningStrategy implements
-			OptionGenerationFunction {
-		@Override
-		public void generateGoals(GoalUpdateSet goalUpdateSet) {
-			Set<Belief<?, ?>> fullyOperationalBeliefs = getBeliefBase()
-					.getBeliefsByType(FullyOperational.class);
-			for (Belief<?, ?> belief : fullyOperationalBeliefs) {
-				PropositionalBelief<FullyOperational> fullyOperational = (PropositionalBelief<FullyOperational>) belief;
-				if (!fullyOperational.getValue()) {
-					PropositionalBelief<RegularUsage> regularUsage = (PropositionalBelief<RegularUsage>) getBeliefBase()
-							.getBelief(
-									new RegularUsage(fullyOperational.getName()
-											.getLink()));
-					if (regularUsage != null && regularUsage.getValue()) {
-						goal(new FullyOperational(fullyOperational.getName()
-								.getLink()), true);
-					}
-
-				}
-			}
 		}
 	}
 
@@ -208,7 +181,6 @@ public class RateLimiterCapability extends RouterAgentCapability {
 			belief(new RateLimited(ip), false);
 			belief(new Restricted(ip), false);
 			belief(new Anomalous(ip), null);
-			log.info(getGoal());
 		}
 
 		@Parameter(direction = Direction.IN)
@@ -227,7 +199,6 @@ public class RateLimiterCapability extends RouterAgentCapability {
 			role.unlimitLink(link);
 			belief(new FullyOperational(link), true);
 			belief(new AttackPrevented(link), null);
-			log.info(getGoal());
 		}
 
 		@Parameter(direction = Direction.IN)
@@ -239,80 +210,125 @@ public class RateLimiterCapability extends RouterAgentCapability {
 	public static final double FLOW_LIMIT_RATE = 0.5;
 	public static final double IP_LIMIT_RATE = 0.5;
 	public static final double LINK_LIMIT_RATE = 0.5;
-
 	private static final long serialVersionUID = -1705728861020677126L;
 
 	@bdi4jade.annotation.Plan
-	private Plan limitFlowRate = new DefaultPlan(
-			GoalTemplateFactory.hasValueForBeliefOfType(ThreatResponded.class,
-					Boolean.TRUE), LimitFlowRatePlan.class) {
-		public boolean isContextApplicable(Goal goal) {
-			BeliefGoal<ThreatResponded> bg = (BeliefGoal<ThreatResponded>) goal;
-			PropositionalBelief<Threat> threat = (PropositionalBelief<Threat>) getBeliefBase()
-					.getBelief(new Threat(bg.getBeliefName().getFlow()));
-			return (threat != null && threat.getValue());
-		};
-	};
-
+	private Plan limitFlowRate;
 	@bdi4jade.annotation.Plan
-	private Plan limitIpRate = new DefaultPlan(
-			GoalTemplateFactory.hasValueForBeliefOfType(Restricted.class,
-					Boolean.TRUE), LimitIPRatePlan.class) {
-		public boolean isContextApplicable(Goal goal) {
-			BeliefGoal<Restricted> bg = (BeliefGoal<Restricted>) goal;
-			PropositionalBelief<Anomalous> anomalous = (PropositionalBelief<Anomalous>) getBeliefBase()
-					.getBelief(new Anomalous(bg.getBeliefName().getIp()));
-			return (anomalous != null && anomalous.getValue());
-		};
-	};
-
+	private Plan limitIpRate;
 	@bdi4jade.annotation.Plan
-	private Plan limitLinkRate = new DefaultPlan(
-			GoalTemplateFactory.hasValueForBeliefOfType(AttackPrevented.class,
-					Boolean.TRUE), LimitLinkRatePlan.class) {
-		public boolean isContextApplicable(Goal goal) {
-			BeliefGoal<AttackPrevented> bg = (BeliefGoal<AttackPrevented>) goal;
-			PropositionalBelief<OverUsage> overUsage = (PropositionalBelief<OverUsage>) getBeliefBase()
-					.getBelief(new OverUsage(bg.getBeliefName().getLink()));
-			return (overUsage != null && overUsage.getValue());
-		};
-	};
-
+	private Plan limitLinkRate;
 	@bdi4jade.annotation.Plan
-	private Plan restoreIpRate = new DefaultPlan(
-			GoalTemplateFactory.hasValueForBeliefOfType(Restricted.class,
-					Boolean.FALSE), RestoreIPRatePlan.class) {
-		public boolean isContextApplicable(Goal goal) {
-			BeliefGoal<Restricted> bg = (BeliefGoal<Restricted>) goal;
-			PropositionalBelief<Benign> benign = (PropositionalBelief<Benign>) getBeliefBase()
-					.getBelief(new Benign(bg.getBeliefName().getIp()));
-			PropositionalBelief<RateLimited> rateLimited = (PropositionalBelief<RateLimited>) getBeliefBase()
-					.getBelief(new RateLimited(bg.getBeliefName().getIp()));
-			return (benign != null && benign.getValue())
-					&& (rateLimited != null && rateLimited.getValue());
-		};
-	};
-
+	private Plan restoreIpRate;
 	@bdi4jade.annotation.Plan
-	private Plan restoreLinkRate = new DefaultPlan(
-			GoalTemplateFactory.hasValueForBeliefOfType(FullyOperational.class,
-					Boolean.TRUE), RestoreLinkRate.class) {
-		public boolean isContextApplicable(Goal goal) {
-			BeliefGoal<FullyOperational> bg = (BeliefGoal<FullyOperational>) goal;
-			PropositionalBelief<RegularUsage> regularUsage = (PropositionalBelief<RegularUsage>) getBeliefBase()
-					.getBelief(new RegularUsage(bg.getBeliefName().getLink()));
-			return (regularUsage != null && regularUsage.getValue());
-		};
-	};
-
+	private Plan restoreLinkRate;
 	@bdi4jade.annotation.TransientBelief
 	private final RateLimiter role;
 
 	public RateLimiterCapability(RateLimiter rateLimiter) {
 		this.role = rateLimiter;
 
-		ReasoningStrategy strategy = new ReasoningStrategy();
-		setOptionGenerationFunction(strategy);
+		setOptionGenerationFunction(this);
+
+		limitFlowRate = new DefaultPlan(
+				GoalTemplateFactory.hasBeliefOfTypeWithValue(
+						ThreatResponded.class, Boolean.TRUE),
+				LimitFlowRatePlan.class) {
+			public boolean isContextApplicable(Goal goal) {
+				BeliefGoal<ThreatResponded> bg = (BeliefGoal<ThreatResponded>) goal;
+				PropositionalBelief<Threat> threat = (PropositionalBelief<Threat>) getBeliefBase()
+						.getBelief(new Threat(bg.getBeliefName().getFlow()));
+				return (threat != null && threat.getValue());
+			};
+		};
+		limitIpRate = new DefaultPlan(
+				GoalTemplateFactory.hasBeliefOfTypeWithValue(Restricted.class,
+						Boolean.TRUE), LimitIPRatePlan.class) {
+			public boolean isContextApplicable(Goal goal) {
+				BeliefGoal<Restricted> bg = (BeliefGoal<Restricted>) goal;
+				PropositionalBelief<Anomalous> anomalous = (PropositionalBelief<Anomalous>) getBeliefBase()
+						.getBelief(new Anomalous(bg.getBeliefName().getIp()));
+				return (anomalous != null && anomalous.getValue());
+			};
+		};
+		limitLinkRate = new DefaultPlan(
+				GoalTemplateFactory.hasBeliefOfTypeWithValue(
+						AttackPrevented.class, Boolean.TRUE),
+				LimitLinkRatePlan.class) {
+			public boolean isContextApplicable(Goal goal) {
+				BeliefGoal<AttackPrevented> bg = (BeliefGoal<AttackPrevented>) goal;
+				PropositionalBelief<OverUsage> overUsage = (PropositionalBelief<OverUsage>) getBeliefBase()
+						.getBelief(new OverUsage(bg.getBeliefName().getLink()));
+				return (overUsage != null && overUsage.getValue());
+			};
+		};
+		restoreIpRate = new DefaultPlan(
+				GoalTemplateFactory.hasBeliefOfTypeWithValue(Restricted.class,
+						Boolean.FALSE), RestoreIPRatePlan.class) {
+			public boolean isContextApplicable(Goal goal) {
+				BeliefGoal<Restricted> bg = (BeliefGoal<Restricted>) goal;
+				PropositionalBelief<Benign> benign = (PropositionalBelief<Benign>) getBeliefBase()
+						.getBelief(new Benign(bg.getBeliefName().getIp()));
+				PropositionalBelief<RateLimited> rateLimited = (PropositionalBelief<RateLimited>) getBeliefBase()
+						.getBelief(new RateLimited(bg.getBeliefName().getIp()));
+				return (benign != null && benign.getValue())
+						&& (rateLimited != null && rateLimited.getValue());
+			};
+		};
+		restoreLinkRate = new DefaultPlan(
+				GoalTemplateFactory.hasBeliefOfTypeWithValue(
+						FullyOperational.class, Boolean.TRUE),
+				RestoreLinkRate.class) {
+			public boolean isContextApplicable(Goal goal) {
+				BeliefGoal<FullyOperational> bg = (BeliefGoal<FullyOperational>) goal;
+				PropositionalBelief<RegularUsage> regularUsage = (PropositionalBelief<RegularUsage>) getBeliefBase()
+						.getBelief(
+								new RegularUsage(bg.getBeliefName().getLink()));
+				return (regularUsage != null && regularUsage.getValue());
+			};
+		};
+	}
+
+	@Override
+	public void generateGoals(GoalUpdateSet goalUpdateSet) {
+		Set<Belief<?, ?>> fullyOperationalBeliefs = getBeliefBase()
+				.getBeliefsByType(FullyOperational.class);
+		for (Belief<?, ?> belief : fullyOperationalBeliefs) {
+			PropositionalBelief<FullyOperational> fullyOperational = (PropositionalBelief<FullyOperational>) belief;
+			if (!fullyOperational.getValue()) {
+				PropositionalBelief<RegularUsage> regularUsage = (PropositionalBelief<RegularUsage>) getBeliefBase()
+						.getBelief(
+								new RegularUsage(fullyOperational.getName()
+										.getLink()));
+				if (regularUsage != null && regularUsage.getValue()) {
+					goalUpdateSet.generateGoal(createGoal(new FullyOperational(
+							fullyOperational.getName().getLink()), true));
+				}
+
+			}
+		}
+
+		Set<Belief<?, ?>> restrictedBeliefs = getBeliefBase().getBeliefsByType(
+				Restricted.class);
+		for (Belief<?, ?> belief : restrictedBeliefs) {
+			PropositionalBelief<Restricted> restricted = (PropositionalBelief<Restricted>) belief;
+			if (restricted.getValue()) {
+				PropositionalBelief<Benign> benign = (PropositionalBelief<Benign>) getBeliefBase()
+						.getBelief(new Benign(restricted.getName().getIp()));
+				if (benign != null && benign.getValue()) {
+					goalUpdateSet.generateGoal(createGoal(new Restricted(
+							restricted.getName().getIp()), false));
+				}
+			}
+		}
+	}
+
+	@Override
+	public void setCapability(Capability capability) {
+		if (!this.equals(capability)) {
+			throw new IllegalArgumentException(
+					"This reasoning strategy is already associated with another capability.");
+		}
 	}
 
 }

@@ -27,8 +27,8 @@ import java.util.Set;
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.PropositionalBelief;
 import bdi4jade.belief.TransientBelief;
+import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
-import bdi4jade.reasoning.AbstractReasoningStrategy;
 import bdi4jade.reasoning.BeliefRevisionStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.Link;
@@ -42,53 +42,7 @@ import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.RegularUsage;
  * @author Ingrid Nunes
  */
 public class LinkMonitorCapability extends RouterAgentCapability implements
-		Observer {
-
-	private class ReasoningStrategy extends AbstractReasoningStrategy implements
-			BeliefRevisionStrategy, OptionGenerationFunction {
-		@Override
-		public void generateGoals(GoalUpdateSet goalUpdateSet) {
-			Set<Belief<?, ?>> overUsageBeliefs = getBeliefBase()
-					.getBeliefsByType(OverUsage.class);
-			for (Belief<?, ?> belief : overUsageBeliefs) {
-				PropositionalBelief<OverUsage> overUsage = (PropositionalBelief<OverUsage>) belief;
-				if (overUsage.getValue()) {
-					PropositionalBelief<AttackPrevented> attackPrevented = (PropositionalBelief<AttackPrevented>) getBeliefBase()
-							.getBelief(
-									new AttackPrevented(overUsage.getName()
-											.getLink()));
-					if (attackPrevented == null || !attackPrevented.getValue()) {
-						goal(new AttackPrevented(overUsage.getName().getLink()),
-								Boolean.TRUE);
-						goal(new RegularUsage(overUsage.getName().getLink()));
-					}
-				}
-			}
-		}
-
-		@Override
-		public void reviewBeliefs() {
-			synchronized (linkEvents) {
-				for (Link link : linkEvents) {
-					OverUsage overUsage = new OverUsage(link);
-					boolean isOverUsage = role.isOverUsage(link);
-
-					if (isOverUsage) {
-						PropositionalBelief<OverUsage> overUsageBelief = (PropositionalBelief<OverUsage>) getBeliefBase()
-								.getBelief(overUsage);
-						if (overUsageBelief == null
-								|| !overUsageBelief.getValue()) {
-							belief(overUsage, true);
-							belief(new RegularUsage(link), null);
-						}
-					} else {
-						belief(overUsage, null);
-					}
-				}
-				linkEvents.clear();
-			}
-		}
-	}
+		BeliefRevisionStrategy, OptionGenerationFunction, Observer {
 
 	public static final double OVER_USAGE_THRESHOLD = 0.8;
 
@@ -96,22 +50,72 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 
 	@bdi4jade.annotation.TransientBeliefSet
 	private final Set<Link> linkEvents;
-
 	@bdi4jade.annotation.Belief
-	private Belief<String, Double> overUsageThreshold = new TransientBelief<>(
-			"threshold", OVER_USAGE_THRESHOLD);
-
+	private Belief<String, Double> overUsageThreshold;
 	@bdi4jade.annotation.TransientBelief
 	private LinkMonitor role;
 
 	public LinkMonitorCapability(LinkMonitor linkMonitor) {
 		this.role = linkMonitor;
-		linkMonitor.attachObserver(this);
-		this.linkEvents = new HashSet<>();
+		role.attachObserver(this);
 
-		ReasoningStrategy strategy = new ReasoningStrategy();
-		setBeliefRevisionStrategy(strategy);
-		setOptionGenerationFunction(strategy);
+		setBeliefRevisionStrategy(this);
+		setOptionGenerationFunction(this);
+
+		this.linkEvents = new HashSet<>();
+		this.overUsageThreshold = new TransientBelief<>("threshold",
+				OVER_USAGE_THRESHOLD);
+	}
+
+	@Override
+	public void generateGoals(GoalUpdateSet goalUpdateSet) {
+		Set<Belief<?, ?>> overUsageBeliefs = getBeliefBase().getBeliefsByType(
+				OverUsage.class);
+		for (Belief<?, ?> belief : overUsageBeliefs) {
+			PropositionalBelief<OverUsage> overUsage = (PropositionalBelief<OverUsage>) belief;
+			if (overUsage.getValue()) {
+				PropositionalBelief<AttackPrevented> attackPrevented = (PropositionalBelief<AttackPrevented>) getBeliefBase()
+						.getBelief(
+								new AttackPrevented(overUsage.getName()
+										.getLink()));
+				if (attackPrevented == null || !attackPrevented.getValue()) {
+					goalUpdateSet.generateGoal(createGoal(new AttackPrevented(
+							overUsage.getName().getLink()), Boolean.TRUE));
+					goalUpdateSet.generateGoal(createGoal(new RegularUsage(
+							overUsage.getName().getLink())));
+				}
+			}
+		}
+	}
+
+	@Override
+	public void reviewBeliefs() {
+		synchronized (linkEvents) {
+			for (Link link : linkEvents) {
+				OverUsage overUsage = new OverUsage(link);
+				boolean isOverUsage = role.isOverUsage(link);
+
+				if (isOverUsage) {
+					PropositionalBelief<OverUsage> overUsageBelief = (PropositionalBelief<OverUsage>) getBeliefBase()
+							.getBelief(overUsage);
+					if (overUsageBelief == null || !overUsageBelief.getValue()) {
+						belief(overUsage, true);
+						belief(new RegularUsage(link), null);
+					}
+				} else {
+					belief(overUsage, null);
+				}
+			}
+			linkEvents.clear();
+		}
+	}
+
+	@Override
+	public void setCapability(Capability capability) {
+		if (!this.equals(capability)) {
+			throw new IllegalArgumentException(
+					"This reasoning strategy is already associated with another capability.");
+		}
 	}
 
 	@Override

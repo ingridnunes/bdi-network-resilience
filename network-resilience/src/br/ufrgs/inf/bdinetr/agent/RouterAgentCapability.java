@@ -24,6 +24,7 @@ package br.ufrgs.inf.bdinetr.agent;
 import bdi4jade.belief.TransientPropositionalBelief;
 import bdi4jade.core.Capability;
 import bdi4jade.goal.BeliefPresentGoal;
+import bdi4jade.goal.Goal;
 import bdi4jade.goal.PropositionalBeliefValueGoal;
 
 /**
@@ -46,15 +47,22 @@ public class RouterAgentCapability extends Capability {
 		}
 	}
 
-	protected void goal(Object proposition) {
-		getMyAgent().addGoal(this, new BeliefPresentGoal(proposition));
+	protected Goal createGoal(Object proposition) {
 		log.debug("goal(?" + proposition + "))");
+		return new BeliefPresentGoal(proposition);
+	}
+
+	protected Goal createGoal(Object proposition, Boolean value) {
+		log.debug("goal(" + (value ? "" : "not ") + proposition + "))");
+		return new PropositionalBeliefValueGoal(proposition, value);
+	}
+
+	protected void goal(Object proposition) {
+		getMyAgent().addGoal(this, createGoal(proposition));
 	}
 
 	protected void goal(Object proposition, Boolean value) {
-		getMyAgent().addGoal(this,
-				new PropositionalBeliefValueGoal(proposition, value));
-		log.debug("goal(" + (value ? "" : "not ") + proposition + "))");
+		getMyAgent().addGoal(this, createGoal(proposition, value));
 	}
 
 }

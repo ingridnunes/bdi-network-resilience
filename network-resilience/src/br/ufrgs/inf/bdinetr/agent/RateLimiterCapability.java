@@ -44,6 +44,7 @@ import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
+import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.FlowRateLimited;
 import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.Threat;
 import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.ThreatResponded;
@@ -321,6 +322,11 @@ public class RateLimiterCapability extends RouterAgentCapability implements
 				}
 			}
 		}
+	}
+
+	@Override
+	public RoleType getRole() {
+		return RoleType.RATE_LIMITER;
 	}
 
 	@Override

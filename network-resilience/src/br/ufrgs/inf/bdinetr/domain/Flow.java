@@ -21,10 +21,13 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
+import jade.content.Concept;
+import jade.content.ContentElement;
+
 /**
  * @author Ingrid Nunes
  */
-public class Flow {
+public class Flow implements ContentElement, Concept {
 
 	private Ip dstIp;
 	private int dstPort;

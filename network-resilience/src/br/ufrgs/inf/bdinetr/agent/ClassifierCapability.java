@@ -38,6 +38,7 @@ import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.Classifier;
 import br.ufrgs.inf.bdinetr.domain.Flow;
 import br.ufrgs.inf.bdinetr.domain.Ip;
+import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.Threat;
 import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.ThreatResponded;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Anomalous;
@@ -119,6 +120,11 @@ public class ClassifierCapability extends RouterAgentCapability implements
 						threat.getName().getFlow()), true));
 			}
 		}
+	}
+
+	@Override
+	public RoleType getRole() {
+		return RoleType.CLASSIFIER;
 	}
 
 	@Override

@@ -26,11 +26,12 @@ import bdi4jade.core.Capability;
 import bdi4jade.goal.BeliefPresentGoal;
 import bdi4jade.goal.Goal;
 import bdi4jade.goal.PropositionalBeliefValueGoal;
+import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 
 /**
  * @author Ingrid Nunes
  */
-public class RouterAgentCapability extends Capability {
+public abstract class RouterAgentCapability extends Capability {
 
 	public static final String ROLE_BELIEF = "role";
 
@@ -56,6 +57,8 @@ public class RouterAgentCapability extends Capability {
 		log.debug("goal(" + (value ? "" : "not ") + proposition + "))");
 		return new PropositionalBeliefValueGoal(proposition, value);
 	}
+
+	public abstract RoleType getRole();
 
 	protected void goal(Object proposition) {
 		getMyAgent().addGoal(this, createGoal(proposition));

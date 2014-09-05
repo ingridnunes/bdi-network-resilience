@@ -21,6 +21,8 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import jade.core.AID;
+import jade.core.messaging.TopicManagementHelper;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.MessageTemplate.MatchExpression;
@@ -111,6 +113,25 @@ public class RouterAgent extends SingleCapabilityAgent implements
 			this.getCapability().addPartCapability(
 					new ClassifierCapability((Classifier) router
 							.getRole(RoleType.CLASSIFIER)));
+		}
+		setPlanSelectionStrategy(this);
+	}
+
+	@Override
+	protected void init() {
+		for (Capability capability : getAllCapabilities()) {
+			if (capability instanceof RouterAgentCapability) {
+				try {
+					TopicManagementHelper topicHelper = (TopicManagementHelper) getHelper(TopicManagementHelper.SERVICE_NAME);
+					AID roleTopic = topicHelper
+							.createTopic(((RouterAgentCapability) capability)
+									.getRole().name());
+					topicHelper.register(roleTopic);
+				} catch (Exception exc) {
+					log.error(exc);
+					exc.printStackTrace();
+				}
+			}
 		}
 	}
 

@@ -37,6 +37,7 @@ import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
+import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Anomalous;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Benign;
 import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.OverUsageCause;
@@ -124,6 +125,11 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 				}
 			}
 		}
+	}
+
+	@Override
+	public RoleType getRole() {
+		return RoleType.ANOMALY_DETECTION;
 	}
 
 	@Override

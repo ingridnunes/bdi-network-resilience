@@ -23,7 +23,13 @@ package br.ufrgs.inf.bdinetr;
 
 import jade.BootProfileImpl;
 import jade.core.Agent;
+import jade.core.Profile;
 import jade.core.ProfileImpl;
+import jade.core.Specifier;
+import jade.core.event.NotificationService;
+import jade.core.messaging.TopicManagementHelper;
+import jade.core.messaging.TopicManagementService;
+import jade.tools.rma.rma;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.PlatformController;
@@ -58,11 +64,11 @@ public class BDINetRApp {
 				.getResource("log4j.properties"));
 
 		Set<PReSETRouter> routers = new HashSet<>();
-		routers.add(new PReSETRouter(new Ip("Router"), RoleType.RATE_LIMITER
-				.getId()
-				| RoleType.CLASSIFIER.getId()
-				| RoleType.ANOMALY_DETECTION.getId()
-				| RoleType.LINK_MONITOR.getId()));
+		routers.add(new PReSETRouter(new Ip("RouterLM"), RoleType.LINK_MONITOR
+				.getId()));
+		routers.add(new PReSETRouter(new Ip("RouterRLCA"),
+				RoleType.RATE_LIMITER.getId() | RoleType.CLASSIFIER.getId()
+						| RoleType.ANOMALY_DETECTION.getId()));
 
 		Link affectedLink = new Link("AFFECTED_LINK");
 
@@ -97,10 +103,30 @@ public class BDINetRApp {
 		List<String> params = new ArrayList<String>();
 		params.add("-gui");
 		params.add("-detect-main:false");
+		params.add("-services:" + TopicManagementHelper.SERVICE_NAME);
 
-		log.info("Plataform parameters: " + params);
+		this.bootProfile = new ProfileImpl();
+		bootProfile.setParameter(Profile.GUI, "truw");
+		bootProfile.setParameter(BootProfileImpl.PLATFORM_ID,
+				BDINetRApp.class.getSimpleName());
+		bootProfile.setParameter(Profile.DETECT_MAIN, "false");
 
-		this.bootProfile = new BootProfileImpl(params.toArray(new String[0]));
+		jade.util.leap.List result = new jade.util.leap.ArrayList();
+		Specifier s = new Specifier();
+		s.setName("RMA");
+		s.setClassName(rma.class.getName());
+		result.add(s);
+		bootProfile.setSpecifiers(Profile.AGENTS, result);
+
+		result = new jade.util.leap.ArrayList();
+		s = new Specifier();
+		s.setClassName(TopicManagementService.class.getName());
+		result.add(s);
+		s = new Specifier();
+		s.setClassName(NotificationService.class.getName());
+		result.add(s);
+		bootProfile.setSpecifiers(Profile.SERVICES, result);
+		log.info("Plataform parameters: " + bootProfile);
 
 		this.runtime = jade.core.Runtime.instance();
 		PlatformController controller = runtime

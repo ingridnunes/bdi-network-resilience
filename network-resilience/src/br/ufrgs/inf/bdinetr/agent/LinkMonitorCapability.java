@@ -34,6 +34,7 @@ import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Observer;
+import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.AttackPrevented;
 import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.OverUsage;
 import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.RegularUsage;
@@ -86,6 +87,11 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 				}
 			}
 		}
+	}
+
+	@Override
+	public RoleType getRole() {
+		return RoleType.LINK_MONITOR;
 	}
 
 	@Override

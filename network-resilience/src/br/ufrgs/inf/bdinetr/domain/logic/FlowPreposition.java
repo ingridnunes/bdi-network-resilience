@@ -21,12 +21,14 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain.logic;
 
+import jade.content.Concept;
+import jade.content.ContentElement;
 import br.ufrgs.inf.bdinetr.domain.Flow;
 
 /**
  * @author Ingrid Nunes
  */
-public class FlowPreposition {
+public class FlowPreposition implements ContentElement, Concept {
 
 	public static class FlowRateLimited extends FlowPreposition {
 		public FlowRateLimited(Flow flow) {

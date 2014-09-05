@@ -25,6 +25,8 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
+import bdi4jade.goal.BeliefGoal;
+import bdi4jade.plan.Plan.EndState;
 import bdi4jade.plan.planbody.AbstractPlanBody;
 
 /**
@@ -44,21 +46,39 @@ public class RespondBeliefGoalPlanBody extends AbstractPlanBody {
 
 	@Override
 	public void action() {
-		switch (state) {
-		case SendingResponse:
-			ACLMessage reply = beliefGoalMsg.createReply();
-			reply.setContent("");
-			this.myAgent.send(reply);
-			break;
-		case ReceivingReply:
+		try {
+			switch (state) {
+			case SendingResponse:
+				ACLMessage reply = beliefGoalMsg.createReply();
+				Object content = reply.getContent();
+				if (content instanceof BeliefGoal) {
+					Boolean canAchieve = getCapability().canAchieve(
+							(BeliefGoal<?>) content);
+					reply.setContentObject(canAchieve);
+					log.info("Agent " + myAgent + " can achieve " + content
+							+ ": " + canAchieve);
+				} else {
+					reply.setContentObject(Boolean.FALSE);
+				}
+				this.myAgent.send(reply);
+				this.mt = MessageTemplate.and(MessageTemplate
+						.MatchConversationId(reply.getConversationId()),
+						MessageTemplate.MatchInReplyTo(reply.getReplyWith()));
+				this.state = State.ReceivingReply;
+				break;
+			case ReceivingReply:
 
-			break;
-		case AchievingBeliefGoal:
+				break;
+			case AchievingBeliefGoal:
 
-			break;
-		case Ended:
+				break;
+			case Ended:
 
-			break;
+				break;
+			}
+		} catch (Exception exc) {
+			log.error(exc);
+			setEndState(EndState.FAILED);
 		}
 	}
 

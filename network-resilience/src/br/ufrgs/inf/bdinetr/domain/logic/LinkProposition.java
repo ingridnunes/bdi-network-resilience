@@ -21,12 +21,14 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain.logic;
 
+import jade.content.Concept;
+import jade.content.ContentElement;
 import br.ufrgs.inf.bdinetr.domain.Link;
 
 /**
  * @author Ingrid Nunes
  */
-public class LinkProposition {
+public class LinkProposition implements ContentElement, Concept {
 
 	public static class AttackPrevented extends LinkProposition {
 		public AttackPrevented(Link link) {

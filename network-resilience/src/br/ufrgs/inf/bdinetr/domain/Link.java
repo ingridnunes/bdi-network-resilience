@@ -21,10 +21,13 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
+import jade.content.Concept;
+import jade.content.ContentElement;
+
 /**
  * @author Ingrid Nunes
  */
-public class Link {
+public class Link implements ContentElement, Concept {
 
 	private final String id;
 

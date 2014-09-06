@@ -34,12 +34,20 @@ import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.PlatformController;
 
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,7 +98,27 @@ public class BDINetRApp {
 
 	public static void main(String[] args) {
 		new BDINetRApp();
-		NETWORK.run();
+
+		JPanel panel = new JPanel(new GridLayout(1, 1));
+		JButton button = new JButton("Run!");
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				NETWORK.run();
+			}
+		});
+		panel.add(button);
+		final JFrame frame = new JFrame();
+		frame.setTitle(BDINetRApp.class.getSimpleName());
+		frame.setContentPane(panel);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.pack();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				frame.setVisible(true);
+			}
+		});
 	}
 
 	private ProfileImpl bootProfile;

@@ -25,7 +25,10 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
+import bdi4jade.belief.Belief;
+import bdi4jade.event.GoalEvent;
 import bdi4jade.goal.BeliefGoal;
+import bdi4jade.goal.GoalStatus;
 import bdi4jade.plan.Plan.EndState;
 import bdi4jade.plan.planbody.AbstractPlanBody;
 
@@ -43,37 +46,69 @@ public class RespondBeliefGoalPlanBody extends AbstractPlanBody {
 	private ACLMessage beliefGoalMsg;
 	private MessageTemplate mt;
 	private State state;
+	private ACLMessage incomingMsg;
+	private ACLMessage outcomingMsg;
+	private BeliefGoal<?> beliefGoal;
 
 	@Override
 	public void action() {
 		try {
 			switch (state) {
 			case SendingResponse:
-				ACLMessage reply = beliefGoalMsg.createReply();
-				Object content = reply.getContent();
+				outcomingMsg = beliefGoalMsg.createReply();
+				Object content = beliefGoalMsg.getContentObject();
 				if (content instanceof BeliefGoal) {
-					Boolean canAchieve = getCapability().canAchieve(
-							(BeliefGoal<?>) content);
-					reply.setContentObject(canAchieve);
+					beliefGoal = (BeliefGoal<?>) content;
+					Boolean canAchieve = getCapability().canAchieve(beliefGoal);
+					outcomingMsg.setContentObject(canAchieve);
 					log.info("Agent " + myAgent + " can achieve " + content
 							+ ": " + canAchieve);
 				} else {
-					reply.setContentObject(Boolean.FALSE);
+					outcomingMsg.setContentObject(Boolean.FALSE);
 				}
-				this.myAgent.send(reply);
+				outcomingMsg.setReplyWith("cfp" + System.currentTimeMillis());
+				this.myAgent.send(outcomingMsg);
 				this.mt = MessageTemplate.and(MessageTemplate
-						.MatchConversationId(reply.getConversationId()),
-						MessageTemplate.MatchInReplyTo(reply.getReplyWith()));
+						.MatchConversationId(outcomingMsg.getConversationId()),
+						MessageTemplate.MatchInReplyTo(outcomingMsg
+								.getReplyWith()));
 				this.state = State.ReceivingReply;
 				break;
 			case ReceivingReply:
-
+				incomingMsg = myAgent.receive(mt);
+				if (incomingMsg != null) {
+					if (ACLMessage.ACCEPT_PROPOSAL == incomingMsg
+							.getPerformative()) {
+						dispatchSubgoalAndListen(beliefGoal);
+						this.state = State.AchievingBeliefGoal;
+					} else {
+						setEndState(EndState.SUCCESSFULL);
+						log.info("Proposal rejected.");
+						this.state = State.Ended;
+						return;
+					}
+				} else {
+					block();
+				}
 				break;
 			case AchievingBeliefGoal:
-
+				GoalEvent event = getGoalEvent();
+				if (event != null) {
+					outcomingMsg = incomingMsg.createReply();
+					outcomingMsg.setPerformative(ACLMessage.INFORM);
+					if (GoalStatus.ACHIEVED.equals(event.getStatus())) {
+						Belief<?, ?> belief = (getBeliefBase()
+								.getBelief(beliefGoal.getBeliefName()));
+						outcomingMsg.setContentObject((Belief<?, ?>) belief
+								.clone());
+					} else {
+						outcomingMsg.setContentObject(null);
+					}
+					this.myAgent.send(outcomingMsg);
+					this.state = State.Ended;
+				}
 				break;
 			case Ended:
-
 				break;
 			}
 		} catch (Exception exc) {

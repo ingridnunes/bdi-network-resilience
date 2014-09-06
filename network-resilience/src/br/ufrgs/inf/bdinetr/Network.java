@@ -26,7 +26,6 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import bdi4jade.examples.BDI4JADEExamplesPanel;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Observer;

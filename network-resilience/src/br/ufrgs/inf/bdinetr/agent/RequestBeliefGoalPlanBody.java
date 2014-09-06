@@ -39,8 +39,8 @@ import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
  */
 public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 
-	public static final int MSG_TIME_OUT = 10000;
-	public static final int ANSWER_TIME_OUT = 30000;
+	public static final int MSG_TIME_OUT = 10;
+	public static final int ANSWER_TIME_OUT = 100;
 
 	private enum State {
 		Resquesting, ReceivingResponses, Selecting, AchievingGoal, Ended;
@@ -76,9 +76,10 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 						.MatchConversationId(msg.getConversationId()),
 						MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
 				this.positiveAnswers = new HashSet<>();
+				this.state = State.ReceivingResponses;
 				break;
 			case ReceivingResponses:
-				ACLMessage reply = myAgent.blockingReceive(mt, MSG_TIME_OUT);
+				ACLMessage reply = myAgent.receive(mt);
 				if (reply != null) {
 					Object content = reply.getContentObject();
 					if (content instanceof Boolean) {
@@ -86,11 +87,16 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 								+ content);
 						if ((Boolean) content) {
 							positiveAnswers.add(reply);
+							log.info("Answers: " + positiveAnswers);
 						}
 					}
+				} else {
+					block(MSG_TIME_OUT);
 				}
 				if ((System.currentTimeMillis() - requestTime) > ANSWER_TIME_OUT) {
 					this.state = State.Selecting;
+				} else {
+					log.info("Waiting for more answers...");
 				}
 				break;
 			case Selecting:
@@ -100,26 +106,38 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 					this.state = State.Ended;
 					return;
 				} else {
-					ACLMessage chosenMsg = positiveAnswers.iterator().next(); // TODO
-																				// Better
-																				// selection
-																				// process.
+					// TODO Better selection process.
+					ACLMessage chosenMsg = positiveAnswers.iterator().next();
 					for (ACLMessage answer : positiveAnswers) {
 						reply = answer.createReply();
-						reply.setPerformative((answer == chosenMsg) ? ACLMessage.ACCEPT_PROPOSAL
-								: ACLMessage.REJECT_PROPOSAL);
+						if (answer == chosenMsg) {
+							reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+							reply.setReplyWith("cfp"
+									+ System.currentTimeMillis());
+							reply.setContentObject(getGoal());
+							this.mt = MessageTemplate.and(MessageTemplate
+									.MatchConversationId(reply
+											.getConversationId()),
+									MessageTemplate.MatchInReplyTo(reply
+											.getReplyWith()));
+							log.info("Accepted proposal of agent: "
+									+ answer.getSender());
+						} else {
+							reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+							log.info("Rejected proposal of agent: "
+									+ answer.getSender());
+						}
 						this.myAgent.send(reply);
 					}
 					this.state = State.AchievingGoal;
 				}
 				break;
 			case AchievingGoal:
-				reply = myAgent.blockingReceive(mt);
+				reply = myAgent.receive(mt);
 				if (reply != null) {
 					Object content = reply.getContentObject();
 					if (content instanceof Belief) {
-						getCapability().getWholeCapability().getBeliefBase()
-								.addBelief((Belief<?, ?>) content);
+						getBeliefBase().addBelief((Belief<?, ?>) content);
 						assert ((BeliefGoal<?>) getGoal())
 								.isAchieved(getBeliefBase());
 						log.info("Goal " + getGoal() + " achieved.");
@@ -127,6 +145,8 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 						setEndState(EndState.FAILED);
 					}
 					this.state = State.Ended;
+				} else {
+					block();
 				}
 				break;
 			case Ended:

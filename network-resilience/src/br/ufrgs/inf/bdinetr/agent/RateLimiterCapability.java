@@ -75,6 +75,7 @@ public class RateLimiterCapability extends RouterAgentCapability implements
 			belief(new ThreatResponded(flow), true);
 			belief(new Threat(flow), null);
 
+			// nExists flow'.(Threat(flow') AND dst(flow) = dst(flow')) --> Benign(dst(flow))
 			boolean exists = false;
 			Set<Belief<?, ?>> threatBeliefs = getBeliefBase().getBeliefsByType(
 					Threat.class);
@@ -111,6 +112,7 @@ public class RateLimiterCapability extends RouterAgentCapability implements
 			belief(new RateLimited(ip), true);
 			belief(new Restricted(ip), true);
 
+			// OverUsageCause(ip, link) --> ~OverUsageCause(ip, link)
 			Set<Belief<?, ?>> overUsageCauseBeliefs = getBeliefBase()
 					.getBeliefsByType(OverUsageCause.class);
 			Set<OverUsageCause> causedByIp = new HashSet<>();
@@ -126,6 +128,7 @@ public class RateLimiterCapability extends RouterAgentCapability implements
 				}
 			}
 
+			// nExists ip'.(was OverUsageCause(ip, link) AND OverUsageCause(ip', link)) --> RegularUsage(link))
 			for (OverUsageCause overUsageCause : causedByIp) {
 				boolean exists = false;
 				for (Belief<?, ?> belief : overUsageCauseBeliefs) {

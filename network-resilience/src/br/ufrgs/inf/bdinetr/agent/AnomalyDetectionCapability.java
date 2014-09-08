@@ -64,6 +64,8 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 				belief(new OverUsageCause(outlier, link), true);
 			}
 
+			// Exists ip.(OverUsageCause(ip, link) AND not(Restricted(ip)) --> not RegularUsage(link)
+			// nExists ip.(OverUsageCause(ip, link) AND not(Restricted(ip)) --> RegularUsage(link)
 			boolean exists = false;
 			Set<Belief<?, ?>> overUsageCauseBeliefs = getBeliefBase()
 					.getBeliefsByType(OverUsageCause.class);
@@ -110,6 +112,7 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 
 	@Override
 	public void generateGoals(GoalUpdateSet goalUpdateSet) {
+		// Anomalous(ip) AND not Restricted(ip) --> goal(Restricted(ip)) AND goal(belief(Anomalous(ip))
 		Set<Belief<?, ?>> anomalousIpBeliefs = getBeliefBase()
 				.getBeliefsByType(Anomalous.class);
 		for (Belief<?, ?> belief : anomalousIpBeliefs) {

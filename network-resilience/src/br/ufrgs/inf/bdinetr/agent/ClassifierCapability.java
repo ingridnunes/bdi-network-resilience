@@ -64,6 +64,8 @@ public class ClassifierCapability extends RouterAgentCapability implements
 				belief(new Threat(flow), true);
 			}
 
+			// Exists flow.(threat(flow) AND ip = dst(flow)) --> not Benign(ip) 
+			// nExists flow.(threat(flow) AND ip = dst(flow)) --> Benign(ip)
 			boolean exists = false;
 			Set<Belief<?, ?>> threatBeliefs = getBeliefBase().getBeliefsByType(
 					Threat.class);
@@ -111,6 +113,7 @@ public class ClassifierCapability extends RouterAgentCapability implements
 
 	@Override
 	public void generateGoals(GoalUpdateSet goalUpdateSet) {
+		// Threat(flow) --> goal(ThreatResponded(flow))
 		Set<Belief<?, ?>> threatBeliefs = getBeliefBase().getBeliefsByType(
 				Threat.class);
 		for (Belief<?, ?> belief : threatBeliefs) {

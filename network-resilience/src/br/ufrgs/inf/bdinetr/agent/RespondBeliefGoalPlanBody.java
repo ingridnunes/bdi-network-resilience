@@ -82,7 +82,7 @@ public class RespondBeliefGoalPlanBody extends AbstractPlanBody {
 						dispatchSubgoalAndListen(beliefGoal);
 						this.state = State.AchievingBeliefGoal;
 					} else {
-						setEndState(EndState.SUCCESSFULL);
+						setEndState(EndState.SUCCESSFUL);
 						log.info("Proposal rejected.");
 						this.state = State.Ended;
 						return;
@@ -113,6 +113,7 @@ public class RespondBeliefGoalPlanBody extends AbstractPlanBody {
 			}
 		} catch (Exception exc) {
 			log.error(exc);
+			exc.printStackTrace();
 			setEndState(EndState.FAILED);
 		}
 	}

@@ -70,7 +70,7 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 
 	@Override
 	public void generateGoals(GoalUpdateSet goalUpdateSet) {
-		// OverUsage(link) AND not AttackPrevented(link) --> goal(AttackPrevent(link)) AND goal(belief(RegularUsage(link)))
+		// OverUsage(link) AND not AttackPrevented(link) --> goal(AttackPrevented(link)) AND goal(belief(?RegularUsage(link)))
 		Set<Belief<?, ?>> overUsageBeliefs = getBeliefBase().getBeliefsByType(
 				OverUsage.class);
 		for (Belief<?, ?> belief : overUsageBeliefs) {

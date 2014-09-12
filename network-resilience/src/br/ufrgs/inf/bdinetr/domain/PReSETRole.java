@@ -31,7 +31,8 @@ public abstract class PReSETRole {
 
 	public enum RoleType {
 
-		ANOMALY_DETECTION(1), CLASSIFIER(2), LINK_MONITOR(4), RATE_LIMITER(8);
+		ANOMALY_DETECTION(1), CLASSIFIER(2), FLOW_EXPORTER(4), LINK_MONITOR(8), RATE_LIMITER(
+				16);
 
 		private final int id;
 

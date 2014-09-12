@@ -29,12 +29,16 @@ import bdi4jade.belief.Belief;
 import bdi4jade.belief.PropositionalBelief;
 import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
+import bdi4jade.event.GoalEvent;
 import bdi4jade.goal.BeliefPresentGoal;
+import bdi4jade.goal.GoalStatus;
 import bdi4jade.goal.GoalTemplateFactory;
 import bdi4jade.plan.DefaultPlan;
 import bdi4jade.plan.Plan;
+import bdi4jade.plan.Plan.EndState;
 import bdi4jade.plan.planbody.BeliefGoalPlanBody;
 import bdi4jade.reasoning.OptionGenerationFunction;
+import br.ufrgs.inf.bdinetr.agent.RouterAgent.RootCapability.ExportFlows;
 import br.ufrgs.inf.bdinetr.domain.Classifier;
 import br.ufrgs.inf.bdinetr.domain.Flow;
 import br.ufrgs.inf.bdinetr.domain.Ip;
@@ -54,31 +58,53 @@ public class ClassifierCapability extends RouterAgentCapability implements
 		private static final long serialVersionUID = -3493377510830902961L;
 
 		private Ip ip;
+		private boolean flowsExported;
 
 		@Override
 		public void execute() {
-			role.turnFlowExporterOn();
-			Set<Flow> malicious = role.classifyFlows(ip);
+			if (!flowsExported) {
+				dispatchSubgoalAndListen(new ExportFlows(ip));
+				this.flowsExported = true;
+			} else {
+				GoalEvent event = getGoalEvent();
+				if (event != null) {
+					if (GoalStatus.ACHIEVED.equals(event.getStatus())) {
+						Set<Flow> malicious = role.classifyFlows(ip);
 
-			for (Flow flow : malicious) {
-				belief(new Threat(flow), true);
-			}
+						for (Flow flow : malicious) {
+							belief(new Threat(flow), true);
+						}
 
-			// Exists flow.(threat(flow) AND ip = dst(flow)) --> not Benign(ip) 
-			// nExists flow.(threat(flow) AND ip = dst(flow)) --> Benign(ip)
-			boolean exists = false;
-			Set<Belief<?, ?>> threatBeliefs = getBeliefBase().getBeliefsByType(
-					Threat.class);
-			for (Belief<?, ?> belief : threatBeliefs) {
-				PropositionalBelief<Threat> threat = (PropositionalBelief<Threat>) belief;
-				assert threat.getValue();
+						// Exists flow.(threat(flow) AND ip = dst(flow)) --> not
+						// Benign(ip)
+						// nExists flow.(threat(flow) AND ip = dst(flow)) -->
+						// Benign(ip)
+						boolean exists = false;
+						Set<Belief<?, ?>> threatBeliefs = getBeliefBase()
+								.getBeliefsByType(Threat.class);
+						for (Belief<?, ?> belief : threatBeliefs) {
+							PropositionalBelief<Threat> threat = (PropositionalBelief<Threat>) belief;
+							assert threat.getValue();
 
-				if (ip.equals(threat.getName().getFlow().getDstIp())) {
-					exists = true;
-					break;
+							if (ip.equals(threat.getName().getFlow().getDstIp())) {
+								exists = true;
+								break;
+							}
+						}
+						belief(new Benign(ip), !exists);
+					} else {
+						setEndState(EndState.FAILED);
+					}
+				} else {
+					block();
 				}
 			}
-			belief(new Benign(ip), !exists);
+		}
+
+		@Override
+		public void onStart() {
+			super.onStart();
+			this.flowsExported = false;
 		}
 
 		@Parameter(direction = Direction.IN)

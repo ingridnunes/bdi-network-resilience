@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * flowexporter addOperation: "victim:flow:idle:" remoteName: "setthreshold".
- * 
  * event at:
  * 
  * "classification" put: (factory/event create: #( "value_name" "value_source"
@@ -52,10 +50,6 @@ public class Classifier extends PReSETRole {
 					"http"));
 		}
 		return flows;
-	}
-
-	public void turnFlowExporterOn() {
-
 	}
 
 }

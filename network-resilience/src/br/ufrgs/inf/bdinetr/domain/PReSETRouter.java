@@ -50,6 +50,9 @@ public class PReSETRouter {
 		if (RoleType.CLASSIFIER.isPresent(roles)) {
 			this.roles.put(RoleType.CLASSIFIER, new Classifier(this));
 		}
+		if (RoleType.FLOW_EXPORTER.isPresent(roles)) {
+			this.roles.put(RoleType.FLOW_EXPORTER, new FlowExporter(this));
+		}
 	}
 
 	@Override

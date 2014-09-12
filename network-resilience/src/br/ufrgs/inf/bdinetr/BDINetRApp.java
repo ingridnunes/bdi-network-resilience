@@ -75,7 +75,8 @@ public class BDINetRApp {
 		routers.add(new PReSETRouter(new Ip("RouterLM"), RoleType.LINK_MONITOR
 				.getId()));
 		routers.add(new PReSETRouter(new Ip("RouterRLCA"),
-				RoleType.RATE_LIMITER.getId() | RoleType.CLASSIFIER.getId()
+				RoleType.RATE_LIMITER.getId() | RoleType.FLOW_EXPORTER.getId()
+						| RoleType.CLASSIFIER.getId()
 						| RoleType.ANOMALY_DETECTION.getId()));
 
 		Link affectedLink = new Link("AFFECTED_LINK");

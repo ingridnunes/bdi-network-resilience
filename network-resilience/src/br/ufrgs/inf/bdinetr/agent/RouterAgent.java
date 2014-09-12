@@ -31,6 +31,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import bdi4jade.annotation.Parameter;
+import bdi4jade.annotation.Parameter.Direction;
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.TransientBelief;
 import bdi4jade.core.BDIAgent;
@@ -43,6 +45,8 @@ import bdi4jade.plan.Plan;
 import bdi4jade.reasoning.AgentPlanSelectionStrategy;
 import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
 import br.ufrgs.inf.bdinetr.domain.Classifier;
+import br.ufrgs.inf.bdinetr.domain.FlowExporter;
+import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
 import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
@@ -55,6 +59,23 @@ public class RouterAgent extends SingleCapabilityAgent implements
 		AgentPlanSelectionStrategy {
 
 	public static class RootCapability extends Capability {
+
+		public static class ExportFlows implements Goal {
+
+			private static final long serialVersionUID = -7114413010093171144L;
+
+			private Ip ip;
+
+			public ExportFlows(Ip ip) {
+				this.ip = ip;
+			}
+
+			@Parameter(direction = Direction.IN)
+			public Ip getIp() {
+				return ip;
+			}
+
+		}
 
 		public static final String ROUTER_BELIEF = "router";
 
@@ -113,6 +134,11 @@ public class RouterAgent extends SingleCapabilityAgent implements
 			this.getCapability().addPartCapability(
 					new ClassifierCapability((Classifier) router
 							.getRole(RoleType.CLASSIFIER)));
+		}
+		if (router.hasRole(RoleType.FLOW_EXPORTER)) {
+			this.getCapability().addPartCapability(
+					new FlowExporterCapability((FlowExporter) router
+							.getRole(RoleType.FLOW_EXPORTER)));
 		}
 		setPlanSelectionStrategy(this);
 	}

@@ -39,8 +39,8 @@ import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
  */
 public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 
-	public static final int MSG_TIME_OUT = 10;
-	public static final int ANSWER_TIME_OUT = 100;
+	public static final int MSG_TIME_OUT = 100;
+	public static final int ANSWER_TIME_OUT = 1000;
 
 	private enum State {
 		Resquesting, ReceivingResponses, Selecting, AchievingGoal, Ended;
@@ -154,6 +154,7 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 			}
 		} catch (Exception exc) {
 			log.error(exc);
+			exc.printStackTrace();
 			setEndState(EndState.FAILED);
 		}
 	}

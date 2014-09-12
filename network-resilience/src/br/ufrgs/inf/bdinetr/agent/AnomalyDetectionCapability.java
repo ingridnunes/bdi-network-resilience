@@ -112,7 +112,7 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 
 	@Override
 	public void generateGoals(GoalUpdateSet goalUpdateSet) {
-		// Anomalous(ip) AND not Restricted(ip) --> goal(Restricted(ip)) AND goal(belief(Anomalous(ip))
+		// Anomalous(ip) AND not Restricted(ip) --> goal(Restricted(ip)) AND goal(?belief(Anomalous(ip))
 		Set<Belief<?, ?>> anomalousIpBeliefs = getBeliefBase()
 				.getBeliefsByType(Anomalous.class);
 		for (Belief<?, ?> belief : anomalousIpBeliefs) {

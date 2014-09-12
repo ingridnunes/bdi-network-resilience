@@ -56,8 +56,8 @@ import org.apache.log4j.PropertyConfigurator;
 import br.ufrgs.inf.bdinetr.agent.RouterAgent;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
-import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
+import br.ufrgs.inf.bdinetr.domain.Router;
+import br.ufrgs.inf.bdinetr.domain.Role;
 
 /**
  * @author Ingrid Nunes
@@ -71,13 +71,14 @@ public class BDINetRApp {
 		PropertyConfigurator.configure(BDINetRApp.class
 				.getResource("log4j.properties"));
 
-		Set<PReSETRouter> routers = new HashSet<>();
-		routers.add(new PReSETRouter(new Ip("RouterLM"), RoleType.LINK_MONITOR
+		Set<Router> routers = new HashSet<>();
+		routers.add(new Router(new Ip("RouterLM"), Role.LINK_MONITOR
 				.getId()));
-		routers.add(new PReSETRouter(new Ip("RouterRLCA"),
-				RoleType.RATE_LIMITER.getId() | RoleType.FLOW_EXPORTER.getId()
-						| RoleType.CLASSIFIER.getId()
-						| RoleType.ANOMALY_DETECTION.getId()));
+		routers.add(new Router(new Ip("RouterRLCA"), Role.RATE_LIMITER
+				.getId()
+				| Role.FLOW_EXPORTER.getId()
+				| Role.CLASSIFIER.getId()
+				| Role.ANOMALY_DETECTION.getId()));
 
 		Link affectedLink = new Link("AFFECTED_LINK");
 
@@ -92,7 +93,7 @@ public class BDINetRApp {
 		NETWORK = new Network(routers, links, affectedLinks);
 
 		AGENTS = new HashMap<>();
-		for (PReSETRouter router : NETWORK.getRouters()) {
+		for (Router router : NETWORK.getRouters()) {
 			AGENTS.put(router.getIp(), new RouterAgent(router));
 		}
 	}

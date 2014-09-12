@@ -26,9 +26,9 @@ package br.ufrgs.inf.bdinetr.domain;
  * 
  * @author Ingrid Nunes
  */
-public class FlowExporter extends PReSETRole {
+public class FlowExporter extends RouterComponent {
 
-	public FlowExporter(PReSETRouter router) {
+	public FlowExporter(Router router) {
 		super(router);
 	}
 

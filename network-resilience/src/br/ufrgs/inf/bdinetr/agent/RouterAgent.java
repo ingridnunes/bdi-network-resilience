@@ -48,9 +48,9 @@ import br.ufrgs.inf.bdinetr.domain.Classifier;
 import br.ufrgs.inf.bdinetr.domain.FlowExporter;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
-import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
+import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
+import br.ufrgs.inf.bdinetr.domain.Role;
 
 /**
  * @author Ingrid Nunes
@@ -86,9 +86,9 @@ public class RouterAgent extends SingleCapabilityAgent implements
 		@bdi4jade.annotation.Plan
 		private final Plan respondBeliefGoalPlan;
 		@bdi4jade.annotation.Belief
-		private final Belief<String, PReSETRouter> router;
+		private final Belief<String, Router> router;
 
-		public RootCapability(PReSETRouter router) {
+		public RootCapability(Router router) {
 			this.router = new TransientBelief<>(ROUTER_BELIEF, router);
 			this.requestBeliefGoalPlan = new DefaultPlan(BeliefGoal.class,
 					RequestBeliefGoalPlanBody.class);
@@ -113,32 +113,32 @@ public class RouterAgent extends SingleCapabilityAgent implements
 
 	private static final long serialVersionUID = 6534875498063013722L;
 
-	public RouterAgent(PReSETRouter router) {
+	public RouterAgent(Router router) {
 		super(new RootCapability(router));
-		if (router.hasRole(RoleType.LINK_MONITOR)) {
+		if (router.hasRole(Role.LINK_MONITOR)) {
 			this.getCapability().addPartCapability(
 					new LinkMonitorCapability((LinkMonitor) router
-							.getRole(RoleType.LINK_MONITOR)));
+							.getRole(Role.LINK_MONITOR)));
 		}
-		if (router.hasRole(RoleType.ANOMALY_DETECTION)) {
+		if (router.hasRole(Role.ANOMALY_DETECTION)) {
 			this.getCapability().addPartCapability(
 					new AnomalyDetectionCapability((AnomalyDetection) router
-							.getRole(RoleType.ANOMALY_DETECTION)));
+							.getRole(Role.ANOMALY_DETECTION)));
 		}
-		if (router.hasRole(RoleType.RATE_LIMITER)) {
+		if (router.hasRole(Role.RATE_LIMITER)) {
 			this.getCapability().addPartCapability(
 					new RateLimiterCapability((RateLimiter) router
-							.getRole(RoleType.RATE_LIMITER)));
+							.getRole(Role.RATE_LIMITER)));
 		}
-		if (router.hasRole(RoleType.CLASSIFIER)) {
+		if (router.hasRole(Role.CLASSIFIER)) {
 			this.getCapability().addPartCapability(
 					new ClassifierCapability((Classifier) router
-							.getRole(RoleType.CLASSIFIER)));
+							.getRole(Role.CLASSIFIER)));
 		}
-		if (router.hasRole(RoleType.FLOW_EXPORTER)) {
+		if (router.hasRole(Role.FLOW_EXPORTER)) {
 			this.getCapability().addPartCapability(
 					new FlowExporterCapability((FlowExporter) router
-							.getRole(RoleType.FLOW_EXPORTER)));
+							.getRole(Role.FLOW_EXPORTER)));
 		}
 		setPlanSelectionStrategy(this);
 	}

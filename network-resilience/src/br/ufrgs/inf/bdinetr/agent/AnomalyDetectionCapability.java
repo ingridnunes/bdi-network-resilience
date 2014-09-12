@@ -37,12 +37,12 @@ import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
-import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Anomalous;
-import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Benign;
-import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.OverUsageCause;
-import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Restricted;
-import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.RegularUsage;
+import br.ufrgs.inf.bdinetr.domain.Role;
+import br.ufrgs.inf.bdinetr.domain.predicate.Anomalous;
+import br.ufrgs.inf.bdinetr.domain.predicate.Benign;
+import br.ufrgs.inf.bdinetr.domain.predicate.OverUsageCause;
+import br.ufrgs.inf.bdinetr.domain.predicate.RegularUsage;
+import br.ufrgs.inf.bdinetr.domain.predicate.Restricted;
 
 /**
  * @author Ingrid Nunes
@@ -64,8 +64,10 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 				belief(new OverUsageCause(outlier, link), true);
 			}
 
-			// Exists ip.(OverUsageCause(ip, link) AND not(Restricted(ip)) --> not RegularUsage(link)
-			// nExists ip.(OverUsageCause(ip, link) AND not(Restricted(ip)) --> RegularUsage(link)
+			// Exists ip.(OverUsageCause(ip, link) AND not(Restricted(ip)) -->
+			// not RegularUsage(link)
+			// nExists ip.(OverUsageCause(ip, link) AND not(Restricted(ip)) -->
+			// RegularUsage(link)
 			boolean exists = false;
 			Set<Belief<?, ?>> overUsageCauseBeliefs = getBeliefBase()
 					.getBeliefsByType(OverUsageCause.class);
@@ -73,11 +75,11 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 				PropositionalBelief<OverUsageCause> overUsageCause = (PropositionalBelief<OverUsageCause>) belief;
 				assert overUsageCause.getValue();
 
-				if (link.equals(overUsageCause.getName().getLink())) {
+				if (link.equals(overUsageCause.getName().getSecond())) {
 					PropositionalBelief<Restricted> restricted = (PropositionalBelief<Restricted>) getBeliefBase()
 							.getBelief(
 									new Restricted(overUsageCause.getName()
-											.getIp()));
+											.getFirst()));
 					if (restricted == null || !restricted.getValue()) {
 						exists = true;
 						break;
@@ -89,7 +91,7 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(RegularUsage regularUsage) {
-			this.link = regularUsage.getLink();
+			this.link = regularUsage.getConcept();
 		}
 	}
 
@@ -112,27 +114,29 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 
 	@Override
 	public void generateGoals(GoalUpdateSet goalUpdateSet) {
-		// Anomalous(ip) AND not Restricted(ip) --> goal(Restricted(ip)) AND goal(?belief(Anomalous(ip))
+		// Anomalous(ip) AND not Restricted(ip) --> goal(Restricted(ip)) AND
+		// goal(?belief(Anomalous(ip))
 		Set<Belief<?, ?>> anomalousIpBeliefs = getBeliefBase()
 				.getBeliefsByType(Anomalous.class);
 		for (Belief<?, ?> belief : anomalousIpBeliefs) {
 			PropositionalBelief<Anomalous> anomalous = (PropositionalBelief<Anomalous>) belief;
 			if (anomalous.getValue()) {
 				PropositionalBelief<Restricted> restricted = (PropositionalBelief<Restricted>) getBeliefBase()
-						.getBelief(new Restricted(anomalous.getName().getIp()));
+						.getBelief(
+								new Restricted(anomalous.getName().getConcept()));
 				if (restricted == null || !restricted.getValue()) {
 					goalUpdateSet.generateGoal(createGoal(new Restricted(
-							anomalous.getName().getIp()), true));
+							anomalous.getName().getConcept()), true));
 					goalUpdateSet.generateGoal(createGoal(new Benign(anomalous
-							.getName().getIp())));
+							.getName().getConcept())));
 				}
 			}
 		}
 	}
 
 	@Override
-	public RoleType getRole() {
-		return RoleType.ANOMALY_DETECTION;
+	public Role getRole() {
+		return Role.ANOMALY_DETECTION;
 	}
 
 	@Override

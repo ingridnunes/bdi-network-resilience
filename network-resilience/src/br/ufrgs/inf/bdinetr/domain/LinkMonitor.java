@@ -34,11 +34,11 @@ import java.util.Set;
  * 
  * @author Ingrid Nunes
  */
-public class LinkMonitor extends PReSETRole {
+public class LinkMonitor extends RouterComponent {
 
 	private final Map<Link, Boolean> overUsageLinks;
 
-	public LinkMonitor(PReSETRouter router) {
+	public LinkMonitor(Router router) {
 		super(router);
 		this.overUsageLinks = new HashMap<>();
 	}

@@ -29,6 +29,8 @@ import jade.content.ContentElement;
  */
 public class Flow implements ContentElement, Concept {
 
+	private static final long serialVersionUID = 9016750269033135868L;
+
 	private Ip dstIp;
 	private int dstPort;
 	private String protocol;

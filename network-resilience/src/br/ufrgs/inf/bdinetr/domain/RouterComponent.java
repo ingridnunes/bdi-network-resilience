@@ -27,33 +27,12 @@ import java.util.Set;
 /**
  * @author Ingrid Nunes
  */
-public abstract class PReSETRole {
+public abstract class RouterComponent {
 
-	public enum RoleType {
-
-		ANOMALY_DETECTION(1), CLASSIFIER(2), FLOW_EXPORTER(4), LINK_MONITOR(8), RATE_LIMITER(
-				16);
-
-		private final int id;
-
-		private RoleType(int id) {
-			this.id = id;
-		}
-
-		public int getId() {
-			return id;
-		}
-
-		public boolean isPresent(int roles) {
-			return (roles & id) != 0;
-		}
-
-	}
-
-	protected final PReSETRouter router;
+	protected final Router router;
 	private final Set<Observer> observers;
 
-	public PReSETRole(PReSETRouter router) {
+	public RouterComponent(Router router) {
 		this.router = router;
 		this.observers = new HashSet<>();
 	}

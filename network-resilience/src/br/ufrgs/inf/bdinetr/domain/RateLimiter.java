@@ -36,7 +36,7 @@ import java.util.Map;
  * 
  * @author Ingrid Nunes
  */
-public class RateLimiter extends PReSETRole {
+public class RateLimiter extends RouterComponent {
 
 	public class LimitLinkEvent {
 		private Link link;
@@ -54,7 +54,7 @@ public class RateLimiter extends PReSETRole {
 	private final Map<Ip, Double> rateLimitedIps;
 	private final Map<Link, Double> rateLimitedLinks;
 
-	public RateLimiter(PReSETRouter router) {
+	public RateLimiter(Router router) {
 		super(router);
 		this.rateLimitedLinks = new HashMap<>();
 		this.rateLimitedIps = new HashMap<>();

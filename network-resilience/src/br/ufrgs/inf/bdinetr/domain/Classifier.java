@@ -32,9 +32,9 @@ import java.util.Set;
  * 
  * @author Ingrid Nunes
  */
-public class Classifier extends PReSETRole {
+public class Classifier extends RouterComponent {
 
-	public Classifier(PReSETRouter router) {
+	public Classifier(Router router) {
 		super(router);
 	}
 

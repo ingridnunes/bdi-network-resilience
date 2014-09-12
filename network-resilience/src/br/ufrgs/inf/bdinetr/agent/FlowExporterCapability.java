@@ -10,7 +10,7 @@ import bdi4jade.plan.planbody.AbstractPlanBody;
 import br.ufrgs.inf.bdinetr.agent.RouterAgent.RootCapability.ExportFlows;
 import br.ufrgs.inf.bdinetr.domain.FlowExporter;
 import br.ufrgs.inf.bdinetr.domain.Ip;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
+import br.ufrgs.inf.bdinetr.domain.Role;
 
 public class FlowExporterCapability extends RouterAgentCapability {
 
@@ -47,7 +47,7 @@ public class FlowExporterCapability extends RouterAgentCapability {
 	}
 
 	@Override
-	public RoleType getRole() {
-		return RoleType.FLOW_EXPORTER;
+	public Role getRole() {
+		return Role.FLOW_EXPORTER;
 	}
 }

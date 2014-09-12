@@ -21,43 +21,23 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
-import jade.content.Concept;
-import jade.content.ContentElement;
+public enum Role {
 
-/**
- * @author Ingrid Nunes
- */
-public class Ip implements ContentElement, Concept {
+	ANOMALY_DETECTION(1), CLASSIFIER(2), FLOW_EXPORTER(4), LINK_MONITOR(8), RATE_LIMITER(
+			16);
 
-	private static final long serialVersionUID = -6397439243662425210L;
+	private final int id;
 
-	private final String address;
-
-	public Ip(String address) {
-		this.address = address;
+	private Role(int id) {
+		this.id = id;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof Ip) {
-			Ip ip = (Ip) obj;
-			return this.address.equals(ip.address);
-		}
-		return false;
+	public int getId() {
+		return id;
 	}
 
-	public String getAddress() {
-		return address;
-	}
-
-	@Override
-	public int hashCode() {
-		return address == null ? 0 : address.hashCode();
-	}
-
-	@Override
-	public String toString() {
-		return address;
+	public boolean isPresent(int roles) {
+		return (roles & id) != 0;
 	}
 
 }

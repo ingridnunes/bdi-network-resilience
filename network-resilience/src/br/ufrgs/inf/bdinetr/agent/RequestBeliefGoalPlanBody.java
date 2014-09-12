@@ -32,7 +32,7 @@ import bdi4jade.belief.Belief;
 import bdi4jade.goal.BeliefGoal;
 import bdi4jade.plan.Plan.EndState;
 import bdi4jade.plan.planbody.BeliefGoalPlanBody;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
+import br.ufrgs.inf.bdinetr.domain.Role;
 
 /**
  * @author Ingrid Nunes
@@ -64,7 +64,7 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 				// FIXME send request to specific role
 				TopicManagementHelper topicHelper = (TopicManagementHelper) myAgent
 						.getHelper(TopicManagementHelper.SERVICE_NAME);
-				for (RoleType role : RoleType.values()) {
+				for (Role role : Role.values()) {
 					msg.addReceiver(topicHelper.createTopic(role.name()));
 				}
 

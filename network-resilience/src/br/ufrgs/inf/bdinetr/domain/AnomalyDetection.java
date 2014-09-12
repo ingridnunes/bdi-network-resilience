@@ -35,9 +35,9 @@ import java.util.Set;
  * 
  * @author Ingrid Nunes
  */
-public class AnomalyDetection extends PReSETRole {
+public class AnomalyDetection extends RouterComponent {
 
-	public AnomalyDetection(PReSETRouter router) {
+	public AnomalyDetection(Router router) {
 		super(router);
 	}
 

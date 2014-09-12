@@ -34,10 +34,10 @@ import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Observer;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
-import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.AttackPrevented;
-import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.OverUsage;
-import br.ufrgs.inf.bdinetr.domain.logic.LinkProposition.RegularUsage;
+import br.ufrgs.inf.bdinetr.domain.Role;
+import br.ufrgs.inf.bdinetr.domain.predicate.AttackPrevented;
+import br.ufrgs.inf.bdinetr.domain.predicate.OverUsage;
+import br.ufrgs.inf.bdinetr.domain.predicate.RegularUsage;
 
 /**
  * @author Ingrid Nunes
@@ -70,7 +70,8 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 
 	@Override
 	public void generateGoals(GoalUpdateSet goalUpdateSet) {
-		// OverUsage(link) AND not AttackPrevented(link) --> goal(AttackPrevented(link)) AND goal(belief(?RegularUsage(link)))
+		// OverUsage(link) AND not AttackPrevented(link) -->
+		// goal(AttackPrevented(link)) AND goal(belief(?RegularUsage(link)))
 		Set<Belief<?, ?>> overUsageBeliefs = getBeliefBase().getBeliefsByType(
 				OverUsage.class);
 		for (Belief<?, ?> belief : overUsageBeliefs) {
@@ -79,20 +80,20 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 				PropositionalBelief<AttackPrevented> attackPrevented = (PropositionalBelief<AttackPrevented>) getBeliefBase()
 						.getBelief(
 								new AttackPrevented(overUsage.getName()
-										.getLink()));
+										.getConcept()));
 				if (attackPrevented == null || !attackPrevented.getValue()) {
 					goalUpdateSet.generateGoal(createGoal(new AttackPrevented(
-							overUsage.getName().getLink()), Boolean.TRUE));
+							overUsage.getName().getConcept()), Boolean.TRUE));
 					goalUpdateSet.generateGoal(createGoal(new RegularUsage(
-							overUsage.getName().getLink())));
+							overUsage.getName().getConcept())));
 				}
 			}
 		}
 	}
 
 	@Override
-	public RoleType getRole() {
-		return RoleType.LINK_MONITOR;
+	public Role getRole() {
+		return Role.LINK_MONITOR;
 	}
 
 	@Override

@@ -29,10 +29,10 @@ import org.apache.commons.logging.LogFactory;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Observer;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
-import br.ufrgs.inf.bdinetr.domain.PReSETRouter;
+import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter.LimitLinkEvent;
+import br.ufrgs.inf.bdinetr.domain.Role;
 
 /**
  * @author Ingrid Nunes
@@ -42,18 +42,18 @@ public class Network implements Observer {
 	private final Set<Link> affectedLinks;
 	private final Set<Link> links;
 	private final Log log;
-	private final Set<PReSETRouter> routers;
+	private final Set<Router> routers;
 
-	public Network(Set<PReSETRouter> routers, Set<Link> links,
+	public Network(Set<Router> routers, Set<Link> links,
 			Set<Link> affectedLinks) {
 		this.log = LogFactory.getLog(this.getClass());
 		this.routers = routers;
 		this.links = links;
 		this.affectedLinks = affectedLinks;
 
-		for (PReSETRouter router : routers) {
-			if (router.hasRole(RoleType.RATE_LIMITER)) {
-				((RateLimiter) router.getRole(RoleType.RATE_LIMITER))
+		for (Router router : routers) {
+			if (router.hasRole(Role.RATE_LIMITER)) {
+				((RateLimiter) router.getRole(Role.RATE_LIMITER))
 						.attachObserver(this);
 			}
 		}
@@ -63,7 +63,7 @@ public class Network implements Observer {
 		this.links.add(link);
 	}
 
-	public void addRouter(PReSETRouter router) {
+	public void addRouter(Router router) {
 		this.routers.add(router);
 	}
 
@@ -71,7 +71,7 @@ public class Network implements Observer {
 		return links;
 	}
 
-	public Set<PReSETRouter> getRouters() {
+	public Set<Router> getRouters() {
 		return routers;
 	}
 
@@ -82,10 +82,10 @@ public class Network implements Observer {
 	public void run() {
 		log.info("Updating link usage");
 		for (Link link : affectedLinks) {
-			for (PReSETRouter router : routers) {
-				if (router.hasRole(RoleType.LINK_MONITOR)) {
+			for (Router router : routers) {
+				if (router.hasRole(Role.LINK_MONITOR)) {
 					LinkMonitor lm = (LinkMonitor) router
-							.getRole(RoleType.LINK_MONITOR);
+							.getRole(Role.LINK_MONITOR);
 					lm.setOverUsage(link, true);
 				}
 			}
@@ -96,10 +96,10 @@ public class Network implements Observer {
 	public void update(Object o, Object arg) {
 		if (arg instanceof LimitLinkEvent) {
 			LimitLinkEvent event = (LimitLinkEvent) arg;
-			for (PReSETRouter router : routers) {
-				if (router.hasRole(RoleType.LINK_MONITOR)) {
+			for (Router router : routers) {
+				if (router.hasRole(Role.LINK_MONITOR)) {
 					LinkMonitor lm = (LinkMonitor) router
-							.getRole(RoleType.LINK_MONITOR);
+							.getRole(Role.LINK_MONITOR);
 					if (lm.isOverUsage(event.getLink())) {
 						lm.setOverUsage(event.getLink(), false);
 					}

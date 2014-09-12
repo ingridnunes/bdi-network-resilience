@@ -29,6 +29,8 @@ import jade.content.ContentElement;
  */
 public class Link implements ContentElement, Concept {
 
+	private static final long serialVersionUID = 8547078610455643585L;
+
 	private final String id;
 
 	public Link(String id) {

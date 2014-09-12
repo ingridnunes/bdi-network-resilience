@@ -42,11 +42,11 @@ import br.ufrgs.inf.bdinetr.agent.RouterAgent.RootCapability.ExportFlows;
 import br.ufrgs.inf.bdinetr.domain.Classifier;
 import br.ufrgs.inf.bdinetr.domain.Flow;
 import br.ufrgs.inf.bdinetr.domain.Ip;
-import br.ufrgs.inf.bdinetr.domain.PReSETRole.RoleType;
-import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.Threat;
-import br.ufrgs.inf.bdinetr.domain.logic.FlowPreposition.ThreatResponded;
-import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Anomalous;
-import br.ufrgs.inf.bdinetr.domain.logic.IpPreposition.Benign;
+import br.ufrgs.inf.bdinetr.domain.Role;
+import br.ufrgs.inf.bdinetr.domain.predicate.Anomalous;
+import br.ufrgs.inf.bdinetr.domain.predicate.Benign;
+import br.ufrgs.inf.bdinetr.domain.predicate.Threat;
+import br.ufrgs.inf.bdinetr.domain.predicate.ThreatResponded;
 
 /**
  * @author Ingrid Nunes
@@ -86,7 +86,8 @@ public class ClassifierCapability extends RouterAgentCapability implements
 							PropositionalBelief<Threat> threat = (PropositionalBelief<Threat>) belief;
 							assert threat.getValue();
 
-							if (ip.equals(threat.getName().getFlow().getDstIp())) {
+							if (ip.equals(threat.getName().getConcept()
+									.getDstIp())) {
 								exists = true;
 								break;
 							}
@@ -109,7 +110,7 @@ public class ClassifierCapability extends RouterAgentCapability implements
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(Benign benign) {
-			this.ip = benign.getIp();
+			this.ip = benign.getConcept();
 		}
 	}
 
@@ -131,7 +132,8 @@ public class ClassifierCapability extends RouterAgentCapability implements
 			public boolean isContextApplicable(bdi4jade.goal.Goal goal) {
 				BeliefPresentGoal<Benign> bg = (BeliefPresentGoal<Benign>) goal;
 				PropositionalBelief<Anomalous> anomalous = (PropositionalBelief<Anomalous>) getBeliefBase()
-						.getBelief(new Anomalous(bg.getBeliefName().getIp()));
+						.getBelief(
+								new Anomalous(bg.getBeliefName().getConcept()));
 				return (anomalous != null && anomalous.getValue());
 			};
 		};
@@ -146,14 +148,14 @@ public class ClassifierCapability extends RouterAgentCapability implements
 			PropositionalBelief<Threat> threat = (PropositionalBelief<Threat>) belief;
 			if (threat.getValue()) {
 				goalUpdateSet.generateGoal(createGoal(new ThreatResponded(
-						threat.getName().getFlow()), true));
+						threat.getName().getConcept()), true));
 			}
 		}
 	}
 
 	@Override
-	public RoleType getRole() {
-		return RoleType.CLASSIFIER;
+	public Role getRole() {
+		return Role.CLASSIFIER;
 	}
 
 	@Override

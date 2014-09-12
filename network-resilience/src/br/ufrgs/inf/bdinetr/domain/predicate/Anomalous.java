@@ -6,6 +6,10 @@ public class Anomalous extends UnaryPredicate<Ip> {
 
 	private static final long serialVersionUID = -5495943806870470494L;
 
+	public Anomalous() {
+
+	}
+
 	public Anomalous(Ip ip) {
 		super(ip);
 	}

@@ -3,11 +3,18 @@ package br.ufrgs.inf.bdinetr.domain.predicate;
 import jade.content.Concept;
 import jade.content.ContentElement;
 
-public abstract class UnaryPredicate<T> implements ContentElement, Concept {
+import java.io.Serializable;
+
+public abstract class UnaryPredicate<T> implements Serializable, Concept,
+		ContentElement {
 
 	private static final long serialVersionUID = -1506723105103606268L;
 
 	protected T concept;
+
+	public UnaryPredicate() {
+
+	}
 
 	public UnaryPredicate(T concept) {
 		this.concept = concept;
@@ -34,6 +41,10 @@ public abstract class UnaryPredicate<T> implements ContentElement, Concept {
 				+ ((this.getClass() == null) ? 0 : this.getClass().hashCode());
 		result = prime * result + ((concept == null) ? 0 : concept.hashCode());
 		return result;
+	}
+
+	public void setConcept(T concept) {
+		this.concept = concept;
 	}
 
 	@Override

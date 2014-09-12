@@ -6,6 +6,10 @@ public class ThreatResponded extends UnaryPredicate<Flow> {
 
 	private static final long serialVersionUID = -5495943806870470494L;
 
+	public ThreatResponded() {
+
+	}
+
 	public ThreatResponded(Flow flow) {
 		super(flow);
 	}

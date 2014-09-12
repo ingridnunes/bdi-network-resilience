@@ -21,6 +21,8 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import jade.content.ContentElement;
+import jade.content.lang.sl.SLCodec;
 import jade.core.messaging.TopicManagementHelper;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -28,11 +30,15 @@ import jade.lang.acl.MessageTemplate;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import bdi4jade.belief.Belief;
 import bdi4jade.goal.BeliefGoal;
 import bdi4jade.plan.Plan.EndState;
 import bdi4jade.plan.planbody.BeliefGoalPlanBody;
 import br.ufrgs.inf.bdinetr.domain.Role;
+import br.ufrgs.inf.bdinetr.domain.ontology.BDINetROntology;
 
 /**
  * @author Ingrid Nunes
@@ -41,11 +47,14 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 
 	public static final int MSG_TIME_OUT = 100;
 	public static final int ANSWER_TIME_OUT = 1000;
+	public static final String LANGUAGE = new SLCodec().getName();
 
 	private enum State {
 		Resquesting, ReceivingResponses, Selecting, AchievingGoal, Ended;
 	}
 
+	private static final Log log = LogFactory
+			.getLog(RequestBeliefGoalPlanBody.class);
 	private static final long serialVersionUID = -1833810388789537049L;
 
 	private MessageTemplate mt;
@@ -59,7 +68,9 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 			switch (state) {
 			case Resquesting:
 				ACLMessage msg = new ACLMessage(ACLMessage.CFP);
-				msg.setContentObject(getGoal());
+				msg.setLanguage(LANGUAGE);
+				msg.setOntology(BDINetROntology.ONTOLOGY_NAME);
+				myAgent.getContentManager().fillContent(msg, getGoal());
 
 				// FIXME send request to specific role
 				TopicManagementHelper topicHelper = (TopicManagementHelper) myAgent
@@ -81,14 +92,13 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 			case ReceivingResponses:
 				ACLMessage reply = myAgent.receive(mt);
 				if (reply != null) {
-					Object content = reply.getContentObject();
-					if (content instanceof Boolean) {
-						log.info("Agent " + reply.getSender() + "'s reply: "
-								+ content);
-						if ((Boolean) content) {
-							positiveAnswers.add(reply);
-							log.info("Answers: " + positiveAnswers);
-						}
+					if (ACLMessage.PROPOSE == reply.getPerformative()) {
+						log.info("Agent " + reply.getSender()
+								+ "sent a proposal");
+						positiveAnswers.add(reply);
+					} else {
+						log.info("Agent " + reply.getSender()
+								+ "refused the request");
 					}
 				} else {
 					block(MSG_TIME_OUT);
@@ -114,7 +124,6 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 							reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
 							reply.setReplyWith("cfp"
 									+ System.currentTimeMillis());
-							reply.setContentObject(getGoal());
 							this.mt = MessageTemplate.and(MessageTemplate
 									.MatchConversationId(reply
 											.getConversationId()),
@@ -135,8 +144,9 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 			case AchievingGoal:
 				reply = myAgent.receive(mt);
 				if (reply != null) {
-					Object content = reply.getContentObject();
-					if (content instanceof Belief) {
+					if (ACLMessage.INFORM == reply.getPerformative()) {
+						ContentElement content = myAgent.getContentManager()
+								.extractContent(reply);
 						getBeliefBase().addBelief((Belief<?, ?>) content);
 						assert ((BeliefGoal<?>) getGoal())
 								.isAchieved(getBeliefBase());

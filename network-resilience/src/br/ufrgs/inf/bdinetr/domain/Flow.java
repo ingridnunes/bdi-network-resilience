@@ -24,10 +24,12 @@ package br.ufrgs.inf.bdinetr.domain;
 import jade.content.Concept;
 import jade.content.ContentElement;
 
+import java.io.Serializable;
+
 /**
  * @author Ingrid Nunes
  */
-public class Flow implements ContentElement, Concept {
+public class Flow implements Serializable, Concept, ContentElement {
 
 	private static final long serialVersionUID = 9016750269033135868L;
 
@@ -36,6 +38,10 @@ public class Flow implements ContentElement, Concept {
 	private String protocol;
 	private Ip srcIp;
 	private int srcPort;
+
+	public Flow() {
+
+	}
 
 	public Flow(Ip srcIp, int srcPort, Ip dstIp, int dstPort, String protocol) {
 		this.srcIp = srcIp;

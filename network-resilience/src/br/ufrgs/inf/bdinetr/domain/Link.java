@@ -24,14 +24,20 @@ package br.ufrgs.inf.bdinetr.domain;
 import jade.content.Concept;
 import jade.content.ContentElement;
 
+import java.io.Serializable;
+
 /**
  * @author Ingrid Nunes
  */
-public class Link implements ContentElement, Concept {
+public class Link implements Serializable, Concept, ContentElement {
 
 	private static final long serialVersionUID = 8547078610455643585L;
 
-	private final String id;
+	private String id;
+
+	public Link() {
+
+	}
 
 	public Link(String id) {
 		this.id = id;
@@ -53,6 +59,10 @@ public class Link implements ContentElement, Concept {
 	@Override
 	public int hashCode() {
 		return id == null ? 0 : id.hashCode();
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	@Override

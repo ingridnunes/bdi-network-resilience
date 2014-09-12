@@ -24,14 +24,20 @@ package br.ufrgs.inf.bdinetr.domain;
 import jade.content.Concept;
 import jade.content.ContentElement;
 
+import java.io.Serializable;
+
 /**
  * @author Ingrid Nunes
  */
-public class Ip implements ContentElement, Concept {
+public class Ip implements Serializable, Concept, ContentElement {
 
 	private static final long serialVersionUID = -6397439243662425210L;
 
-	private final String address;
+	private String address;
+
+	public Ip() {
+
+	}
 
 	public Ip(String address) {
 		this.address = address;
@@ -53,6 +59,10 @@ public class Ip implements ContentElement, Concept {
 	@Override
 	public int hashCode() {
 		return address == null ? 0 : address.hashCode();
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 	@Override

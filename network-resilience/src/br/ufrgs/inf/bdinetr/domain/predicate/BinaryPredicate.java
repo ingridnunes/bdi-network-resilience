@@ -3,12 +3,19 @@ package br.ufrgs.inf.bdinetr.domain.predicate;
 import jade.content.Concept;
 import jade.content.ContentElement;
 
-public abstract class BinaryPredicate<T, U> implements ContentElement, Concept {
+import java.io.Serializable;
+
+public abstract class BinaryPredicate<T, U> implements Serializable, Concept,
+		ContentElement {
 
 	private static final long serialVersionUID = -1506723105103606268L;
 
 	protected T first;
 	protected U second;
+
+	public BinaryPredicate() {
+
+	}
 
 	public BinaryPredicate(T first, U second) {
 		this.first = first;
@@ -41,6 +48,14 @@ public abstract class BinaryPredicate<T, U> implements ContentElement, Concept {
 		result = prime * result + ((first == null) ? 0 : first.hashCode());
 		result = prime * result + ((second == null) ? 0 : second.hashCode());
 		return result;
+	}
+
+	public void setFirst(T first) {
+		this.first = first;
+	}
+
+	public void setSecond(U second) {
+		this.second = second;
 	}
 
 	@Override

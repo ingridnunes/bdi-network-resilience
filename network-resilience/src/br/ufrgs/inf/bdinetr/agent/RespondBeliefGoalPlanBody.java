@@ -21,8 +21,13 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import jade.content.ContentElement;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
 import bdi4jade.belief.Belief;
@@ -41,6 +46,8 @@ public class RespondBeliefGoalPlanBody extends AbstractPlanBody {
 		SendingResponse, ReceivingReply, AchievingBeliefGoal, Ended;
 	}
 
+	private static final Log log = LogFactory
+			.getLog(RespondBeliefGoalPlanBody.class);
 	private static final long serialVersionUID = -4231465068344668721L;
 
 	private ACLMessage beliefGoalMsg;
@@ -56,15 +63,20 @@ public class RespondBeliefGoalPlanBody extends AbstractPlanBody {
 			switch (state) {
 			case SendingResponse:
 				outcomingMsg = beliefGoalMsg.createReply();
-				Object content = beliefGoalMsg.getContentObject();
+				log.info(beliefGoalMsg);
+				ContentElement content = myAgent.getContentManager()
+						.extractContent(beliefGoalMsg);
 				if (content instanceof BeliefGoal) {
 					beliefGoal = (BeliefGoal<?>) content;
 					Boolean canAchieve = getCapability().canAchieve(beliefGoal);
+					outcomingMsg
+							.setPerformative(canAchieve ? ACLMessage.PROPOSE
+									: ACLMessage.REFUSE);
 					outcomingMsg.setContentObject(canAchieve);
 					log.info("Agent " + myAgent + " can achieve " + content
 							+ ": " + canAchieve);
 				} else {
-					outcomingMsg.setContentObject(Boolean.FALSE);
+					outcomingMsg.setPerformative(ACLMessage.REFUSE);
 				}
 				outcomingMsg.setReplyWith("cfp" + System.currentTimeMillis());
 				this.myAgent.send(outcomingMsg);
@@ -95,14 +107,14 @@ public class RespondBeliefGoalPlanBody extends AbstractPlanBody {
 				GoalEvent event = getGoalEvent();
 				if (event != null) {
 					outcomingMsg = incomingMsg.createReply();
-					outcomingMsg.setPerformative(ACLMessage.INFORM);
 					if (GoalStatus.ACHIEVED.equals(event.getStatus())) {
+						outcomingMsg.setPerformative(ACLMessage.INFORM);
 						Belief<?, ?> belief = (getBeliefBase()
 								.getBelief(beliefGoal.getBeliefName()));
-						outcomingMsg.setContentObject((Belief<?, ?>) belief
-								.clone());
+						myAgent.getContentManager().fillContent(outcomingMsg,
+								(Belief<?, ?>) belief.clone());
 					} else {
-						outcomingMsg.setContentObject(null);
+						outcomingMsg.setPerformative(ACLMessage.FAILURE);
 					}
 					this.myAgent.send(outcomingMsg);
 					this.state = State.Ended;

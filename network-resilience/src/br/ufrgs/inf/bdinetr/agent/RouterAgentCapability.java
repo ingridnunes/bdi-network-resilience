@@ -21,6 +21,9 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import bdi4jade.belief.TransientPropositionalBelief;
 import bdi4jade.core.Capability;
 import bdi4jade.goal.BeliefPresentGoal;
@@ -34,8 +37,9 @@ import br.ufrgs.inf.bdinetr.domain.Role;
 public abstract class RouterAgentCapability extends Capability {
 
 	public static final String ROLE_BELIEF = "role";
-
 	private static final long serialVersionUID = -3491170777812144486L;
+
+	protected final Log log = LogFactory.getLog(getClass());
 
 	protected void belief(Object proposition, Boolean value) {
 		if (value == null) {
@@ -49,13 +53,19 @@ public abstract class RouterAgentCapability extends Capability {
 	}
 
 	protected Goal createGoal(Object proposition) {
-		log.debug("goal(?" + proposition + "))");
-		return new BeliefPresentGoal(proposition);
+		Goal goal = new BeliefPresentGoal(proposition);
+		if (!getMyAgent().hasGoal(goal)) {
+			log.debug("goal(?" + proposition + "))");
+		}
+		return goal;
 	}
 
 	protected Goal createGoal(Object proposition, Boolean value) {
-		log.debug("goal(" + (value ? "" : "not ") + proposition + "))");
-		return new PropositionalBeliefValueGoal(proposition, value);
+		Goal goal = new PropositionalBeliefValueGoal(proposition, value);
+		if (!getMyAgent().hasGoal(goal)) {
+			log.debug("goal(" + (value ? "" : "not ") + proposition + "))");
+		}
+		return goal;
 	}
 
 	public abstract Role getRole();

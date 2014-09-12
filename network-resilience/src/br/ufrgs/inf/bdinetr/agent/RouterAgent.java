@@ -21,6 +21,7 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import jade.content.lang.sl.SLCodec;
 import jade.core.AID;
 import jade.core.messaging.TopicManagementHelper;
 import jade.lang.acl.ACLMessage;
@@ -30,6 +31,9 @@ import jade.lang.acl.MessageTemplate.MatchExpression;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
@@ -48,9 +52,10 @@ import br.ufrgs.inf.bdinetr.domain.Classifier;
 import br.ufrgs.inf.bdinetr.domain.FlowExporter;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
-import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 import br.ufrgs.inf.bdinetr.domain.Role;
+import br.ufrgs.inf.bdinetr.domain.Router;
+import br.ufrgs.inf.bdinetr.domain.ontology.BDINetROntology;
 
 /**
  * @author Ingrid Nunes
@@ -78,7 +83,6 @@ public class RouterAgent extends SingleCapabilityAgent implements
 		}
 
 		public static final String ROUTER_BELIEF = "router";
-
 		private static final long serialVersionUID = -2156730094556459899L;
 
 		@bdi4jade.annotation.Plan
@@ -99,8 +103,7 @@ public class RouterAgent extends SingleCapabilityAgent implements
 						@Override
 						public boolean match(ACLMessage msg) {
 							try {
-								return (msg.getContentObject() != null && msg
-										.getContentObject() instanceof BeliefGoal<?>);
+								return (ACLMessage.CFP == msg.getPerformative());
 							} catch (Exception exc) {
 								log.error(exc);
 								return false;
@@ -111,10 +114,12 @@ public class RouterAgent extends SingleCapabilityAgent implements
 
 	}
 
+	private static final Log log = LogFactory.getLog(RouterAgent.class);
 	private static final long serialVersionUID = 6534875498063013722L;
 
 	public RouterAgent(Router router) {
 		super(new RootCapability(router));
+
 		if (router.hasRole(Role.LINK_MONITOR)) {
 			this.getCapability().addPartCapability(
 					new LinkMonitorCapability((LinkMonitor) router
@@ -159,6 +164,9 @@ public class RouterAgent extends SingleCapabilityAgent implements
 				}
 			}
 		}
+
+		getContentManager().registerLanguage(new SLCodec());
+		getContentManager().registerOntology(BDINetROntology.getInstance());
 	}
 
 	@Override

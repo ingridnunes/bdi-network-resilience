@@ -23,7 +23,12 @@ package br.ufrgs.inf.bdinetr.agent;
 
 import jade.content.ContentElement;
 import jade.content.lang.sl.SLCodec;
-import jade.core.messaging.TopicManagementHelper;
+import jade.core.AID;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPANames.ContentLanguage;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
@@ -61,6 +66,8 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 	private State state;
 	private long requestTime;
 	private Set<ACLMessage> positiveAnswers;
+	private Set<AID> receivers;
+	private int answers;
 
 	@Override
 	protected void execute() {
@@ -73,11 +80,15 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 				myAgent.getContentManager().fillContent(msg, getGoal());
 
 				// FIXME send request to specific role
-				TopicManagementHelper topicHelper = (TopicManagementHelper) myAgent
-						.getHelper(TopicManagementHelper.SERVICE_NAME);
+				receivers = new HashSet<>();
 				for (Role role : Role.values()) {
-					msg.addReceiver(topicHelper.createTopic(role.name()));
+					for (DFAgentDescription agentDesc : getReceivers(role)) {
+						if (receivers.add(agentDesc.getName())) {
+							msg.addReceiver(agentDesc.getName());
+						}
+					}
 				}
+				log.info(receivers);
 
 				this.requestTime = System.currentTimeMillis();
 				msg.setConversationId("cin" + requestTime);
@@ -86,24 +97,27 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 				this.mt = MessageTemplate.and(MessageTemplate
 						.MatchConversationId(msg.getConversationId()),
 						MessageTemplate.MatchInReplyTo(msg.getReplyWith()));
+				this.answers = 0;
 				this.positiveAnswers = new HashSet<>();
 				this.state = State.ReceivingResponses;
 				break;
 			case ReceivingResponses:
 				ACLMessage reply = myAgent.receive(mt);
 				if (reply != null) {
+					this.answers++;
 					if (ACLMessage.PROPOSE == reply.getPerformative()) {
 						log.info("Agent " + reply.getSender()
-								+ "sent a proposal");
+								+ " sent a proposal");
 						positiveAnswers.add(reply);
 					} else {
 						log.info("Agent " + reply.getSender()
-								+ "refused the request");
+								+ " refused the request");
 					}
 				} else {
 					block(MSG_TIME_OUT);
 				}
-				if ((System.currentTimeMillis() - requestTime) > ANSWER_TIME_OUT) {
+				if (answers >= receivers.size()
+						|| (System.currentTimeMillis() - requestTime) >= ANSWER_TIME_OUT) {
 					this.state = State.Selecting;
 				} else {
 					log.info("Waiting for more answers...");
@@ -172,6 +186,25 @@ public class RequestBeliefGoalPlanBody extends BeliefGoalPlanBody {
 	@Override
 	public void onStart() {
 		this.state = State.Resquesting;
+	}
+
+	private DFAgentDescription[] getReceivers(Role role) {
+		DFAgentDescription dfd = new DFAgentDescription();
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType(role.name());
+		sd.addLanguages(ContentLanguage.FIPA_SL);
+		sd.addOntologies(BDINetROntology.ONTOLOGY_NAME);
+		dfd.addServices(sd);
+
+		try {
+			return DFService.search(myAgent, dfd);
+		} catch (FIPAException fe) {
+			log.error(myAgent.getLocalName()
+					+ " search with DF unsucceeded. Reason: " + fe.getMessage());
+			log.error(fe);
+			fe.printStackTrace();
+			return new DFAgentDescription[0];
+		}
 	}
 
 }

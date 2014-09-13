@@ -22,8 +22,11 @@
 package br.ufrgs.inf.bdinetr.agent;
 
 import jade.content.lang.sl.SLCodec;
-import jade.core.AID;
-import jade.core.messaging.TopicManagementHelper;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPANames.ContentLanguage;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.MessageTemplate.MatchExpression;
@@ -150,19 +153,28 @@ public class RouterAgent extends SingleCapabilityAgent implements
 
 	@Override
 	protected void init() {
+		DFAgentDescription dfd = new DFAgentDescription();
+		dfd.setName(getAID());
 		for (Capability capability : getAllCapabilities()) {
 			if (capability instanceof RouterAgentCapability) {
-				try {
-					TopicManagementHelper topicHelper = (TopicManagementHelper) getHelper(TopicManagementHelper.SERVICE_NAME);
-					AID roleTopic = topicHelper
-							.createTopic(((RouterAgentCapability) capability)
-									.getRole().name());
-					topicHelper.register(roleTopic);
-				} catch (Exception exc) {
-					log.error(exc);
-					exc.printStackTrace();
-				}
+				ServiceDescription sd = new ServiceDescription();
+				sd.setType(((RouterAgentCapability) capability).getRole()
+						.name());
+				sd.setName(getLocalName());
+				sd.addLanguages(ContentLanguage.FIPA_SL);
+				sd.addOntologies(BDINetROntology.ONTOLOGY_NAME);
+				dfd.addServices(sd);
 			}
+		}
+
+		try {
+			DFService.register(this, dfd);
+		} catch (FIPAException fe) {
+			log.error(getLocalName()
+					+ " registration with DF unsucceeded. Reason: "
+					+ fe.getMessage());
+			log.error(fe);
+			fe.printStackTrace();
 		}
 
 		getContentManager().registerLanguage(new SLCodec());

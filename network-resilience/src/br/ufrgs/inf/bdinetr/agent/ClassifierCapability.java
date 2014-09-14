@@ -28,7 +28,6 @@ import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.Predicate;
-import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.event.GoalEvent;
 import bdi4jade.goal.BeliefGoal;
@@ -202,14 +201,6 @@ public class ClassifierCapability extends RouterAgentCapability implements
 			if (benignBelief.getValue() == null || benignBelief.getValue()) {
 				removeBelief(benignBelief);
 			}
-		}
-	}
-
-	@Override
-	public void setCapability(Capability capability) {
-		if (!this.equals(capability)) {
-			throw new IllegalArgumentException(
-					"This reasoning strategy is already associated with another capability.");
 		}
 	}
 

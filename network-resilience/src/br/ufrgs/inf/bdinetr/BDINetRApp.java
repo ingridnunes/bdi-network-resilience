@@ -79,7 +79,7 @@ public class BDINetRApp {
 		routers.add(new Router(new Ip("RouterAD"), Role.ANOMALY_DETECTION
 				.getId()));
 		routers.add(new Router(new Ip("RouterCL"), Role.CLASSIFIER.getId()));
-		routers.add(new Router(new Ip("RouterEX"), Role.FLOW_EXPORTER.getId()));
+		routers.add(new Router(new Ip("RouterFE"), Role.FLOW_EXPORTER.getId()));
 
 		Link affectedLink = new Link("AFFECTED_LINK");
 

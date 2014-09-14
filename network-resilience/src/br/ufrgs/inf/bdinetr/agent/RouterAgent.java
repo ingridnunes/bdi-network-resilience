@@ -114,6 +114,7 @@ public class RouterAgent extends SingleCapabilityAgent implements
 					new FlowExporterCapability((FlowExporter) router
 							.getRole(Role.FLOW_EXPORTER)));
 		}
+
 		setPlanSelectionStrategy(this);
 	}
 

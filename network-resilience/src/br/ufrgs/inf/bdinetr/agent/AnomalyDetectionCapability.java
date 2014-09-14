@@ -30,7 +30,6 @@ import bdi4jade.belief.Belief;
 import bdi4jade.belief.BeliefSet;
 import bdi4jade.belief.Predicate;
 import bdi4jade.belief.TransientBeliefSet;
-import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.event.GoalEvent;
 import bdi4jade.event.GoalListener;
@@ -44,6 +43,7 @@ import bdi4jade.plan.Plan;
 import bdi4jade.plan.Plan.EndState;
 import bdi4jade.plan.planbody.BeliefGoalPlanBody;
 import bdi4jade.reasoning.BeliefRevisionStrategy;
+import bdi4jade.reasoning.DeliberationFunction;
 import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.agent.belief.AnomalousUsageBelief;
 import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
@@ -274,6 +274,11 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 	}
 
 	@Override
+	protected Class<?> getLowPriorityGoal() {
+		return Benign.class;
+	}
+
+	@Override
 	public Role getRole() {
 		return Role.ANOMALY_DETECTION;
 	}
@@ -305,14 +310,6 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 							.getValue())) {
 				removeBelief(anomalousUsage);
 			}
-		}
-	}
-
-	@Override
-	public void setCapability(Capability capability) {
-		if (!this.equals(capability)) {
-			throw new IllegalArgumentException(
-					"This reasoning strategy is already associated with another capability.");
 		}
 	}
 

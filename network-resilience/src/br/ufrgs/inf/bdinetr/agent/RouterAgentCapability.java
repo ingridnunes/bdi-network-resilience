@@ -21,6 +21,9 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -29,22 +32,31 @@ import bdi4jade.belief.Predicate;
 import bdi4jade.belief.TransientPredicate;
 import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
+import bdi4jade.core.GoalUpdateSet.GoalDescription;
 import bdi4jade.event.GoalListener;
+import bdi4jade.goal.BeliefGoal;
 import bdi4jade.goal.BeliefNotPresentGoal;
 import bdi4jade.goal.BeliefPresentGoal;
 import bdi4jade.goal.Goal;
+import bdi4jade.goal.GoalStatus;
 import bdi4jade.goal.PredicateGoal;
+import bdi4jade.reasoning.DeliberationFunction;
 import br.ufrgs.inf.bdinetr.domain.Role;
 
 /**
  * @author Ingrid Nunes
  */
-public abstract class RouterAgentCapability extends Capability {
+public abstract class RouterAgentCapability extends Capability implements
+		DeliberationFunction {
 
 	public static final String ROLE_BELIEF = "role";
 	private static final long serialVersionUID = -3491170777812144486L;
 
 	protected final Log log = LogFactory.getLog(getClass());
+
+	public RouterAgentCapability() {
+		setDeliberationFunction(this);
+	}
 
 	protected void addBelief(Belief<?, ?> belief) {
 		getBeliefBase().addOrUpdateBelief(belief);
@@ -62,6 +74,36 @@ public abstract class RouterAgentCapability extends Capability {
 			log.debug("belief(" + (value ? "" : "not ") + proposition + ")");
 			return predicate;
 		}
+	}
+
+	@Override
+	public Set<Goal> filter(Set<GoalDescription> goals) {
+		Set<Goal> priorityGoals = new HashSet<>();
+		Set<Goal> nonpriorityGoals = new HashSet<>();
+
+		if (getLowPriorityGoal() == null) {
+			for (GoalDescription goalDescription : goals) {
+				priorityGoals.add(goalDescription.getGoal());
+			}
+		} else {
+			for (GoalDescription goalDescription : goals) {
+				if (isNonPriorityGoal(goalDescription)) {
+					nonpriorityGoals.add(goalDescription.getGoal());
+				} else {
+					priorityGoals.add(goalDescription.getGoal());
+				}
+			}
+		}
+
+		if (!priorityGoals.isEmpty()) {
+			return priorityGoals;
+		} else {
+			return nonpriorityGoals;
+		}
+	}
+
+	protected Class<?> getLowPriorityGoal() {
+		return null;
 	}
 
 	public abstract Role getRole();
@@ -102,9 +144,28 @@ public abstract class RouterAgentCapability extends Capability {
 		}
 	}
 
+	private boolean isNonPriorityGoal(GoalDescription goalDesc) {
+		if (GoalStatus.WAITING.equals(goalDesc.getStatus())) {
+			if (goalDesc.getGoal() instanceof BeliefGoal) {
+				BeliefGoal<?> bg = (BeliefGoal<?>) goalDesc.getGoal();
+				return bg.getBeliefName().getClass()
+						.equals(getLowPriorityGoal());
+			}
+		}
+		return false;
+	}
+
 	protected void removeBelief(Belief<?, ?> belief) {
 		getBeliefBase().removeBelief(belief.getName());
 		log.debug("belief removed: " + belief);
+	}
+
+	@Override
+	public void setCapability(Capability capability) {
+		if (!this.equals(capability)) {
+			throw new IllegalArgumentException(
+					"This reasoning strategy is already associated with another capability.");
+		}
 	}
 
 }

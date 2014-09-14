@@ -76,7 +76,7 @@ public class GoalResponsePlan extends DefaultPlan {
 			if (event == null)
 				return;
 
-			log.info(goal + " finished: " + event.getStatus());
+			log.debug(goal + " finished: " + event.getStatus());
 			ACLMessage reply = acceptProposalMsg.createReply();
 			if (GoalStatus.ACHIEVED.equals(event.getStatus())) {
 				reply.setPerformative(ACLMessage.INFORM);
@@ -146,6 +146,7 @@ public class GoalResponsePlan extends DefaultPlan {
 						myAgent.getContentManager()
 								.fillContent(reply, response);
 						this.myAgent.send(reply);
+						log.debug("Sending update (belief removed): " + goal);
 					} catch (Exception exc) {
 						log.error(exc);
 						exc.printStackTrace();
@@ -170,6 +171,7 @@ public class GoalResponsePlan extends DefaultPlan {
 								.fillContent(reply, response);
 						this.myAgent.send(reply);
 						this.lastValue = currentValue;
+						log.debug("Goal: " + goal);
 					} catch (Exception exc) {
 						log.error(exc);
 						exc.printStackTrace();
@@ -186,13 +188,15 @@ public class GoalResponsePlan extends DefaultPlan {
 		private void receiveReply() {
 			ACLMessage reply = myAgent.receive(mt);
 			if (reply != null) {
+				log.debug("Goal: " + goal);
 				if (ACLMessage.ACCEPT_PROPOSAL == reply.getPerformative()) {
 					dispatchSubgoalAndListen(goal);
 					this.acceptProposalMsg = reply;
+					log.debug("Proposal accepted");
 					this.state = State.AchievingBeliefGoal;
 				} else {
 					setEndState(EndState.SUCCESSFUL);
-					log.info("Proposal rejected");
+					log.debug("Proposal rejected");
 					this.state = State.Ended;
 					return;
 				}
@@ -200,7 +204,7 @@ public class GoalResponsePlan extends DefaultPlan {
 				long timeElapsed = System.currentTimeMillis() - responseTime;
 				if (timeElapsed >= ANSWER_TIME_OUT) {
 					setEndState(EndState.SUCCESSFUL);
-					log.info("No answer received... ending plan.");
+					log.debug("No answer received... ending plan.");
 				} else {
 					block(ANSWER_TIME_OUT);
 				}
@@ -208,9 +212,9 @@ public class GoalResponsePlan extends DefaultPlan {
 		}
 
 		private void sendResponse() throws Exception {
+			log.debug(beliefGoalMsg.getContent());
 			this.responseTime = System.currentTimeMillis();
 
-			log.info(beliefGoalMsg.getContent());
 			this.request = (GoalRequest<?>) myAgent.getContentManager()
 					.extractContent(beliefGoalMsg);
 			if (request.getBeliefGoal()) {
@@ -245,8 +249,8 @@ public class GoalResponsePlan extends DefaultPlan {
 
 			myAgent.send(reply);
 
-			log.info("Agent " + myAgent.getLocalName() + " can achieve " + goal
-					+ ": " + canAchieve);
+			log.debug("Agent " + myAgent.getLocalName() + " can achieve "
+					+ goal + ": " + canAchieve);
 
 			this.mt = MessageTemplate.and(MessageTemplate
 					.MatchConversationId(reply.getConversationId()),
@@ -266,7 +270,7 @@ public class GoalResponsePlan extends DefaultPlan {
 	}
 
 	private static final Log log = LogFactory.getLog(GoalResponsePlan.class);
-	public static final int ANSWER_TIME_OUT = 15000;
+	public static final int ANSWER_TIME_OUT = 60000;
 
 	public GoalResponsePlan() {
 		super(new MessageTemplate(new MatchExpression() {

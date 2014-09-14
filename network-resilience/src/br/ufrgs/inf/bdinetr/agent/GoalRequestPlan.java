@@ -77,7 +77,7 @@ public class GoalRequestPlan extends DefaultPlan {
 			ACLMessage reply = myAgent.receive(mt);
 			if (reply != null) {
 				if (ACLMessage.INFORM == reply.getPerformative()) {
-					log.info("Goal " + getGoal() + " achieved.");
+					log.debug("Goal " + getGoal() + " achieved.");
 					if (getGoal() instanceof BeliefGoal) {
 						GoalResponse<?> response = (GoalResponse<?>) myAgent
 								.getContentManager().extractContent(reply);
@@ -162,13 +162,14 @@ public class GoalRequestPlan extends DefaultPlan {
 		private void receiveResponse() {
 			ACLMessage reply = myAgent.receive(mt);
 			if (reply != null) {
+				log.debug("Goal: " + getGoal());
 				this.answers++;
 				if (ACLMessage.PROPOSE == reply.getPerformative()) {
-					log.info("Agent " + reply.getSender().getLocalName()
+					log.debug("Agent " + reply.getSender().getLocalName()
 							+ " sent a proposal.");
 					positiveAnswers.add(reply);
 				} else {
-					log.info("Agent " + reply.getSender().getLocalName()
+					log.debug("Agent " + reply.getSender().getLocalName()
 							+ " refused the request.");
 				}
 			} else {
@@ -183,6 +184,7 @@ public class GoalRequestPlan extends DefaultPlan {
 		}
 
 		private void request() throws Exception {
+			log.debug("Goal: " + getGoal());
 			this.requestTime = System.currentTimeMillis();
 
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
@@ -197,7 +199,7 @@ public class GoalRequestPlan extends DefaultPlan {
 					msg.addReceiver(agentDesc.getName());
 				}
 			}
-			log.info("Number of requests: " + receivers.size());
+			log.debug("Number of requests: " + receivers.size());
 
 			GoalRequest request = new GoalRequest();
 			if (getGoal() instanceof BeliefPresentGoal) {
@@ -226,8 +228,9 @@ public class GoalRequestPlan extends DefaultPlan {
 		}
 
 		private void selectProposal() throws Exception {
+			log.debug("Goal: " + getGoal());
 			if (positiveAnswers.isEmpty()) {
-				log.info("No positive answers");
+				log.debug("No positive answers");
 				setEndState(EndState.FAILED);
 				this.state = State.Ended;
 				return;
@@ -252,11 +255,11 @@ public class GoalRequestPlan extends DefaultPlan {
 								MessageTemplate.MatchConversationId(reply
 										.getConversationId()), MessageTemplate
 										.MatchInReplyTo(reply.getReplyWith()));
-						log.info("Accepted proposal of agent: "
+						log.debug("Accepted proposal of agent: "
 								+ answer.getSender().getLocalName());
 					} else {
 						reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
-						log.info("Rejected proposal of agent: "
+						log.debug("Rejected proposal of agent: "
 								+ answer.getSender().getLocalName());
 					}
 					this.myAgent.send(reply);
@@ -293,12 +296,12 @@ public class GoalRequestPlan extends DefaultPlan {
 					assert capability.getBeliefBase().getBelief(
 							response.getPredicate()) == predicate;
 					if (response.getValue() != null) {
-						log.info(predicate);
 						predicate.setValue(response.getValue());
+						log.debug("Predicate updated: " + predicate);
 						((BDIAgent) myAgent).restart();
 					} else {
-						log.info("Predicate removed: " + predicate);
 						// capability.getBeliefBase().removeBelief(predicate.getName());
+						log.debug("Predicate removed: " + predicate);
 						this.done = true;
 					}
 				}
@@ -333,7 +336,7 @@ public class GoalRequestPlan extends DefaultPlan {
 		AchievingGoal, Ended, ReceivingResponses, Resquesting, Selecting;
 	}
 
-	public static final int ANSWER_TIME_OUT = 15000;
+	public static final int ANSWER_TIME_OUT = 60000;
 	private static final Log log = LogFactory.getLog(GoalRequestPlan.class);
 	public static final int MSG_TIME_OUT = 10000;
 	private Map<GoalTemplate, RequestDescription> requestDescriptions;

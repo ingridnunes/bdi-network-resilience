@@ -68,8 +68,8 @@ public class GoalResponsePlan extends DefaultPlan {
 		private Capability partCapability;
 		private Predicate<?> predicate;
 		private GoalRequest<?> request;
-		private State state;
 		private long responseTime;
+		private State state;
 
 		private void achieveBeliefGoal() throws Exception {
 			GoalEvent event = getGoalEvent();
@@ -237,25 +237,35 @@ public class GoalResponsePlan extends DefaultPlan {
 				}
 			}
 
-			ACLMessage reply = beliefGoalMsg.createReply();
-			reply.setPerformative(canAchieve ? ACLMessage.PROPOSE
-					: ACLMessage.REFUSE);
-			reply.setReplyWith("per" + responseTime);
+			if (canAchieve) {
+				ACLMessage reply = beliefGoalMsg.createReply();
+				reply.setPerformative(ACLMessage.PROPOSE);
+				reply.setReplyWith("per" + responseTime);
+				// TODO set proposal cost
+				Random r = new Random(System.currentTimeMillis());
+				GoalProposal proposal = new GoalProposal(r.nextDouble());
+				myAgent.getContentManager().fillContent(reply, proposal);
+				myAgent.send(reply);
 
-			// TODO set proposal cost
-			Random r = new Random(System.currentTimeMillis());
-			GoalProposal proposal = new GoalProposal(r.nextDouble());
-			myAgent.getContentManager().fillContent(reply, proposal);
+				log.debug("Agent " + myAgent.getLocalName() + " CAN achieve "
+						+ goal);
 
-			myAgent.send(reply);
+				this.mt = MessageTemplate.and(MessageTemplate
+						.MatchConversationId(reply.getConversationId()),
+						MessageTemplate.MatchInReplyTo(reply.getReplyWith()));
+				this.state = State.ReceivingReply;
+			} else {
+				ACLMessage reply = beliefGoalMsg.createReply();
+				reply.setPerformative(ACLMessage.REFUSE);
+				reply.setReplyWith("per" + responseTime);
+				myAgent.send(reply);
 
-			log.debug("Agent " + myAgent.getLocalName() + " can achieve "
-					+ goal + ": " + canAchieve);
+				log.debug("Agent " + myAgent.getLocalName()
+						+ " CANNOT achieve " + goal);
 
-			this.mt = MessageTemplate.and(MessageTemplate
-					.MatchConversationId(reply.getConversationId()),
-					MessageTemplate.MatchInReplyTo(reply.getReplyWith()));
-			this.state = State.ReceivingReply;
+				setEndState(EndState.SUCCESSFUL);
+				this.state = State.Ended;
+			}
 		}
 
 		@Parameter(direction = Direction.IN)
@@ -269,8 +279,8 @@ public class GoalResponsePlan extends DefaultPlan {
 		AchievingBeliefGoal, Ended, ReceivingReply, SendingResponse, SendingUpdates;
 	}
 
+	public static final int ANSWER_TIME_OUT = 5000;
 	private static final Log log = LogFactory.getLog(GoalResponsePlan.class);
-	public static final int ANSWER_TIME_OUT = 60000;
 
 	public GoalResponsePlan() {
 		super(new MessageTemplate(new MatchExpression() {

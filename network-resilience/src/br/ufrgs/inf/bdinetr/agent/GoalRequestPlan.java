@@ -42,6 +42,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import bdi4jade.belief.Predicate;
+import bdi4jade.belief.TransientPredicate;
 import bdi4jade.core.BDIAgent;
 import bdi4jade.core.Capability;
 import bdi4jade.goal.BeliefGoal;
@@ -82,14 +83,9 @@ public class GoalRequestPlan extends DefaultPlan {
 						GoalResponse<?> response = (GoalResponse<?>) myAgent
 								.getContentManager().extractContent(reply);
 
-						Predicate<?> predicate = requestDescription.capability
-								.belief(response.getPredicate(),
-										response.getValue());
-
-						BeliefGoal goal = (BeliefGoal<?>) getGoal();
-						goal.setOutputBelief(predicate);
-						assert goal.isAchieved(requestDescription.capability
-								.getBeliefBase());
+						Predicate<?> predicate = new TransientPredicate(
+								response.getPredicate(), response.getValue());
+						((BeliefGoal) getGoal()).setOutputBelief(predicate);
 
 						if (requestDescription.subscribe) {
 							myAgent.addBehaviour(new ReceiveUpdatesBehavior(
@@ -177,9 +173,11 @@ public class GoalRequestPlan extends DefaultPlan {
 			}
 			long timeElapsed = System.currentTimeMillis() - requestTime;
 			if (answers >= requests || timeElapsed >= ANSWER_TIME_OUT) {
+				log.debug("Received answers: " + answers + " (of " + requests
+						+ ")");
 				this.state = State.Selecting;
 			} else {
-				log.info("Waiting for more answers...");
+				log.debug("Waiting for more answers...");
 			}
 		}
 
@@ -336,9 +334,9 @@ public class GoalRequestPlan extends DefaultPlan {
 		AchievingGoal, Ended, ReceivingResponses, Resquesting, Selecting;
 	}
 
-	public static final int ANSWER_TIME_OUT = 60000;
+	public static final int ANSWER_TIME_OUT = 5000;
 	private static final Log log = LogFactory.getLog(GoalRequestPlan.class);
-	public static final int MSG_TIME_OUT = 10000;
+	public static final int MSG_TIME_OUT = 1000;
 	private Map<GoalTemplate, RequestDescription> requestDescriptions;
 
 	public GoalRequestPlan() {

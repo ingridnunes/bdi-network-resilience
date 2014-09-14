@@ -60,18 +60,18 @@ public abstract class RouterAgentCapability extends Capability implements
 
 	protected void addBelief(Belief<?, ?> belief) {
 		getBeliefBase().addOrUpdateBelief(belief);
-		log.debug("belief added or updated: " + belief);
+		log.info("belief added or updated: " + belief);
 	}
 
 	protected Predicate<?> belief(Object proposition, Boolean value) {
 		if (value == null) {
 			getBeliefBase().removeBelief(proposition);
-			log.debug("belief(~" + proposition + "))");
+			log.info("belief(~" + proposition + "))");
 			return null;
 		} else {
 			Predicate<?> predicate = new TransientPredicate(proposition, value);
 			getBeliefBase().addOrUpdateBelief(predicate);
-			log.debug("belief(" + (value ? "" : "not ") + proposition + ")");
+			log.info("belief(" + (value ? "" : "not ") + proposition + ")");
 			return predicate;
 		}
 	}
@@ -127,9 +127,9 @@ public abstract class RouterAgentCapability extends Capability implements
 		}
 		if (!getMyAgent().hasGoal(goal)) {
 			if (value == null) {
-				log.debug("goal(~" + proposition + "))");
+				log.info("goal(~" + proposition + "))");
 			} else {
-				log.debug("goal(" + (value ? "" : "not ") + proposition + "))");
+				log.info("goal(" + (value ? "" : "not ") + proposition + "))");
 			}
 			goalUpdateSet.generateGoal(goal, this, listener);
 		}
@@ -139,7 +139,7 @@ public abstract class RouterAgentCapability extends Capability implements
 			GoalListener listener) {
 		Goal goal = new BeliefPresentGoal(proposition);
 		if (!getMyAgent().hasGoal(goal)) {
-			log.debug("goal(?" + proposition + "))");
+			log.info("goal(?" + proposition + "))");
 			goalUpdateSet.generateGoal(goal, this, listener);
 		}
 	}
@@ -157,7 +157,7 @@ public abstract class RouterAgentCapability extends Capability implements
 
 	protected void removeBelief(Belief<?, ?> belief) {
 		getBeliefBase().removeBelief(belief.getName());
-		log.debug("belief removed: " + belief);
+		log.info("belief removed: " + belief);
 	}
 
 	@Override

@@ -74,11 +74,11 @@ public class BDINetRApp {
 		Set<Router> routers = new HashSet<>();
 		routers.add(new Router(new Ip("RouterLM"), Role.LINK_MONITOR.getId()));
 		routers.add(new Router(new Ip("RouterRL"), Role.RATE_LIMITER.getId()));
-		routers.add(new Router(new Ip("RouterRL+FE"), Role.RATE_LIMITER.getId()
-				| Role.FLOW_EXPORTER.getId()));
-		routers.add(new Router(new Ip("RouterAD"), Role.ANOMALY_DETECTION
-				.getId()));
+		routers.add(new Router(new Ip("RouterRL+FE"), Role.RATE_LIMITER.getId() | Role.FLOW_EXPORTER.getId()));
+		routers.add(new Router(new Ip("RouterAD"), Role.ANOMALY_DETECTION.getId()));
+		routers.add(new Router(new Ip("RouterAD+RL"), Role.ANOMALY_DETECTION.getId() | Role.RATE_LIMITER.getId()));
 		routers.add(new Router(new Ip("RouterCL"), Role.CLASSIFIER.getId()));
+		routers.add(new Router(new Ip("RouterCL+FE"), Role.CLASSIFIER.getId() | Role.FLOW_EXPORTER.getId()));
 		routers.add(new Router(new Ip("RouterFE"), Role.FLOW_EXPORTER.getId()));
 
 		Link affectedLink = new Link("AFFECTED_LINK");

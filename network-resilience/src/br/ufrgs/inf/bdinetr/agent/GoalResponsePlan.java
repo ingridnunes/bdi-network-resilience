@@ -55,7 +55,8 @@ import br.ufrgs.inf.bdinetr.domain.message.GoalResponse;
  */
 public class GoalResponsePlan extends DefaultPlan {
 
-	public class PlanBody extends AbstractPlanBody implements BeliefListener {
+	public class GoalResponsePlanBody extends AbstractPlanBody implements
+			BeliefListener {
 
 		private static final long serialVersionUID = -4231465068344668721L;
 
@@ -68,6 +69,7 @@ public class GoalResponsePlan extends DefaultPlan {
 		private Predicate<?> predicate;
 		private GoalRequest<?> request;
 		private State state;
+		private long responseTime;
 
 		private void achieveBeliefGoal() throws Exception {
 			GoalEvent event = getGoalEvent();
@@ -156,7 +158,7 @@ public class GoalResponsePlan extends DefaultPlan {
 				}
 			} else {
 				Boolean currentValue = predicate.getValue();
-				if (currentValue != lastValue) {
+				if (!currentValue.equals(lastValue)) {
 					try {
 						ACLMessage reply = acceptProposalMsg.createReply();
 						reply.setPerformative(ACLMessage.INFORM);
@@ -167,6 +169,7 @@ public class GoalResponsePlan extends DefaultPlan {
 						myAgent.getContentManager()
 								.fillContent(reply, response);
 						this.myAgent.send(reply);
+						this.lastValue = currentValue;
 					} catch (Exception exc) {
 						log.error(exc);
 						exc.printStackTrace();
@@ -194,12 +197,20 @@ public class GoalResponsePlan extends DefaultPlan {
 					return;
 				}
 			} else {
-				block();
+				long timeElapsed = System.currentTimeMillis() - responseTime;
+				if (timeElapsed >= ANSWER_TIME_OUT) {
+					setEndState(EndState.SUCCESSFUL);
+					log.info("No answer received... ending plan.");
+				} else {
+					block(ANSWER_TIME_OUT);
+				}
 			}
 		}
 
 		private void sendResponse() throws Exception {
-			log.info(beliefGoalMsg);
+			this.responseTime = System.currentTimeMillis();
+
+			log.info(beliefGoalMsg.getContent());
 			this.request = (GoalRequest<?>) myAgent.getContentManager()
 					.extractContent(beliefGoalMsg);
 			if (request.getBeliefGoal()) {
@@ -225,7 +236,7 @@ public class GoalResponsePlan extends DefaultPlan {
 			ACLMessage reply = beliefGoalMsg.createReply();
 			reply.setPerformative(canAchieve ? ACLMessage.PROPOSE
 					: ACLMessage.REFUSE);
-			reply.setReplyWith("per" + System.currentTimeMillis());
+			reply.setReplyWith("per" + responseTime);
 
 			// TODO set proposal cost
 			Random r = new Random(System.currentTimeMillis());
@@ -234,8 +245,8 @@ public class GoalResponsePlan extends DefaultPlan {
 
 			myAgent.send(reply);
 
-			log.info("Agent " + myAgent + " can achieve " + goal + ": "
-					+ canAchieve);
+			log.info("Agent " + myAgent.getLocalName() + " can achieve " + goal
+					+ ": " + canAchieve);
 
 			this.mt = MessageTemplate.and(MessageTemplate
 					.MatchConversationId(reply.getConversationId()),
@@ -255,6 +266,7 @@ public class GoalResponsePlan extends DefaultPlan {
 	}
 
 	private static final Log log = LogFactory.getLog(GoalResponsePlan.class);
+	public static final int ANSWER_TIME_OUT = 15000;
 
 	public GoalResponsePlan() {
 		super(new MessageTemplate(new MatchExpression() {
@@ -271,7 +283,7 @@ public class GoalResponsePlan extends DefaultPlan {
 					return false;
 				}
 			}
-		}), PlanBody.class);
+		}), GoalResponsePlanBody.class);
 	}
 
 }

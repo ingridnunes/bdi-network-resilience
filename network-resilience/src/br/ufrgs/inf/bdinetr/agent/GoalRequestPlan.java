@@ -62,7 +62,7 @@ import br.ufrgs.inf.bdinetr.domain.ontology.BDINetROntology;
  */
 public class GoalRequestPlan extends DefaultPlan {
 
-	public class PlanBody extends AbstractPlanBody {
+	public class GoalRequestPlanBody extends AbstractPlanBody {
 		private static final long serialVersionUID = -1833810388789537049L;
 
 		private int answers;
@@ -164,10 +164,11 @@ public class GoalRequestPlan extends DefaultPlan {
 			if (reply != null) {
 				this.answers++;
 				if (ACLMessage.PROPOSE == reply.getPerformative()) {
-					log.info("Agent " + reply.getSender() + " sent a proposal.");
+					log.info("Agent " + reply.getSender().getLocalName()
+							+ " sent a proposal.");
 					positiveAnswers.add(reply);
 				} else {
-					log.info("Agent " + reply.getSender()
+					log.info("Agent " + reply.getSender().getLocalName()
 							+ " refused the request.");
 				}
 			} else {
@@ -196,7 +197,7 @@ public class GoalRequestPlan extends DefaultPlan {
 					msg.addReceiver(agentDesc.getName());
 				}
 			}
-			log.info(receivers);
+			log.info("Number of requests: " + receivers.size());
 
 			GoalRequest request = new GoalRequest();
 			if (getGoal() instanceof BeliefPresentGoal) {
@@ -252,11 +253,11 @@ public class GoalRequestPlan extends DefaultPlan {
 										.getConversationId()), MessageTemplate
 										.MatchInReplyTo(reply.getReplyWith()));
 						log.info("Accepted proposal of agent: "
-								+ answer.getSender());
+								+ answer.getSender().getLocalName());
 					} else {
 						reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
 						log.info("Rejected proposal of agent: "
-								+ answer.getSender());
+								+ answer.getSender().getLocalName());
 					}
 					this.myAgent.send(reply);
 				}
@@ -272,6 +273,7 @@ public class GoalRequestPlan extends DefaultPlan {
 
 		private Capability capability;
 		private Predicate<?> predicate;
+		private boolean done;
 
 		public ReceiveUpdatesBehavior(Agent agent, MessageTemplate mt,
 				Capability capability, Predicate<?> predicate) {
@@ -279,6 +281,7 @@ public class GoalRequestPlan extends DefaultPlan {
 					ReceiveUpdatesBehavior.class.getSimpleName());
 			this.capability = capability;
 			this.predicate = predicate;
+			this.done = false;
 		}
 
 		@Override
@@ -296,7 +299,7 @@ public class GoalRequestPlan extends DefaultPlan {
 					} else {
 						log.info("Predicate removed: " + predicate);
 						// capability.getBeliefBase().removeBelief(predicate.getName());
-						myAgent.removeBehaviour(this);
+						this.done = true;
 					}
 				}
 			} catch (Exception exc) {
@@ -304,6 +307,11 @@ public class GoalRequestPlan extends DefaultPlan {
 				exc.printStackTrace();
 				myAgent.removeBehaviour(this);
 			}
+		}
+
+		@Override
+		public boolean done() {
+			return done;
 		}
 
 	}
@@ -325,13 +333,13 @@ public class GoalRequestPlan extends DefaultPlan {
 		AchievingGoal, Ended, ReceivingResponses, Resquesting, Selecting;
 	}
 
-	public static final int ANSWER_TIME_OUT = 30000;
+	public static final int ANSWER_TIME_OUT = 15000;
 	private static final Log log = LogFactory.getLog(GoalRequestPlan.class);
 	public static final int MSG_TIME_OUT = 10000;
 	private Map<GoalTemplate, RequestDescription> requestDescriptions;
 
 	public GoalRequestPlan() {
-		super(PlanBody.class);
+		super(GoalRequestPlanBody.class);
 		this.requestDescriptions = new HashMap<>();
 	}
 

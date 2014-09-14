@@ -19,23 +19,39 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.predicate;
+package br.ufrgs.inf.bdinetr.agent.belief;
 
-import br.ufrgs.inf.bdinetr.domain.Flow;
+import java.util.Set;
 
-/**
- * @author Ingrid Nunes
- */
-public class Threat extends UnaryPredicate<Flow> {
+import bdi4jade.belief.Belief;
+import bdi4jade.belief.DerivedPredicate;
+import bdi4jade.belief.Predicate;
+import br.ufrgs.inf.bdinetr.domain.predicate.Benign;
+import br.ufrgs.inf.bdinetr.domain.predicate.Threat;
 
-	private static final long serialVersionUID = -5495943806870470494L;
+public class BenignBelief extends DerivedPredicate<Benign> {
 
-	public Threat() {
+	private static final long serialVersionUID = 6923761036847007160L;
 
+	public BenignBelief(Benign benign) {
+		super(benign);
 	}
 
-	public Threat(Flow flow) {
-		super(flow);
+	@Override
+	protected Boolean evaluate() {
+		boolean exists = false;
+		Set<Belief<?, ?>> threatBeliefs = getMainBeliefBase().getBeliefsByType(
+				Threat.class);
+		for (Belief<?, ?> belief : threatBeliefs) {
+			Predicate<Threat> threat = (Predicate<Threat>) belief;
+			assert threat.getValue();
+			if (getName().getConcept().equals(
+					threat.getName().getConcept().getDstIp())) {
+				exists = true;
+				break;
+			}
+		}
+		return !exists;
 	}
 
 }

@@ -19,23 +19,37 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.predicate;
+package br.ufrgs.inf.bdinetr.domain.message;
 
-import br.ufrgs.inf.bdinetr.domain.Flow;
+import jade.content.Concept;
+import jade.content.ContentElement;
+
+import java.io.Serializable;
 
 /**
  * @author Ingrid Nunes
  */
-public class Threat extends UnaryPredicate<Flow> {
+public class GoalProposal implements Serializable, Concept,
+		ContentElement {
 
-	private static final long serialVersionUID = -5495943806870470494L;
+	private static final long serialVersionUID = 8629276766179263660L;
 
-	public Threat() {
+	private Double cost;
 
+	public GoalProposal() {
+		this(0.0);
 	}
 
-	public Threat(Flow flow) {
-		super(flow);
+	public GoalProposal(Double cost) {
+		this.cost = cost;
+	}
+
+	public Double getCost() {
+		return cost;
+	}
+
+	public void setCost(Double cost) {
+		this.cost = cost;
 	}
 
 }

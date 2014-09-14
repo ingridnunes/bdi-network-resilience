@@ -32,7 +32,7 @@ public class FlowExporter extends RouterComponent {
 		super(router);
 	}
 
-	public void turnFlowExporterOn() {
+	public void turnFlowExporterOn(Ip ip) {
 
 	}
 

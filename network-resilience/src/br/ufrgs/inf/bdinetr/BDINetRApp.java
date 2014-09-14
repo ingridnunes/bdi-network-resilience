@@ -56,8 +56,8 @@ import org.apache.log4j.PropertyConfigurator;
 import br.ufrgs.inf.bdinetr.agent.RouterAgent;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
-import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.Role;
+import br.ufrgs.inf.bdinetr.domain.Router;
 
 /**
  * @author Ingrid Nunes
@@ -72,13 +72,11 @@ public class BDINetRApp {
 				.getResource("log4j.properties"));
 
 		Set<Router> routers = new HashSet<>();
-		routers.add(new Router(new Ip("RouterLM"), Role.LINK_MONITOR
-				.getId()));
-		routers.add(new Router(new Ip("RouterRLCA"), Role.RATE_LIMITER
-				.getId()
-				| Role.FLOW_EXPORTER.getId()
-				| Role.CLASSIFIER.getId()
-				| Role.ANOMALY_DETECTION.getId()));
+		routers.add(new Router(new Ip("RouterLM"), Role.LINK_MONITOR.getId()));
+		routers.add(new Router(new Ip("RouterRL1"), Role.RATE_LIMITER.getId()));
+		routers.add(new Router(new Ip("RouterRL2"), Role.RATE_LIMITER.getId()));
+		routers.add(new Router(new Ip("RouterADFC"), Role.CLASSIFIER.getId()
+				| Role.FLOW_EXPORTER.getId() | Role.ANOMALY_DETECTION.getId()));
 
 		Link affectedLink = new Link("AFFECTED_LINK");
 

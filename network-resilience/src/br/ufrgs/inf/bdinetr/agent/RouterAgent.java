@@ -27,9 +27,6 @@ import jade.domain.FIPAException;
 import jade.domain.FIPANames.ContentLanguage;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
-import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
-import jade.lang.acl.MessageTemplate.MatchExpression;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -38,22 +35,17 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import bdi4jade.annotation.Parameter;
-import bdi4jade.annotation.Parameter.Direction;
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.TransientBelief;
 import bdi4jade.core.BDIAgent;
 import bdi4jade.core.Capability;
 import bdi4jade.core.SingleCapabilityAgent;
-import bdi4jade.goal.BeliefGoal;
 import bdi4jade.goal.Goal;
-import bdi4jade.plan.DefaultPlan;
 import bdi4jade.plan.Plan;
 import bdi4jade.reasoning.AgentPlanSelectionStrategy;
 import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
 import br.ufrgs.inf.bdinetr.domain.Classifier;
 import br.ufrgs.inf.bdinetr.domain.FlowExporter;
-import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 import br.ufrgs.inf.bdinetr.domain.Role;
@@ -68,51 +60,20 @@ public class RouterAgent extends SingleCapabilityAgent implements
 
 	public static class RootCapability extends Capability {
 
-		public static class ExportFlows implements Goal {
-
-			private static final long serialVersionUID = -7114413010093171144L;
-
-			private Ip ip;
-
-			public ExportFlows(Ip ip) {
-				this.ip = ip;
-			}
-
-			@Parameter(direction = Direction.IN)
-			public Ip getIp() {
-				return ip;
-			}
-
-		}
-
 		public static final String ROUTER_BELIEF = "router";
 		private static final long serialVersionUID = -2156730094556459899L;
 
 		@bdi4jade.annotation.Plan
-		private final Plan requestBeliefGoalPlan;
+		private final GoalRequestPlan beliefGoalRequestPlan;
 		@bdi4jade.annotation.Plan
-		private final Plan respondBeliefGoalPlan;
+		private final GoalResponsePlan beliefGoalResponsePlan;
 		@bdi4jade.annotation.Belief
 		private final Belief<String, Router> router;
 
 		public RootCapability(Router router) {
 			this.router = new TransientBelief<>(ROUTER_BELIEF, router);
-			this.requestBeliefGoalPlan = new DefaultPlan(BeliefGoal.class,
-					RequestBeliefGoalPlanBody.class);
-			this.respondBeliefGoalPlan = new DefaultPlan(new MessageTemplate(
-					new MatchExpression() {
-						private static final long serialVersionUID = -3581014512390059387L;
-
-						@Override
-						public boolean match(ACLMessage msg) {
-							try {
-								return (ACLMessage.CFP == msg.getPerformative());
-							} catch (Exception exc) {
-								log.error(exc);
-								return false;
-							}
-						}
-					}), RespondBeliefGoalPlanBody.class);
+			this.beliefGoalRequestPlan = new GoalRequestPlan();
+			this.beliefGoalResponsePlan = new GoalResponsePlan();
 		}
 
 	}
@@ -123,15 +84,19 @@ public class RouterAgent extends SingleCapabilityAgent implements
 	public RouterAgent(Router router) {
 		super(new RootCapability(router));
 
+		RootCapability root = (RootCapability) getCapability();
+
 		if (router.hasRole(Role.LINK_MONITOR)) {
 			this.getCapability().addPartCapability(
 					new LinkMonitorCapability((LinkMonitor) router
-							.getRole(Role.LINK_MONITOR)));
+							.getRole(Role.LINK_MONITOR),
+							root.beliefGoalRequestPlan));
 		}
 		if (router.hasRole(Role.ANOMALY_DETECTION)) {
 			this.getCapability().addPartCapability(
 					new AnomalyDetectionCapability((AnomalyDetection) router
-							.getRole(Role.ANOMALY_DETECTION)));
+							.getRole(Role.ANOMALY_DETECTION),
+							root.beliefGoalRequestPlan));
 		}
 		if (router.hasRole(Role.RATE_LIMITER)) {
 			this.getCapability().addPartCapability(
@@ -141,7 +106,8 @@ public class RouterAgent extends SingleCapabilityAgent implements
 		if (router.hasRole(Role.CLASSIFIER)) {
 			this.getCapability().addPartCapability(
 					new ClassifierCapability((Classifier) router
-							.getRole(Role.CLASSIFIER)));
+							.getRole(Role.CLASSIFIER),
+							root.beliefGoalRequestPlan));
 		}
 		if (router.hasRole(Role.FLOW_EXPORTER)) {
 			this.getCapability().addPartCapability(

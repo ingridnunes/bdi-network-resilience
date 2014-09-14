@@ -19,64 +19,66 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.predicate;
+package br.ufrgs.inf.bdinetr.domain.message;
 
 import jade.content.Concept;
 import jade.content.ContentElement;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author Ingrid Nunes
  */
-public abstract class UnaryPredicate<T> implements Serializable, Concept,
+public class GoalResponse<K> implements Serializable, Concept,
 		ContentElement {
 
-	private static final long serialVersionUID = -1506723105103606268L;
+	private static final long serialVersionUID = -260033218376521461L;
 
-	protected T concept;
+	private K predicate;
+	private Date timestamp;
+	private Boolean value;
 
-	public UnaryPredicate() {
+	public GoalResponse() {
 
 	}
 
-	public UnaryPredicate(T concept) {
-		this.concept = concept;
+	public GoalResponse(K predicate) {
+		this(predicate, null);
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj != null && this.getClass().equals(obj.getClass())) {
-			UnaryPredicate<?> p = (UnaryPredicate<?>) obj;
-			return this.concept.equals(p.concept);
-		}
-		return false;
+	public GoalResponse(K predicate, Boolean value) {
+		this(predicate, value, null);
 	}
 
-	public T getConcept() {
-		return concept;
+	public GoalResponse(K predicate, Boolean value, Date timestamp) {
+		this.predicate = predicate;
+		this.value = value;
+		this.timestamp = timestamp;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((this.getClass() == null) ? 0 : this.getClass().hashCode());
-		result = prime * result + ((concept == null) ? 0 : concept.hashCode());
-		return result;
+	public K getPredicate() {
+		return predicate;
 	}
 
-	public void setConcept(T concept) {
-		this.concept = concept;
+	public Date getTimestamp() {
+		return timestamp;
 	}
 
-	@Override
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append(this.getClass().getSimpleName());
-		sb.append("(").append(concept).append(")");
-		return sb.toString();
+	public Boolean getValue() {
+		return value;
+	}
+
+	public void setPredicate(K predicate) {
+		this.predicate = predicate;
+	}
+
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public void setValue(Boolean value) {
+		this.value = value;
 	}
 
 }

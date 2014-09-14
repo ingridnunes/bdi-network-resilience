@@ -24,11 +24,16 @@ package br.ufrgs.inf.bdinetr.agent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import bdi4jade.belief.TransientPropositionalBelief;
+import bdi4jade.belief.Belief;
+import bdi4jade.belief.Predicate;
+import bdi4jade.belief.TransientPredicate;
 import bdi4jade.core.Capability;
+import bdi4jade.core.GoalUpdateSet;
+import bdi4jade.event.GoalListener;
+import bdi4jade.goal.BeliefNotPresentGoal;
 import bdi4jade.goal.BeliefPresentGoal;
 import bdi4jade.goal.Goal;
-import bdi4jade.goal.PropositionalBeliefValueGoal;
+import bdi4jade.goal.PredicateGoal;
 import br.ufrgs.inf.bdinetr.domain.Role;
 
 /**
@@ -41,41 +46,65 @@ public abstract class RouterAgentCapability extends Capability {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	protected void belief(Object proposition, Boolean value) {
+	protected void addBelief(Belief<?, ?> belief) {
+		getBeliefBase().addOrUpdateBelief(belief);
+		log.debug("belief added or updated: " + belief);
+	}
+
+	protected Predicate<?> belief(Object proposition, Boolean value) {
 		if (value == null) {
-			getWholeCapability().getBeliefBase().removeBelief(proposition);
+			getBeliefBase().removeBelief(proposition);
 			log.debug("belief(~" + proposition + "))");
+			return null;
 		} else {
-			getWholeCapability().getBeliefBase().addOrUpdateBelief(
-					new TransientPropositionalBelief(proposition, value));
+			Predicate<?> predicate = new TransientPredicate(proposition, value);
+			getBeliefBase().addOrUpdateBelief(predicate);
 			log.debug("belief(" + (value ? "" : "not ") + proposition + ")");
+			return predicate;
 		}
-	}
-
-	protected Goal createGoal(Object proposition) {
-		Goal goal = new BeliefPresentGoal(proposition);
-		if (!getMyAgent().hasGoal(goal)) {
-			log.debug("goal(?" + proposition + "))");
-		}
-		return goal;
-	}
-
-	protected Goal createGoal(Object proposition, Boolean value) {
-		Goal goal = new PropositionalBeliefValueGoal(proposition, value);
-		if (!getMyAgent().hasGoal(goal)) {
-			log.debug("goal(" + (value ? "" : "not ") + proposition + "))");
-		}
-		return goal;
 	}
 
 	public abstract Role getRole();
 
-	protected void goal(Object proposition) {
-		getMyAgent().addGoal(this, createGoal(proposition));
+	protected void goal(GoalUpdateSet goalUpdateSet, Object proposition) {
+		goal(goalUpdateSet, proposition, (GoalListener) null);
 	}
 
-	protected void goal(Object proposition, Boolean value) {
-		getMyAgent().addGoal(this, createGoal(proposition, value));
+	protected void goal(GoalUpdateSet goalUpdateSet, Object proposition,
+			Boolean value) {
+		goal(goalUpdateSet, proposition, value, null);
+	}
+
+	protected void goal(GoalUpdateSet goalUpdateSet, Object proposition,
+			Boolean value, GoalListener listener) {
+		Goal goal;
+		if (value == null) {
+			goal = new BeliefNotPresentGoal(proposition);
+		} else {
+			goal = new PredicateGoal(proposition, value);
+		}
+		if (!getMyAgent().hasGoal(goal)) {
+			if (value == null) {
+				log.debug("goal(~" + proposition + "))");
+			} else {
+				log.debug("goal(" + (value ? "" : "not ") + proposition + "))");
+			}
+			goalUpdateSet.generateGoal(goal, this, listener);
+		}
+	}
+
+	protected void goal(GoalUpdateSet goalUpdateSet, Object proposition,
+			GoalListener listener) {
+		Goal goal = new BeliefPresentGoal(proposition);
+		if (!getMyAgent().hasGoal(goal)) {
+			log.debug("goal(?" + proposition + "))");
+			goalUpdateSet.generateGoal(goal, this, listener);
+		}
+	}
+
+	protected void removeBelief(Belief<?, ?> belief) {
+		getBeliefBase().removeBelief(belief.getName());
+		log.debug("belief removed: " + belief);
 	}
 
 }

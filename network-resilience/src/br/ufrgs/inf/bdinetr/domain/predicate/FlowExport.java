@@ -21,21 +21,35 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain.predicate;
 
-import br.ufrgs.inf.bdinetr.domain.Flow;
+import bdi4jade.annotation.Parameter;
+import bdi4jade.annotation.Parameter.Direction;
+import bdi4jade.goal.Goal;
+import br.ufrgs.inf.bdinetr.domain.Ip;
 
 /**
  * @author Ingrid Nunes
  */
-public class Threat extends UnaryPredicate<Flow> {
+public class FlowExport implements Goal {
 
-	private static final long serialVersionUID = -5495943806870470494L;
+	private static final long serialVersionUID = -7114413010093171144L;
 
-	public Threat() {
+	private Ip ip;
 
+	public FlowExport() {
+		
 	}
 
-	public Threat(Flow flow) {
-		super(flow);
+	public FlowExport(Ip ip) {
+		this.ip = ip;
+	}
+
+	@Parameter(direction = Direction.IN)
+	public Ip getIp() {
+		return ip;
+	}
+
+	public void setIp(Ip ip) {
+		this.ip = ip;
 	}
 
 }

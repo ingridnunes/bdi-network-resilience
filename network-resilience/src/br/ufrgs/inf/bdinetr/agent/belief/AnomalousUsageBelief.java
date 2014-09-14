@@ -19,23 +19,28 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.predicate;
+package br.ufrgs.inf.bdinetr.agent.belief;
 
-import br.ufrgs.inf.bdinetr.domain.Flow;
+import bdi4jade.belief.BeliefSet;
+import bdi4jade.belief.DerivedPredicate;
+import br.ufrgs.inf.bdinetr.domain.Ip;
+import br.ufrgs.inf.bdinetr.domain.predicate.AnomalousUsage;
+import br.ufrgs.inf.bdinetr.domain.predicate.OverUsageCause;
 
-/**
- * @author Ingrid Nunes
- */
-public class Threat extends UnaryPredicate<Flow> {
+public class AnomalousUsageBelief extends DerivedPredicate<AnomalousUsage> {
 
-	private static final long serialVersionUID = -5495943806870470494L;
+	private static final long serialVersionUID = 6923761036847007160L;
 
-	public Threat() {
-
+	public AnomalousUsageBelief(AnomalousUsage anomalousUsage) {
+		super(anomalousUsage);
 	}
 
-	public Threat(Flow flow) {
-		super(flow);
+	@Override
+	protected Boolean evaluate() {
+		BeliefSet<OverUsageCause, Ip> overUsageCauseBeliefs = (BeliefSet<OverUsageCause, Ip>) getMainBeliefBase()
+				.getBelief(new OverUsageCause(getName().getConcept()));
+		return overUsageCauseBeliefs == null ? false : !overUsageCauseBeliefs
+				.getValue().isEmpty();
 	}
 
 }

@@ -25,23 +25,27 @@ import jade.content.onto.BasicOntology;
 import jade.content.onto.Ontology;
 import jade.content.onto.OntologyException;
 import jade.content.schema.ConceptSchema;
+import jade.content.schema.ObjectSchema;
+import jade.content.schema.PredicateSchema;
 import jade.content.schema.PrimitiveSchema;
 import br.ufrgs.inf.bdinetr.domain.Flow;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
+import br.ufrgs.inf.bdinetr.domain.message.GoalProposal;
+import br.ufrgs.inf.bdinetr.domain.message.GoalRequest;
+import br.ufrgs.inf.bdinetr.domain.message.GoalResponse;
 import br.ufrgs.inf.bdinetr.domain.predicate.Anomalous;
+import br.ufrgs.inf.bdinetr.domain.predicate.AnomalousUsage;
 import br.ufrgs.inf.bdinetr.domain.predicate.AttackPrevented;
 import br.ufrgs.inf.bdinetr.domain.predicate.Benign;
 import br.ufrgs.inf.bdinetr.domain.predicate.BinaryPredicate;
+import br.ufrgs.inf.bdinetr.domain.predicate.FlowExport;
 import br.ufrgs.inf.bdinetr.domain.predicate.FlowRateLimited;
-import br.ufrgs.inf.bdinetr.domain.predicate.FullyOperational;
+import br.ufrgs.inf.bdinetr.domain.predicate.IpRateLimited;
+import br.ufrgs.inf.bdinetr.domain.predicate.LinkRateLimited;
 import br.ufrgs.inf.bdinetr.domain.predicate.OverUsage;
-import br.ufrgs.inf.bdinetr.domain.predicate.OverUsageCause;
-import br.ufrgs.inf.bdinetr.domain.predicate.RateLimited;
-import br.ufrgs.inf.bdinetr.domain.predicate.RegularUsage;
 import br.ufrgs.inf.bdinetr.domain.predicate.Restricted;
 import br.ufrgs.inf.bdinetr.domain.predicate.Threat;
-import br.ufrgs.inf.bdinetr.domain.predicate.ThreatResponded;
 import br.ufrgs.inf.bdinetr.domain.predicate.UnaryPredicate;
 
 /**
@@ -70,10 +74,12 @@ public class BDINetROntology extends Ontology implements BDINetRVocabulary {
 	}
 
 	public BDINetROntology() {
-		super(ONTOLOGY_NAME, new Ontology[] { BDI4JADEOntology
-				.getInstance() }, new Introspector());
+		super(ONTOLOGY_NAME, new Ontology[] { BasicOntology.getInstance() }, new Introspector());
 
 		try {
+			add(new ConceptSchema(OBJECT_CONCEPT), Object.class);
+			add(new PredicateSchema(OBJECT_PREDICATE), Object.class);
+			
 			add(new ConceptSchema(FLOW), Flow.class);
 			add(new ConceptSchema(IP), Ip.class);
 			add(new ConceptSchema(LINK), Link.class);
@@ -94,44 +100,66 @@ public class BDINetROntology extends Ontology implements BDINetRVocabulary {
 			cs.add(LINK_ID, (PrimitiveSchema) getSchema(BasicOntology.STRING));
 			cs.addSuperSchema((ConceptSchema) getSchema(OBJECT_CONCEPT));
 
+			add(new ConceptSchema(FLOW_EXPORT), FlowExport.class);
+
+			cs = (ConceptSchema) getSchema(FLOW_EXPORT);
+			cs.add(FLOW_EXPORT_IP, (ConceptSchema) getSchema(IP));
+			cs.addSuperSchema((ConceptSchema) getSchema(OBJECT_CONCEPT));
+			
 			add(new ConceptSchema(UNARY_PREDICATE), UnaryPredicate.class);
 			add(new ConceptSchema(BINARY_PREDICATE), BinaryPredicate.class);
 			
 			add(new ConceptSchema(ANOMALOUS), Anomalous.class);
+			add(new ConceptSchema(ANOMALOUS_USAGE), AnomalousUsage.class);
 			add(new ConceptSchema(ATTACK_PREVENTED), AttackPrevented.class);
 			add(new ConceptSchema(BENIGN), Benign.class);
 			add(new ConceptSchema(FLOW_RATE_LIMITED), FlowRateLimited.class);
-			add(new ConceptSchema(FULLY_OPERATIONAL), FullyOperational.class);
+			add(new ConceptSchema(IP_RATE_LIMITED), IpRateLimited.class);
+			add(new ConceptSchema(LINK_RATE_LIMITED), LinkRateLimited.class);
 			add(new ConceptSchema(OVER_USAGE), OverUsage.class);
-			add(new ConceptSchema(OVER_USAGE_CAUSE), OverUsageCause.class);
-			add(new ConceptSchema(RATE_LIMITED), RateLimited.class);
-			add(new ConceptSchema(REGULAR_USAGE), RegularUsage.class);
 			add(new ConceptSchema(RESTRICTED), Restricted.class);
 			add(new ConceptSchema(THREAT), Threat.class);
-			add(new ConceptSchema(THREAT_RESPONDED), ThreatResponded.class);
 
-			ConceptSchema ps = (ConceptSchema) getSchema(UNARY_PREDICATE);
-			ps.add(UNARY_PREDICATE_CONCEPT, (ConceptSchema) getSchema(OBJECT_CONCEPT));
-			ps.addSuperSchema((ConceptSchema)getSchema(OBJECT_CONCEPT));
+			cs = (ConceptSchema) getSchema(UNARY_PREDICATE);
+			cs.add(UNARY_PREDICATE_CONCEPT, (ConceptSchema) getSchema(OBJECT_CONCEPT));
+			cs.addSuperSchema((ConceptSchema)getSchema(OBJECT_CONCEPT));
 			
-			((ConceptSchema) getSchema(ANOMALOUS)).addSuperSchema(ps);
-			((ConceptSchema) getSchema(ATTACK_PREVENTED)).addSuperSchema(ps);
-			((ConceptSchema) getSchema(BENIGN)).addSuperSchema(ps);
-			((ConceptSchema) getSchema(FLOW_RATE_LIMITED)).addSuperSchema(ps);
-			((ConceptSchema) getSchema(FULLY_OPERATIONAL)).addSuperSchema(ps);
-			((ConceptSchema) getSchema(OVER_USAGE)).addSuperSchema(ps);
-			((ConceptSchema) getSchema(RATE_LIMITED)).addSuperSchema(ps);
-			((ConceptSchema) getSchema(REGULAR_USAGE)).addSuperSchema(ps);
-			((ConceptSchema) getSchema(RESTRICTED)).addSuperSchema(ps);
-			((ConceptSchema) getSchema(THREAT)).addSuperSchema(ps);
-			((ConceptSchema) getSchema(THREAT_RESPONDED)).addSuperSchema(ps);
+			((ConceptSchema) getSchema(ANOMALOUS)).addSuperSchema(cs);
+			((ConceptSchema) getSchema(ANOMALOUS_USAGE)).addSuperSchema(cs);
+			((ConceptSchema) getSchema(ATTACK_PREVENTED)).addSuperSchema(cs);
+			((ConceptSchema) getSchema(BENIGN)).addSuperSchema(cs);
+			((ConceptSchema) getSchema(FLOW_RATE_LIMITED)).addSuperSchema(cs);
+			((ConceptSchema) getSchema(IP_RATE_LIMITED)).addSuperSchema(cs);
+			((ConceptSchema) getSchema(LINK_RATE_LIMITED)).addSuperSchema(cs);
+			((ConceptSchema) getSchema(OVER_USAGE)).addSuperSchema(cs);
+			((ConceptSchema) getSchema(RESTRICTED)).addSuperSchema(cs);
+			((ConceptSchema) getSchema(THREAT)).addSuperSchema(cs);
 			
-			ps = (ConceptSchema) getSchema(BINARY_PREDICATE);
-			ps.add(BINARY_PREDICATE_FIRST, (ConceptSchema) getSchema(OBJECT_CONCEPT));
-			ps.add(BINARY_PREDICATE_SECOND, (ConceptSchema) getSchema(OBJECT_CONCEPT));
-			ps.addSuperSchema((ConceptSchema)getSchema(OBJECT_CONCEPT));
+			cs = (ConceptSchema) getSchema(BINARY_PREDICATE);
+			cs.add(BINARY_PREDICATE_FIRST, (ConceptSchema) getSchema(OBJECT_CONCEPT));
+			cs.add(BINARY_PREDICATE_SECOND, (ConceptSchema) getSchema(OBJECT_CONCEPT));
+			cs.addSuperSchema((ConceptSchema)getSchema(OBJECT_CONCEPT));
 			
-			((ConceptSchema) getSchema(OVER_USAGE_CAUSE)).addSuperSchema(ps);
+			add(new PredicateSchema(GOAL_PROPOSAL), GoalProposal.class);
+			add(new PredicateSchema(GOAL_REQUEST), GoalRequest.class);
+			add(new PredicateSchema(GOAL_RESPONSE), GoalResponse.class);
+			
+			PredicateSchema ps = (PredicateSchema) getSchema(GOAL_PROPOSAL);
+			ps.add(GOAL_PROPOSAL_COST, (PrimitiveSchema) getSchema(BasicOntology.FLOAT));
+			ps.addSuperSchema((PredicateSchema)getSchema(OBJECT_PREDICATE));
+			
+			ps = (PredicateSchema) getSchema(GOAL_REQUEST);
+			ps.add(GOAL_REQUEST_BELIEF_GOAL, (PrimitiveSchema) getSchema(BasicOntology.BOOLEAN));
+			ps.add(GOAL_REQUEST_PREDICATE, (ConceptSchema) getSchema(OBJECT_CONCEPT));
+			ps.add(GOAL_REQUEST_SUBSCRIBE, (PrimitiveSchema) getSchema(BasicOntology.BOOLEAN));
+			ps.add(GOAL_REQUEST_VALUE, (PrimitiveSchema) getSchema(BasicOntology.BOOLEAN), ObjectSchema.OPTIONAL);
+			ps.addSuperSchema((PredicateSchema)getSchema(OBJECT_PREDICATE));
+
+			ps = (PredicateSchema) getSchema(GOAL_RESPONSE);
+			ps.add(GOAL_RESPONSE_PREDICATE, (ConceptSchema) getSchema(OBJECT_CONCEPT));
+			ps.add(GOAL_RESPONSE_TIMESTAMP, (PrimitiveSchema) getSchema(BasicOntology.DATE));
+			ps.add(GOAL_RESPONSE_VALUE, (PrimitiveSchema) getSchema(BasicOntology.BOOLEAN), ObjectSchema.OPTIONAL);
+			ps.addSuperSchema((PredicateSchema)getSchema(OBJECT_PREDICATE));
 		} catch (OntologyException oe) {
 			oe.printStackTrace();
 		}

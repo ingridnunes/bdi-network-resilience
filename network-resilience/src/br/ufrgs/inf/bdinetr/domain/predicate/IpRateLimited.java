@@ -21,21 +21,21 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain.predicate;
 
-import br.ufrgs.inf.bdinetr.domain.Flow;
+import br.ufrgs.inf.bdinetr.domain.Ip;
 
 /**
  * @author Ingrid Nunes
  */
-public class Threat extends UnaryPredicate<Flow> {
+public class IpRateLimited extends UnaryPredicate<Ip> {
 
 	private static final long serialVersionUID = -5495943806870470494L;
 
-	public Threat() {
+	public IpRateLimited() {
 
 	}
 
-	public Threat(Flow flow) {
-		super(flow);
+	public IpRateLimited(Ip ip) {
+		super(ip);
 	}
 
 }

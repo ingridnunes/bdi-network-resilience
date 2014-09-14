@@ -11,15 +11,15 @@ import bdi4jade.belief.AbstractBeliefSet;
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.BeliefSet;
 import bdi4jade.belief.PersistentBelief;
-import bdi4jade.belief.PropositionalBelief;
+import bdi4jade.belief.Predicate;
 import bdi4jade.belief.TransientBelief;
 import bdi4jade.belief.TransientBeliefSet;
-import bdi4jade.belief.TransientPropositionalBelief;
+import bdi4jade.belief.TransientPredicate;
 import bdi4jade.goal.BeliefGoal;
 import bdi4jade.goal.BeliefPresentGoal;
 import bdi4jade.goal.BeliefSetHasValueGoal;
 import bdi4jade.goal.BeliefValueGoal;
-import bdi4jade.goal.PropositionalBeliefValueGoal;
+import bdi4jade.goal.PredicateGoal;
 
 public class BDI4JADEOntology extends Ontology implements BDI4JADEVocabulary {
 
@@ -58,14 +58,14 @@ public class BDI4JADEOntology extends Ontology implements BDI4JADEVocabulary {
 			
 			add(new PredicateSchema(BELIEF), Belief.class);
 			add(new PredicateSchema(BELIEF_SET), BeliefSet.class);
-			add(new PredicateSchema(PROPOSITIONAL_BELIEF), PropositionalBelief.class);
+			add(new PredicateSchema(PROPOSITIONAL_BELIEF), Predicate.class);
 
 			add(new PredicateSchema(ABSTRACT_BELIEF), AbstractBelief.class);
 			add(new PredicateSchema(ABSTRACT_BELIEF_SET), AbstractBeliefSet.class);
 			add(new PredicateSchema(TRANSIENT_BELIEF), TransientBelief.class);
 			add(new PredicateSchema(TRANSIENT_BELIEF_SET), TransientBeliefSet.class);
 			add(new PredicateSchema(PERSISTENT_BELIEF), PersistentBelief.class);
-			add(new PredicateSchema(TRANSIENT_PROPOSITIONAL_BELIEF), TransientPropositionalBelief.class);
+			add(new PredicateSchema(TRANSIENT_PROPOSITIONAL_BELIEF), TransientPredicate.class);
 
 			PredicateSchema cs = (PredicateSchema) getSchema(BELIEF);
 			cs.add(BELIEF_NAME, (ConceptSchema) getSchema(OBJECT_CONCEPT));
@@ -101,7 +101,7 @@ public class BDI4JADEOntology extends Ontology implements BDI4JADEVocabulary {
 			add(new PredicateSchema(BELIEF_PRESENT_GOAL), BeliefPresentGoal.class);
 			add(new PredicateSchema(BELIEF_SET_HAS_VALUE_GOAL), BeliefSetHasValueGoal.class);
 			add(new PredicateSchema(BELIEF_VAUE_GOAL), BeliefValueGoal.class);
-			add(new PredicateSchema(PROPOSITIONAL_BELIEF_VAUE_GOAL), PropositionalBeliefValueGoal.class);
+			add(new PredicateSchema(PROPOSITIONAL_BELIEF_VAUE_GOAL), PredicateGoal.class);
 
 			cs = (PredicateSchema) getSchema(BELIEF_GOAL);
 			cs.add(BELIEF_GOAL_BELIEF_NAME, (ConceptSchema) getSchema(OBJECT_CONCEPT));

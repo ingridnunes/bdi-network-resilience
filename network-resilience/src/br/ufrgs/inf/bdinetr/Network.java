@@ -26,13 +26,14 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import bdi4jade.examples.BDI4JADEExamplesPanel;
+import br.ufrgs.inf.bdinetr.domain.LimitLinkEvent;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Observer;
-import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
-import br.ufrgs.inf.bdinetr.domain.RateLimiter.LimitLinkEvent;
 import br.ufrgs.inf.bdinetr.domain.Role;
+import br.ufrgs.inf.bdinetr.domain.Router;
 
 /**
  * @author Ingrid Nunes
@@ -44,8 +45,7 @@ public class Network implements Observer {
 	private final Log log;
 	private final Set<Router> routers;
 
-	public Network(Set<Router> routers, Set<Link> links,
-			Set<Link> affectedLinks) {
+	public Network(Set<Router> routers, Set<Link> links, Set<Link> affectedLinks) {
 		this.log = LogFactory.getLog(this.getClass());
 		this.routers = routers;
 		this.links = links;

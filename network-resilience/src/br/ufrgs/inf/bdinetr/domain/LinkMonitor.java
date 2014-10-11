@@ -21,8 +21,6 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,29 +32,12 @@ import java.util.Set;
  * 
  * @author Ingrid Nunes
  */
-public class LinkMonitor extends RouterComponent {
+public interface LinkMonitor extends RouterComponent, Observable {
 
-	private final Map<Link, Boolean> overUsageLinks;
+	public Set<Link> getLinks();
 
-	public LinkMonitor(Router router) {
-		super(router);
-		this.overUsageLinks = new HashMap<>();
-	}
+	public boolean isOverUsage(Link link);
 
-	public Set<Link> getLinks() {
-		return overUsageLinks.keySet();
-	}
-
-	public boolean isOverUsage(Link link) {
-		Boolean overUsage = this.overUsageLinks.get(link);
-		if (overUsage == null)
-			overUsage = false;
-		return overUsage;
-	}
-
-	public void setOverUsage(Link link, boolean overUsage) {
-		this.overUsageLinks.put(link, overUsage);
-		notifyObservers(link);
-	}
+	public void setOverUsage(Link link, boolean overUsage);
 
 }

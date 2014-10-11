@@ -24,6 +24,35 @@ package br.ufrgs.inf.bdinetr.domain;
 /**
  * @author Ingrid Nunes
  */
-public interface RouterComponent {
+public abstract class AbstractRouterComponentFactory {
+
+	public abstract AnomalyDetection createAnomalyDetection(Router router);
+
+	public abstract Classifier createClassifier(Router router);
+
+	public abstract FlowExporter createFlowExporter(Router router);
+
+	public abstract LinkMonitor createLinkMonitor(Router router);
+
+	public abstract RateLimiter createRateLimiter(Router router);
+
+	public RouterComponent createRouterComponent(Role role, Router router) {
+		if (Role.ANOMALY_DETECTION.equals(role)) {
+			return createAnomalyDetection(router);
+		}
+		if (Role.CLASSIFIER.equals(role)) {
+			return createClassifier(router);
+		}
+		if (Role.FLOW_EXPORTER.equals(role)) {
+			return createFlowExporter(router);
+		}
+		if (Role.LINK_MONITOR.equals(role)) {
+			return createLinkMonitor(router);
+		}
+		if (Role.RATE_LIMITER.equals(role)) {
+			return createRateLimiter(router);
+		}
+		return null;
+	}
 
 }

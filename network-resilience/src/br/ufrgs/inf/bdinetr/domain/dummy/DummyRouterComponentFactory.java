@@ -19,11 +19,44 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain;
+package br.ufrgs.inf.bdinetr.domain.dummy;
+
+import br.ufrgs.inf.bdinetr.domain.AbstractRouterComponentFactory;
+import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
+import br.ufrgs.inf.bdinetr.domain.Classifier;
+import br.ufrgs.inf.bdinetr.domain.FlowExporter;
+import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
+import br.ufrgs.inf.bdinetr.domain.RateLimiter;
+import br.ufrgs.inf.bdinetr.domain.Router;
 
 /**
  * @author Ingrid Nunes
  */
-public interface RouterComponent {
+public class DummyRouterComponentFactory extends AbstractRouterComponentFactory {
+
+	@Override
+	public AnomalyDetection createAnomalyDetection(Router router) {
+		return new DummyAnomalyDetection(router);
+	}
+
+	@Override
+	public Classifier createClassifier(Router router) {
+		return new DummyClassifier(router);
+	}
+
+	@Override
+	public FlowExporter createFlowExporter(Router router) {
+		return new DummyFlowExporter(router);
+	}
+
+	@Override
+	public LinkMonitor createLinkMonitor(Router router) {
+		return new DummyLinkMonitor(router);
+	}
+
+	@Override
+	public RateLimiter createRateLimiter(Router router) {
+		return new DummyRateLimiter(router);
+	}
 
 }

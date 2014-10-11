@@ -57,7 +57,9 @@ import br.ufrgs.inf.bdinetr.agent.RouterAgent;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.Role;
+import br.ufrgs.inf.bdinetr.domain.AbstractRouterComponentFactory;
 import br.ufrgs.inf.bdinetr.domain.Router;
+import br.ufrgs.inf.bdinetr.domain.dummy.DummyRouterComponentFactory;
 
 /**
  * @author Ingrid Nunes
@@ -65,6 +67,7 @@ import br.ufrgs.inf.bdinetr.domain.Router;
 public class BDINetRApp {
 
 	private static final Map<Ip, Agent> AGENTS;
+	private static final AbstractRouterComponentFactory FACTORY = new DummyRouterComponentFactory();
 	private static final Network NETWORK;
 
 	static {
@@ -72,14 +75,14 @@ public class BDINetRApp {
 				.getResource("log4j.properties"));
 
 		Set<Router> routers = new HashSet<>();
-		routers.add(new Router(new Ip("RouterLM"), Role.LINK_MONITOR.getId()));
-		routers.add(new Router(new Ip("RouterRL"), Role.RATE_LIMITER.getId()));
-		routers.add(new Router(new Ip("RouterRL+FE"), Role.RATE_LIMITER.getId() | Role.FLOW_EXPORTER.getId()));
-		routers.add(new Router(new Ip("RouterAD"), Role.ANOMALY_DETECTION.getId()));
-		routers.add(new Router(new Ip("RouterAD+RL"), Role.ANOMALY_DETECTION.getId() | Role.RATE_LIMITER.getId()));
-		routers.add(new Router(new Ip("RouterCL"), Role.CLASSIFIER.getId()));
-		routers.add(new Router(new Ip("RouterCL+FE"), Role.CLASSIFIER.getId() | Role.FLOW_EXPORTER.getId()));
-		routers.add(new Router(new Ip("RouterFE"), Role.FLOW_EXPORTER.getId()));
+		routers.add(new Router(new Ip("RouterLM"), Role.LINK_MONITOR.getId(), FACTORY));
+		routers.add(new Router(new Ip("RouterRL"), Role.RATE_LIMITER.getId(), FACTORY));
+		routers.add(new Router(new Ip("RouterRL+FE"), Role.RATE_LIMITER.getId() | Role.FLOW_EXPORTER.getId(), FACTORY));
+		routers.add(new Router(new Ip("RouterAD"), Role.ANOMALY_DETECTION.getId(), FACTORY));
+		routers.add(new Router(new Ip("RouterAD+RL"), Role.ANOMALY_DETECTION.getId() | Role.RATE_LIMITER.getId(), FACTORY));
+		routers.add(new Router(new Ip("RouterCL"), Role.CLASSIFIER.getId(), FACTORY));
+		routers.add(new Router(new Ip("RouterCL+FE"), Role.CLASSIFIER.getId() | Role.FLOW_EXPORTER.getId(), FACTORY));
+		routers.add(new Router(new Ip("RouterFE"), Role.FLOW_EXPORTER.getId(), FACTORY));
 
 		Link affectedLink = new Link("AFFECTED_LINK");
 

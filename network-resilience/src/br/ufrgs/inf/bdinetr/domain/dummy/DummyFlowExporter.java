@@ -19,11 +19,25 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain;
+package br.ufrgs.inf.bdinetr.domain.dummy;
+
+import br.ufrgs.inf.bdinetr.domain.FlowExporter;
+import br.ufrgs.inf.bdinetr.domain.Ip;
+import br.ufrgs.inf.bdinetr.domain.Router;
+import br.ufrgs.inf.bdinetr.domain.AbstractRouterComponent;
 
 /**
  * @author Ingrid Nunes
  */
-public interface RouterComponent {
+public class DummyFlowExporter extends AbstractRouterComponent implements FlowExporter {
+
+	public DummyFlowExporter(Router router) {
+		super(router);
+	}
+
+	@Override
+	public void turnFlowExporterOn(Ip ip) {
+
+	}
 
 }

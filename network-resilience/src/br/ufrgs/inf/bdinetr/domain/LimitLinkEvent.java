@@ -24,6 +24,16 @@ package br.ufrgs.inf.bdinetr.domain;
 /**
  * @author Ingrid Nunes
  */
-public interface RouterComponent {
+public class LimitLinkEvent {
+
+	private Link link;
+
+	public LimitLinkEvent(Link link) {
+		this.link = link;
+	}
+
+	public Link getLink() {
+		return link;
+	}
 
 }

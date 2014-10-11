@@ -26,14 +26,8 @@ package br.ufrgs.inf.bdinetr.domain;
  * 
  * @author Ingrid Nunes
  */
-public class FlowExporter extends RouterComponent {
+public interface FlowExporter extends RouterComponent {
 
-	public FlowExporter(Router router) {
-		super(router);
-	}
-
-	public void turnFlowExporterOn(Ip ip) {
-
-	}
+	public void turnFlowExporterOn(Ip ip);
 
 }

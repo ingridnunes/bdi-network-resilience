@@ -21,9 +21,6 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * ratelimiter
  * 
@@ -36,54 +33,18 @@ import java.util.Map;
  * 
  * @author Ingrid Nunes
  */
-public class RateLimiter extends RouterComponent {
+public interface RateLimiter extends RouterComponent, Observable {
 
-	public class LimitLinkEvent {
-		private Link link;
+	public void limitFlow(Flow flow, double rate);
 
-		public LimitLinkEvent(Link link) {
-			this.link = link;
-		}
+	public void limitIp(Ip ip, double rate);
 
-		public Link getLink() {
-			return link;
-		}
-	}
+	public void limitLink(Link link, double rate);
 
-	private final Map<Flow, Double> rateLimitedflows;
-	private final Map<Ip, Double> rateLimitedIps;
-	private final Map<Link, Double> rateLimitedLinks;
+	public void unlimitFlow(Flow flow);
 
-	public RateLimiter(Router router) {
-		super(router);
-		this.rateLimitedLinks = new HashMap<>();
-		this.rateLimitedIps = new HashMap<>();
-		this.rateLimitedflows = new HashMap<>();
-	}
+	public void unlimitIp(Ip ip);
 
-	public void limitFlow(Flow flow, double rate) {
-		this.rateLimitedflows.put(flow, rate);
-	}
-
-	public void limitIp(Ip ip, double rate) {
-		this.rateLimitedIps.put(ip, rate);
-	}
-
-	public void limitLink(Link link, double rate) {
-		this.rateLimitedLinks.put(link, rate);
-		notifyObservers(new LimitLinkEvent(link));
-	}
-
-	public void unlimitFlow(Flow flow) {
-		this.rateLimitedflows.remove(flow);
-	}
-
-	public void unlimitIp(Ip ip) {
-		this.rateLimitedIps.remove(ip);
-	}
-
-	public void unlimitLink(Link link) {
-		this.rateLimitedLinks.remove(link);
-	}
+	public void unlimitLink(Link link);
 
 }

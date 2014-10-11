@@ -24,6 +24,8 @@ package br.ufrgs.inf.bdinetr.domain;
 /**
  * @author Ingrid Nunes
  */
-public interface RouterComponent {
+public interface Observable {
+
+	public abstract void attachObserver(Observer observer);
 
 }

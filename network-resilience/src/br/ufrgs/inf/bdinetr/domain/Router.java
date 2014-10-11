@@ -32,24 +32,14 @@ public class Router {
 	private final Map<Role, RouterComponent> components;
 	private final Ip ip;
 
-	public Router(final Ip id, int roles) {
+	public Router(final Ip id, int roles, AbstractRouterComponentFactory factory) {
 		this.ip = id;
 		this.components = new HashMap<>();
-		if (Role.ANOMALY_DETECTION.isPresent(roles)) {
-			this.components.put(Role.ANOMALY_DETECTION, new AnomalyDetection(
-					this));
-		}
-		if (Role.CLASSIFIER.isPresent(roles)) {
-			this.components.put(Role.CLASSIFIER, new Classifier(this));
-		}
-		if (Role.FLOW_EXPORTER.isPresent(roles)) {
-			this.components.put(Role.FLOW_EXPORTER, new FlowExporter(this));
-		}
-		if (Role.LINK_MONITOR.isPresent(roles)) {
-			this.components.put(Role.LINK_MONITOR, new LinkMonitor(this));
-		}
-		if (Role.RATE_LIMITER.isPresent(roles)) {
-			this.components.put(Role.RATE_LIMITER, new RateLimiter(this));
+		for (Role role : Role.values()) {
+			if (role.isPresent(roles)) {
+				this.components.put(role,
+						factory.createRouterComponent(role, this));
+			}
 		}
 	}
 

@@ -21,7 +21,6 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -32,24 +31,8 @@ import java.util.Set;
  * 
  * @author Ingrid Nunes
  */
-public class Classifier extends RouterComponent {
+public interface Classifier extends RouterComponent {
 
-	public Classifier(Router router) {
-		super(router);
-	}
-
-	public Set<Flow> classifyFlows(Ip ip) {
-		Set<Flow> flows = new HashSet<>();
-		if (ip.getAddress().equals("victim1")) {
-			flows.add(new Flow(new Ip("DDoS1"), 80, new Ip("victim1"), 80,
-					"http"));
-			flows.add(new Flow(new Ip("DDoS2"), 80, new Ip("victim1"), 80,
-					"http"));
-		} else if (ip.getAddress().equals("victim2")) {
-			flows.add(new Flow(new Ip("DDoS3"), 80, new Ip("victim2"), 80,
-					"http"));
-		}
-		return flows;
-	}
+	public Set<Flow> classifyFlows(Ip ip);
 
 }

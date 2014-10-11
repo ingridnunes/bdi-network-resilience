@@ -21,7 +21,6 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -35,19 +34,8 @@ import java.util.Set;
  * 
  * @author Ingrid Nunes
  */
-public class AnomalyDetection extends RouterComponent {
+public interface AnomalyDetection extends RouterComponent {
 
-	public AnomalyDetection(Router router) {
-		super(router);
-	}
-
-	public Set<Ip> detectIntrusion(Link link) {
-		Set<Ip> intrusions = new HashSet<>();
-		if (link.getId().equals("AFFECTED_LINK")) {
-			intrusions.add(new Ip("victim1"));
-			intrusions.add(new Ip("victim2"));
-		}
-		return intrusions;
-	}
+	public Set<Ip> detectIntrusion(Link link);
 
 }

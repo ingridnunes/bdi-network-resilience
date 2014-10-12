@@ -21,14 +21,15 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain.dummy;
 
-import br.ufrgs.inf.bdinetr.domain.ObservableImpl;
+import java.util.Observable;
+
 import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.RouterComponent;
 
 /**
  * @author Ingrid Nunes
  */
-public abstract class AbstractRouterComponent extends ObservableImpl implements
+public abstract class AbstractRouterComponent extends Observable implements
 		RouterComponent {
 
 	protected final Router router;

@@ -23,11 +23,12 @@ package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
-import br.ufrgs.inf.bdinetr.domain.Observer;
 import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.omnet.event.OverUsageEvent;
 
@@ -42,7 +43,7 @@ public class OMNeTLinkMonitor extends OMNeTRouterComponent implements
 	public OMNeTLinkMonitor(Router router) {
 		super(router);
 		this.overUsageLinks = new HashMap<>();
-		EventBroker.getInstance().attachObserver(this);
+		EventBroker.getInstance().addObserver(this);
 	}
 
 	@Override
@@ -66,13 +67,14 @@ public class OMNeTLinkMonitor extends OMNeTRouterComponent implements
 	@Override
 	public void setOverUsage(Link link, boolean overUsage) {
 		this.overUsageLinks.put(link, overUsage);
+		setChanged();
 		notifyObservers(link);
 	}
 
 	@Override
-	public void update(Object o, Object arg) {
+	public void update(Observable o, Object arg) {
 		if (arg instanceof OverUsageEvent) {
-			setOverUsage(((OverUsageEvent) o).getLink(), true);
+			setOverUsage(((OverUsageEvent) arg).getLink(), true);
 		}
 	}
 

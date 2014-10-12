@@ -24,6 +24,8 @@ package br.ufrgs.inf.bdinetr;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -32,7 +34,6 @@ import org.apache.commons.logging.LogFactory;
 import br.ufrgs.inf.bdinetr.agent.RouterAgent;
 import br.ufrgs.inf.bdinetr.domain.LimitLinkEvent;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
-import br.ufrgs.inf.bdinetr.domain.Observer;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 import br.ufrgs.inf.bdinetr.domain.Role;
 import br.ufrgs.inf.bdinetr.domain.Router;
@@ -53,8 +54,7 @@ public class Network implements Observer {
 	public void addRouter(Router router) {
 		this.routerAgents.put(router, new RouterAgent(router));
 		if (router.hasRole(Role.RATE_LIMITER)) {
-			((RateLimiter) router.getRole(Role.RATE_LIMITER))
-					.attachObserver(this);
+			((RateLimiter) router.getRole(Role.RATE_LIMITER)).addObserver(this);
 		}
 	}
 
@@ -71,7 +71,7 @@ public class Network implements Observer {
 	}
 
 	@Override
-	public void update(Object o, Object arg) {
+	public void update(Observable o, Object arg) {
 		if (arg instanceof LimitLinkEvent) {
 			LimitLinkEvent event = (LimitLinkEvent) arg;
 			for (Router router : getRouters()) {

@@ -21,6 +21,8 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import bdi4jade.annotation.Parameter;
@@ -43,7 +45,6 @@ import bdi4jade.reasoning.BeliefRevisionStrategy;
 import bdi4jade.reasoning.OptionGenerationFunction;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
-import br.ufrgs.inf.bdinetr.domain.Observer;
 import br.ufrgs.inf.bdinetr.domain.Role;
 import br.ufrgs.inf.bdinetr.domain.predicate.AnomalousUsage;
 import br.ufrgs.inf.bdinetr.domain.predicate.AttackPrevented;
@@ -143,7 +144,7 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 	public LinkMonitorCapability(LinkMonitor linkMonitor,
 			GoalRequestPlan beliefGoalRequestPlan) {
 		this.role = linkMonitor;
-		role.attachObserver(this);
+		role.addObserver(this);
 
 		setBeliefRevisionStrategy(this);
 		setOptionGenerationFunction(this);
@@ -261,7 +262,7 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 	}
 
 	@Override
-	public void update(Object o, Object arg) {
+	public void update(Observable o, Object arg) {
 		getMyAgent().restart();
 	}
 

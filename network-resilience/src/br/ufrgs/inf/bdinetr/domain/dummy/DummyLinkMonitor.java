@@ -63,6 +63,7 @@ public class DummyLinkMonitor extends AbstractRouterComponent implements
 	@Override
 	public void setOverUsage(Link link, boolean overUsage) {
 		this.overUsageLinks.put(link, overUsage);
+		setChanged();
 		notifyObservers(link);
 	}
 

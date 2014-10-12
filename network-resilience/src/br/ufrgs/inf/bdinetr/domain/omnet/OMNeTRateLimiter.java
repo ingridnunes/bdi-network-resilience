@@ -66,6 +66,7 @@ public class OMNeTRateLimiter extends OMNeTRouterComponent implements
 		params[2] = rate;
 		invoke("limitlink", params);
 
+		setChanged();
 		notifyObservers(new LimitLinkEvent(link));
 	}
 

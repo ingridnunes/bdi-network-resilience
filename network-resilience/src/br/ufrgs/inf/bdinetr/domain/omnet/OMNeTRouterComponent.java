@@ -23,6 +23,7 @@ package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Observable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,14 +31,13 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
-import br.ufrgs.inf.bdinetr.domain.ObservableImpl;
 import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.RouterComponent;
 
 /**
  * @author Alberto Egon and Ingrid Nunes
  */
-public abstract class OMNeTRouterComponent extends ObservableImpl implements
+public abstract class OMNeTRouterComponent extends Observable implements
 		RouterComponent {
 
 	private final XmlRpcClient adaptorRPC;

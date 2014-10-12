@@ -61,6 +61,7 @@ public class DummyRateLimiter extends AbstractRouterComponent implements
 	@Override
 	public void limitLink(Link link, double rate) {
 		this.rateLimitedLinks.put(link, rate);
+		setChanged();
 		notifyObservers(new LimitLinkEvent(link));
 	}
 

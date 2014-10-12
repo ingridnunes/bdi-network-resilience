@@ -26,11 +26,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Observable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import br.ufrgs.inf.bdinetr.domain.ObservableImpl;
 import br.ufrgs.inf.bdinetr.domain.omnet.event.AnomalousEvent;
 import br.ufrgs.inf.bdinetr.domain.omnet.event.OMNeTEvent;
 import br.ufrgs.inf.bdinetr.domain.omnet.event.OverUsageEvent;
@@ -39,7 +39,7 @@ import br.ufrgs.inf.bdinetr.domain.omnet.event.ThreatEvent;
 /**
  * @author Alberto Egon and Ingrid Nunes
  */
-public class EventBroker extends ObservableImpl {
+public class EventBroker extends Observable {
 
 	private class BrokerThread extends Thread {
 
@@ -68,6 +68,7 @@ public class EventBroker extends ObservableImpl {
 
 				// notify observers
 				if (event != null) {
+					setChanged();
 					notifyObservers(event);
 				}
 

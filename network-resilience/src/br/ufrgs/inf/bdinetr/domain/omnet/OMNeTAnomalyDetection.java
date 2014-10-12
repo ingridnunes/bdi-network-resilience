@@ -23,12 +23,13 @@ package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
-import br.ufrgs.inf.bdinetr.domain.Observer;
 import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.omnet.event.AnomalousEvent;
 
@@ -43,7 +44,7 @@ public class OMNeTAnomalyDetection extends OMNeTRouterComponent implements
 	public OMNeTAnomalyDetection(Router router) {
 		super(router);
 		this.events = new HashSet<>();
-		EventBroker.getInstance().attachObserver(this);
+		EventBroker.getInstance().addObserver(this);
 	}
 
 	@Override
@@ -69,7 +70,7 @@ public class OMNeTAnomalyDetection extends OMNeTRouterComponent implements
 	}
 
 	@Override
-	public void update(Object o, Object arg) {
+	public void update(Observable o, Object arg) {
 		if (arg instanceof AnomalousEvent) {
 			synchronized (events) {
 				events.add((AnomalousEvent) arg);

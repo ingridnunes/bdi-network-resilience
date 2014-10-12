@@ -21,11 +21,13 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain;
 
+import java.util.Observer;
+
 /**
  * @author Ingrid Nunes
  */
 public interface Observable {
 
-	public abstract void attachObserver(Observer observer);
+	public abstract void addObserver(Observer o);
 
 }

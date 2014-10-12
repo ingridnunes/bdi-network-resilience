@@ -23,8 +23,11 @@ package br.ufrgs.inf.bdinetr.domain.dummy;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
+import br.ufrgs.inf.bdinetr.domain.LimitLinkEvent;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Router;
@@ -33,13 +36,15 @@ import br.ufrgs.inf.bdinetr.domain.Router;
  * @author Ingrid Nunes
  */
 public class DummyLinkMonitor extends AbstractRouterComponent implements
-		LinkMonitor {
+		LinkMonitor, Observer {
 
+	private boolean first;
 	private final Map<Link, Boolean> overUsageLinks;
 
 	public DummyLinkMonitor(Router router) {
 		super(router);
 		this.overUsageLinks = new HashMap<>();
+		this.first = true;
 	}
 
 	@Override
@@ -65,6 +70,18 @@ public class DummyLinkMonitor extends AbstractRouterComponent implements
 		this.overUsageLinks.put(link, overUsage);
 		setChanged();
 		notifyObservers(link);
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		if (arg instanceof LimitLinkEvent) {
+			LimitLinkEvent event = (LimitLinkEvent) arg;
+			if (first) {
+				first = false;
+			} else if (this.isOverUsage(event.getLink())) {
+				this.setOverUsage(event.getLink(), false);
+			}
+		}
 	}
 
 }

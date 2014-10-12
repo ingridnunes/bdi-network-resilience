@@ -114,6 +114,7 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 						addBelief(((BeliefGoal<?>) event.getGoal())
 								.getOutputBelief());
 						belief(new AttackPrevented(link), false);
+						belief(new AnomalousUsage(link), null);
 					} else {
 						setEndState(EndState.FAILED);
 					}

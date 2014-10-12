@@ -33,7 +33,7 @@ package br.ufrgs.inf.bdinetr.domain;
  * 
  * @author Ingrid Nunes
  */
-public interface RateLimiter extends RouterComponent, Observable {
+public interface RateLimiter extends RouterComponent {
 
 	public void limitFlow(Flow flow, double rate);
 

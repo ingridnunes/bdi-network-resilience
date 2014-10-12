@@ -39,6 +39,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -54,6 +55,7 @@ import br.ufrgs.inf.bdinetr.domain.AbstractRouterComponentFactory;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
+import br.ufrgs.inf.bdinetr.domain.Observable;
 import br.ufrgs.inf.bdinetr.domain.Role;
 import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.dummy.DummyRouterComponentFactory;
@@ -94,14 +96,8 @@ public class BDINetRApp {
 					.getId(), factory));
 			NETWORK.addRouter(new Router(new Ip("RouterRL"), Role.RATE_LIMITER
 					.getId(), factory));
-			NETWORK.addRouter(new Router(new Ip("RouterRL+FE"),
-					Role.RATE_LIMITER.getId() | Role.FLOW_EXPORTER.getId(),
-					factory));
 			NETWORK.addRouter(new Router(new Ip("RouterAD"),
 					Role.ANOMALY_DETECTION.getId(), factory));
-			NETWORK.addRouter(new Router(new Ip("RouterAD+RL"),
-					Role.ANOMALY_DETECTION.getId() | Role.RATE_LIMITER.getId(),
-					factory));
 			NETWORK.addRouter(new Router(new Ip("RouterCL"), Role.CLASSIFIER
 					.getId(), factory));
 			NETWORK.addRouter(new Router(new Ip("RouterCL+FE"), Role.CLASSIFIER
@@ -110,6 +106,19 @@ public class BDINetRApp {
 					.getId(), factory));
 
 			AFFECTED_LINKS.add(new Link("AFFECTED_LINK"));
+		}
+
+		Set<Router> routers = NETWORK.getRouters();
+		for (Router router1 : routers) {
+			if (router1.hasRole(Role.RATE_LIMITER)) {
+				for (Router router2 : routers) {
+					if (router2.hasRole(Role.LINK_MONITOR)) {
+						((Observable) router1.getRole(Role.RATE_LIMITER))
+								.addObserver(((Observer) router2
+										.getRole(Role.LINK_MONITOR)));
+					}
+				}
+			}
 		}
 	}
 

@@ -28,6 +28,7 @@ import br.ufrgs.inf.bdinetr.domain.Flow;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.LimitLinkEvent;
 import br.ufrgs.inf.bdinetr.domain.Link;
+import br.ufrgs.inf.bdinetr.domain.Observable;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 import br.ufrgs.inf.bdinetr.domain.Router;
 
@@ -35,7 +36,7 @@ import br.ufrgs.inf.bdinetr.domain.Router;
  * @author Ingrid Nunes
  */
 public class DummyRateLimiter extends AbstractRouterComponent implements
-		RateLimiter {
+		RateLimiter, Observable {
 
 	private final Map<Flow, Double> rateLimitedflows;
 	private final Map<Ip, Double> rateLimitedIps;

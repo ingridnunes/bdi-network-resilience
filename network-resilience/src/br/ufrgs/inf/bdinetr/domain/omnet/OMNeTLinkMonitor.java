@@ -27,6 +27,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
+import br.ufrgs.inf.bdinetr.domain.LimitLinkEvent;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Router;
@@ -75,6 +76,11 @@ public class OMNeTLinkMonitor extends OMNeTRouterComponent implements
 	public void update(Observable o, Object arg) {
 		if (arg instanceof OverUsageEvent) {
 			setOverUsage(((OverUsageEvent) arg).getLink(), true);
+		} else if (arg instanceof LimitLinkEvent) {
+			LimitLinkEvent event = (LimitLinkEvent) arg;
+			if (this.isOverUsage(event.getLink())) {
+				this.setOverUsage(event.getLink(), false);
+			}
 		}
 	}
 

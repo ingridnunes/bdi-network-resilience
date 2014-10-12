@@ -25,6 +25,7 @@ import br.ufrgs.inf.bdinetr.domain.Flow;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.LimitLinkEvent;
 import br.ufrgs.inf.bdinetr.domain.Link;
+import br.ufrgs.inf.bdinetr.domain.Observable;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 import br.ufrgs.inf.bdinetr.domain.Router;
 
@@ -32,7 +33,7 @@ import br.ufrgs.inf.bdinetr.domain.Router;
  * @author Alberto Egon and Ingrid Nunes
  */
 public class OMNeTRateLimiter extends OMNeTRouterComponent implements
-		RateLimiter {
+		RateLimiter, Observable {
 
 	public OMNeTRateLimiter(Router router) {
 		super(router);

@@ -21,14 +21,16 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import bdi4jade.examples.BDI4JADEExamplesPanel;
+import br.ufrgs.inf.bdinetr.agent.RouterAgent;
 import br.ufrgs.inf.bdinetr.domain.LimitLinkEvent;
-import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Observer;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
@@ -40,67 +42,44 @@ import br.ufrgs.inf.bdinetr.domain.Router;
  */
 public class Network implements Observer {
 
-	private final Set<Link> affectedLinks;
-	private final Set<Link> links;
 	private final Log log;
-	private final Set<Router> routers;
+	private final Map<Router, RouterAgent> routerAgents;
 
-	public Network(Set<Router> routers, Set<Link> links, Set<Link> affectedLinks) {
+	public Network() {
 		this.log = LogFactory.getLog(this.getClass());
-		this.routers = routers;
-		this.links = links;
-		this.affectedLinks = affectedLinks;
-
-		for (Router router : routers) {
-			if (router.hasRole(Role.RATE_LIMITER)) {
-				((RateLimiter) router.getRole(Role.RATE_LIMITER))
-						.attachObserver(this);
-			}
-		}
-	}
-
-	public void addLink(Link link) {
-		this.links.add(link);
+		this.routerAgents = new HashMap<>();
 	}
 
 	public void addRouter(Router router) {
-		this.routers.add(router);
+		this.routerAgents.put(router, new RouterAgent(router));
+		if (router.hasRole(Role.RATE_LIMITER)) {
+			((RateLimiter) router.getRole(Role.RATE_LIMITER))
+					.attachObserver(this);
+		}
 	}
 
-	public Set<Link> getLinks() {
-		return links;
+	public RouterAgent getAgent(Router router) {
+		return routerAgents.get(router);
+	}
+
+	public Collection<RouterAgent> getRouterAgents() {
+		return routerAgents.values();
 	}
 
 	public Set<Router> getRouters() {
-		return routers;
-	}
-
-	/**
-	 * Creates and shows a GUI whose content pane is an
-	 * {@link BDI4JADEExamplesPanel}.
-	 */
-	public void run() {
-		log.info("Updating link usage");
-		for (Link link : affectedLinks) {
-			for (Router router : routers) {
-				if (router.hasRole(Role.LINK_MONITOR)) {
-					LinkMonitor lm = (LinkMonitor) router
-							.getRole(Role.LINK_MONITOR);
-					lm.setOverUsage(link, true);
-				}
-			}
-		}
+		return routerAgents.keySet();
 	}
 
 	@Override
 	public void update(Object o, Object arg) {
 		if (arg instanceof LimitLinkEvent) {
 			LimitLinkEvent event = (LimitLinkEvent) arg;
-			for (Router router : routers) {
+			for (Router router : getRouters()) {
 				if (router.hasRole(Role.LINK_MONITOR)) {
 					LinkMonitor lm = (LinkMonitor) router
 							.getRole(Role.LINK_MONITOR);
 					if (lm.isOverUsage(event.getLink())) {
+						log.info("Updating link monitors...");
 						lm.setOverUsage(event.getLink(), false);
 					}
 				}

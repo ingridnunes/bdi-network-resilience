@@ -19,7 +19,7 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.dummy;
+package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import br.ufrgs.inf.bdinetr.domain.AbstractRouterComponentFactory;
 import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
@@ -28,11 +28,6 @@ import br.ufrgs.inf.bdinetr.domain.FlowExporter;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 import br.ufrgs.inf.bdinetr.domain.Router;
-import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTAnomalyDetection;
-import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTClassifier;
-import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTFlowExporter;
-import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTLinkMonitor;
-import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTRateLimiter;
 
 /**
  * @author Ingrid Nunes

@@ -54,9 +54,17 @@ public class Router {
 	public boolean equals(Object obj) {
 		if (obj instanceof Router) {
 			Router d = (Router) obj;
-			return (this.ip + this.type).equals((d.ip + type));
+			return getId().equals(d.getId());
 		}
 		return false;
+	}
+
+	public String getId() {
+		if (type == null) {
+			return ip == null ? null : ip.getAddress();
+		} else {
+			return ip + "::" + type;
+		}
 	}
 
 	public Ip getIp() {
@@ -73,7 +81,8 @@ public class Router {
 
 	@Override
 	public int hashCode() {
-		return (this.ip + this.type).hashCode();
+		String id = getId();
+		return id == null ? 0 : id.hashCode();
 	}
 
 	public boolean hasRole(Role role) {
@@ -82,7 +91,7 @@ public class Router {
 
 	@Override
 	public String toString() {
-		return ip.toString();
+		return getId();
 	}
 
 }

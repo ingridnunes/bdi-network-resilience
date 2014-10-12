@@ -22,7 +22,6 @@
 package br.ufrgs.inf.bdinetr;
 
 import jade.BootProfileImpl;
-import jade.core.Agent;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Specifier;
@@ -38,10 +37,8 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -53,78 +50,71 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 
-import br.ufrgs.inf.bdinetr.agent.RouterAgent;
+import br.ufrgs.inf.bdinetr.domain.AbstractRouterComponentFactory;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
+import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Role;
-import br.ufrgs.inf.bdinetr.domain.AbstractRouterComponentFactory;
 import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.dummy.DummyRouterComponentFactory;
+import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTRouterComponentFactory;
 
 /**
  * @author Ingrid Nunes
  */
 public class BDINetRApp {
 
-	private static final Map<Ip, Agent> AGENTS;
-	private static final AbstractRouterComponentFactory FACTORY = new DummyRouterComponentFactory();
+	private static final Set<Link> AFFECTED_LINKS;
 	private static final Network NETWORK;
+	private static final boolean OMNeT = false;
 
 	static {
 		PropertyConfigurator.configure(BDINetRApp.class
 				.getResource("log4j.properties"));
 
-		Set<Router> routers = new HashSet<>();
-		routers.add(new Router(new Ip("RouterLM"), Role.LINK_MONITOR.getId(), FACTORY));
-		routers.add(new Router(new Ip("RouterRL"), Role.RATE_LIMITER.getId(), FACTORY));
-		routers.add(new Router(new Ip("RouterRL+FE"), Role.RATE_LIMITER.getId() | Role.FLOW_EXPORTER.getId(), FACTORY));
-		routers.add(new Router(new Ip("RouterAD"), Role.ANOMALY_DETECTION.getId(), FACTORY));
-		routers.add(new Router(new Ip("RouterAD+RL"), Role.ANOMALY_DETECTION.getId() | Role.RATE_LIMITER.getId(), FACTORY));
-		routers.add(new Router(new Ip("RouterCL"), Role.CLASSIFIER.getId(), FACTORY));
-		routers.add(new Router(new Ip("RouterCL+FE"), Role.CLASSIFIER.getId() | Role.FLOW_EXPORTER.getId(), FACTORY));
-		routers.add(new Router(new Ip("RouterFE"), Role.FLOW_EXPORTER.getId(), FACTORY));
+		NETWORK = new Network();
+		AFFECTED_LINKS = new HashSet<>();
 
-		Link affectedLink = new Link("AFFECTED_LINK");
+		if (OMNeT) {
+			AbstractRouterComponentFactory factory = new OMNeTRouterComponentFactory();
+			Ip ip = new Ip("http://localhost:8080/RPC2");
+			NETWORK.addRouter(new Router(ip, "ids_one", Role.ANOMALY_DETECTION
+					.getId(), factory));
+			NETWORK.addRouter(new Router(ip, "linkmonitor_one",
+					Role.LINK_MONITOR.getId(), factory));
+			NETWORK.addRouter(new Router(ip, "classifier_one", Role.CLASSIFIER
+					.getId(), factory));
+			NETWORK.addRouter(new Router(ip, "flowexporter_one",
+					Role.FLOW_EXPORTER.getId(), factory));
+			NETWORK.addRouter(new Router(ip, "ratelimiter_one",
+					Role.RATE_LIMITER.getId(), factory));
+		} else {
+			AbstractRouterComponentFactory factory = new DummyRouterComponentFactory();
+			NETWORK.addRouter(new Router(new Ip("RouterLM"), Role.LINK_MONITOR
+					.getId(), factory));
+			NETWORK.addRouter(new Router(new Ip("RouterRL"), Role.RATE_LIMITER
+					.getId(), factory));
+			NETWORK.addRouter(new Router(new Ip("RouterRL+FE"),
+					Role.RATE_LIMITER.getId() | Role.FLOW_EXPORTER.getId(),
+					factory));
+			NETWORK.addRouter(new Router(new Ip("RouterAD"),
+					Role.ANOMALY_DETECTION.getId(), factory));
+			NETWORK.addRouter(new Router(new Ip("RouterAD+RL"),
+					Role.ANOMALY_DETECTION.getId() | Role.RATE_LIMITER.getId(),
+					factory));
+			NETWORK.addRouter(new Router(new Ip("RouterCL"), Role.CLASSIFIER
+					.getId(), factory));
+			NETWORK.addRouter(new Router(new Ip("RouterCL+FE"), Role.CLASSIFIER
+					.getId() | Role.FLOW_EXPORTER.getId(), factory));
+			NETWORK.addRouter(new Router(new Ip("RouterFE"), Role.FLOW_EXPORTER
+					.getId(), factory));
 
-		Set<Link> links = new HashSet<>();
-		links.add(affectedLink);
-		links.add(new Link("LINK_01"));
-		links.add(new Link("LINK_02"));
-
-		Set<Link> affectedLinks = new HashSet<>();
-		affectedLinks.add(affectedLink);
-
-		NETWORK = new Network(routers, links, affectedLinks);
-
-		AGENTS = new HashMap<>();
-		for (Router router : NETWORK.getRouters()) {
-			AGENTS.put(router.getIp(), new RouterAgent(router));
+			AFFECTED_LINKS.add(new Link("AFFECTED_LINK"));
 		}
 	}
 
 	public static void main(String[] args) {
-		new BDINetRApp();
-
-		JPanel panel = new JPanel(new GridLayout(1, 1));
-		JButton button = new JButton("Run!");
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				NETWORK.run();
-			}
-		});
-		panel.add(button);
-		final JFrame frame = new JFrame();
-		frame.setTitle(BDINetRApp.class.getSimpleName());
-		frame.setContentPane(panel);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.pack();
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				frame.setVisible(true);
-			}
-		});
+		new BDINetRApp().createAndShowGUI();
 	}
 
 	private ProfileImpl bootProfile;
@@ -166,14 +156,50 @@ public class BDINetRApp {
 		PlatformController controller = runtime
 				.createMainContainer(bootProfile);
 
-		for (Ip agentName : AGENTS.keySet()) {
+		for (Router router : NETWORK.getRouters()) {
 			try {
 				AgentController ac = ((AgentContainer) controller)
-						.acceptNewAgent(agentName.toString(),
-								AGENTS.get(agentName));
+						.acceptNewAgent(router.getId(),
+								NETWORK.getAgent(router));
 				ac.start();
 			} catch (Exception e) {
 				log.error(e);
+			}
+		}
+	}
+
+	public void createAndShowGUI() {
+		JPanel panel = new JPanel(new GridLayout(1, 1));
+		JButton button = new JButton("Run!");
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				run();
+			}
+		});
+		panel.add(button);
+		final JFrame frame = new JFrame();
+		frame.setTitle(BDINetRApp.class.getSimpleName());
+		frame.setContentPane(panel);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.pack();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				frame.setVisible(true);
+			}
+		});
+	}
+
+	public void run() {
+		log.info("Updating link usage");
+		for (Link link : AFFECTED_LINKS) {
+			for (Router router : NETWORK.getRouters()) {
+				if (router.hasRole(Role.LINK_MONITOR)) {
+					LinkMonitor lm = (LinkMonitor) router
+							.getRole(Role.LINK_MONITOR);
+					lm.setOverUsage(link, true);
+				}
 			}
 		}
 	}

@@ -80,11 +80,14 @@ public class EventBroker extends ObservableImpl {
 		}
 	}
 
-	private static final EventBroker INSTANCE = new EventBroker();
+	private static EventBroker INSTANCE;
 	private static final Log log = LogFactory.getLog(EventBroker.class);
 	private static final int SOCKET_PORT = 4444;
-	
-	public static EventBroker getInstance() {
+
+	public synchronized static EventBroker getInstance() {
+		if (INSTANCE == null) {
+			INSTANCE = new EventBroker();
+		}
 		return INSTANCE;
 	}
 

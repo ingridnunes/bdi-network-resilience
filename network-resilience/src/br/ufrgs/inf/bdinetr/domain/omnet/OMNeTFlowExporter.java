@@ -19,24 +19,29 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.dummy;
+package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import br.ufrgs.inf.bdinetr.domain.FlowExporter;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Router;
 
 /**
- * @author Ingrid Nunes
+ * @author Alberto Egon and Ingrid Nunes
  */
-public class DummyFlowExporter extends AbstractRouterComponent implements FlowExporter {
+public class OMNeTFlowExporter extends OMNeTRouterComponent implements
+		FlowExporter {
 
-	public DummyFlowExporter(Router router) {
+	public OMNeTFlowExporter(Router router) {
 		super(router);
 	}
 
 	@Override
 	public void turnFlowExporterOn(Ip ip) {
-
+		Object[] params = new Object[3];
+		params[0] = "Inet.sas1.core0.flowExporter";
+		params[1] = new Integer(60);
+		params[2] = new Integer(10);
+		invoke("setthreshold", params);
 	}
 
 }

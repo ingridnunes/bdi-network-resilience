@@ -21,22 +21,47 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain.dummy;
 
+import br.ufrgs.inf.bdinetr.domain.AbstractRouterComponentFactory;
+import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
+import br.ufrgs.inf.bdinetr.domain.Classifier;
 import br.ufrgs.inf.bdinetr.domain.FlowExporter;
-import br.ufrgs.inf.bdinetr.domain.Ip;
+import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
+import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 import br.ufrgs.inf.bdinetr.domain.Router;
+import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTAnomalyDetection;
+import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTClassifier;
+import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTFlowExporter;
+import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTLinkMonitor;
+import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTRateLimiter;
 
 /**
  * @author Ingrid Nunes
  */
-public class DummyFlowExporter extends AbstractRouterComponent implements FlowExporter {
+public class OMNeTRouterComponentFactory extends AbstractRouterComponentFactory {
 
-	public DummyFlowExporter(Router router) {
-		super(router);
+	@Override
+	public AnomalyDetection createAnomalyDetection(Router router) {
+		return new OMNeTAnomalyDetection(router);
 	}
 
 	@Override
-	public void turnFlowExporterOn(Ip ip) {
+	public Classifier createClassifier(Router router) {
+		return new OMNeTClassifier(router);
+	}
 
+	@Override
+	public FlowExporter createFlowExporter(Router router) {
+		return new OMNeTFlowExporter(router);
+	}
+
+	@Override
+	public LinkMonitor createLinkMonitor(Router router) {
+		return new OMNeTLinkMonitor(router);
+	}
+
+	@Override
+	public RateLimiter createRateLimiter(Router router) {
+		return new OMNeTRateLimiter(router);
 	}
 
 }

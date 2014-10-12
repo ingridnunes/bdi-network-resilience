@@ -24,11 +24,6 @@ package br.ufrgs.inf.bdinetr.domain;
 import java.util.Set;
 
 /**
- * event at:
- * 
- * "classification" put: (factory/event create: #( "value_name" "value_source"
- * "value_destination" "value_protocol" ));
- * 
  * @author Ingrid Nunes
  */
 public interface Classifier extends RouterComponent {

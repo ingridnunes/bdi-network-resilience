@@ -28,12 +28,12 @@ import java.util.Set;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
 import br.ufrgs.inf.bdinetr.domain.Router;
-import br.ufrgs.inf.bdinetr.domain.AbstractRouterComponent;
 
 /**
  * @author Ingrid Nunes
  */
-public class DummyLinkMonitor extends AbstractRouterComponent implements LinkMonitor {
+public class DummyLinkMonitor extends AbstractRouterComponent implements
+		LinkMonitor {
 
 	private final Map<Link, Boolean> overUsageLinks;
 
@@ -53,6 +53,11 @@ public class DummyLinkMonitor extends AbstractRouterComponent implements LinkMon
 		if (overUsage == null)
 			overUsage = false;
 		return overUsage;
+	}
+
+	@Override
+	public void removeLink(Link link) {
+		this.overUsageLinks.remove(link);
 	}
 
 	@Override

@@ -31,9 +31,16 @@ public class Router {
 
 	private final Map<Role, RouterComponent> components;
 	private final Ip ip;
+	private final String type;
 
-	public Router(final Ip id, int roles, AbstractRouterComponentFactory factory) {
-		this.ip = id;
+	public Router(final Ip ip, int roles, AbstractRouterComponentFactory factory) {
+		this(ip, null, roles, factory);
+	}
+
+	public Router(final Ip ip, final String type, int roles,
+			AbstractRouterComponentFactory factory) {
+		this.ip = ip;
+		this.type = type;
 		this.components = new HashMap<>();
 		for (Role role : Role.values()) {
 			if (role.isPresent(roles)) {
@@ -47,7 +54,7 @@ public class Router {
 	public boolean equals(Object obj) {
 		if (obj instanceof Router) {
 			Router d = (Router) obj;
-			return this.ip.equals(d.ip);
+			return (this.ip + this.type).equals((d.ip + type));
 		}
 		return false;
 	}
@@ -60,9 +67,13 @@ public class Router {
 		return components.get(role);
 	}
 
+	public String getType() {
+		return type;
+	}
+
 	@Override
 	public int hashCode() {
-		return ip == null ? 0 : ip.hashCode();
+		return (this.ip + this.type).hashCode();
 	}
 
 	public boolean hasRole(Role role) {

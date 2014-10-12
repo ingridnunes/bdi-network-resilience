@@ -19,24 +19,32 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.dummy;
+package br.ufrgs.inf.bdinetr.domain.omnet.event;
 
-import br.ufrgs.inf.bdinetr.domain.FlowExporter;
-import br.ufrgs.inf.bdinetr.domain.Ip;
-import br.ufrgs.inf.bdinetr.domain.Router;
+import br.ufrgs.inf.bdinetr.domain.Link;
 
 /**
- * @author Ingrid Nunes
+ * event at:
+ * 
+ * "load" put: (factory/event create: #( "value_name" "value_index" ));
+ * 
+ * --> value_name: ??? --> value_index: id do link
+ * 
+ * @author Alberto Egon and Ingrid Nunes
  */
-public class DummyFlowExporter extends AbstractRouterComponent implements FlowExporter {
+public class OverUsageEvent implements OMNeTEvent {
 
-	public DummyFlowExporter(Router router) {
-		super(router);
+	public static final String NAME = "load";
+
+	private Link link;
+
+	public OverUsageEvent(String s) {
+		String[] parts = s.split(";");
+		this.link = new Link(parts[2]);
 	}
 
-	@Override
-	public void turnFlowExporterOn(Ip ip) {
-
+	public Link getLink() {
+		return link;
 	}
 
 }

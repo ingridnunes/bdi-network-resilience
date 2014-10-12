@@ -19,7 +19,7 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.dummy;
+package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,15 +27,19 @@ import java.util.Set;
 import br.ufrgs.inf.bdinetr.domain.Classifier;
 import br.ufrgs.inf.bdinetr.domain.Flow;
 import br.ufrgs.inf.bdinetr.domain.Ip;
+import br.ufrgs.inf.bdinetr.domain.Observer;
 import br.ufrgs.inf.bdinetr.domain.Router;
+import br.ufrgs.inf.bdinetr.domain.omnet.event.ThreatEvent;
 
 /**
- * @author Ingrid Nunes
+ * @author Alberto Egon and Ingrid Nunes
  */
-public class DummyClassifier extends AbstractRouterComponent implements Classifier {
+public class OMNeTClassifier extends OMNeTRouterComponent implements
+		Classifier, Observer {
 
-	public DummyClassifier(Router router) {
+	public OMNeTClassifier(Router router) {
 		super(router);
+		EventBroker.getInstance().attachObserver(this);
 	}
 
 	@Override
@@ -51,6 +55,13 @@ public class DummyClassifier extends AbstractRouterComponent implements Classifi
 					"http"));
 		}
 		return flows;
+	}
+
+	@Override
+	public void update(Object o, Object arg) {
+		if (arg instanceof ThreatEvent) {
+			// TODO Auto-generated method stub
+		}
 	}
 
 }

@@ -28,10 +28,6 @@ import java.util.Set;
  * 
  * addOperation: "name:action:" remoteName: "togglereport".
  * 
- * event
- * 
- * at: "intrusion" put: (factory/event create: #( "value_victim" ));
- * 
  * @author Ingrid Nunes
  */
 public interface AnomalyDetection extends RouterComponent {

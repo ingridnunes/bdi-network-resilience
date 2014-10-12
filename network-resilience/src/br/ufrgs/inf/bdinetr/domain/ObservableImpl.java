@@ -19,24 +19,31 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.dummy;
+package br.ufrgs.inf.bdinetr.domain;
 
-import br.ufrgs.inf.bdinetr.domain.FlowExporter;
-import br.ufrgs.inf.bdinetr.domain.Ip;
-import br.ufrgs.inf.bdinetr.domain.Router;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Ingrid Nunes
  */
-public class DummyFlowExporter extends AbstractRouterComponent implements FlowExporter {
+public class ObservableImpl implements Observable {
 
-	public DummyFlowExporter(Router router) {
-		super(router);
+	private final Set<Observer> observers;
+
+	public ObservableImpl() {
+		this.observers = new HashSet<>();
 	}
 
 	@Override
-	public void turnFlowExporterOn(Ip ip) {
+	public void attachObserver(Observer observer) {
+		this.observers.add(observer);
+	}
 
+	protected void notifyObservers(Object arg) {
+		for (Observer observer : observers) {
+			observer.update(this, arg);
+		}
 	}
 
 }

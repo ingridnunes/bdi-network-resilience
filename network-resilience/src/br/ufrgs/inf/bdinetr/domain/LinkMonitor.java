@@ -38,6 +38,8 @@ public interface LinkMonitor extends RouterComponent, Observable {
 
 	public boolean isOverUsage(Link link);
 
+	public void removeLink(Link link);
+
 	public void setOverUsage(Link link, boolean overUsage);
 
 }

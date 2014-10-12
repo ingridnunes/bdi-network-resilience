@@ -19,64 +19,61 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.dummy;
+package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-import br.ufrgs.inf.bdinetr.domain.Flow;
-import br.ufrgs.inf.bdinetr.domain.Ip;
-import br.ufrgs.inf.bdinetr.domain.LimitLinkEvent;
 import br.ufrgs.inf.bdinetr.domain.Link;
-import br.ufrgs.inf.bdinetr.domain.RateLimiter;
+import br.ufrgs.inf.bdinetr.domain.LinkMonitor;
+import br.ufrgs.inf.bdinetr.domain.Observer;
 import br.ufrgs.inf.bdinetr.domain.Router;
+import br.ufrgs.inf.bdinetr.domain.omnet.event.OverUsageEvent;
 
 /**
- * @author Ingrid Nunes
+ * @author Alberto Egon and Ingrid Nunes
  */
-public class DummyRateLimiter extends AbstractRouterComponent implements
-		RateLimiter {
+public class OMNeTLinkMonitor extends OMNeTRouterComponent implements
+		LinkMonitor, Observer {
 
-	private final Map<Flow, Double> rateLimitedflows;
-	private final Map<Ip, Double> rateLimitedIps;
-	private final Map<Link, Double> rateLimitedLinks;
+	private final Map<Link, Boolean> overUsageLinks;
 
-	public DummyRateLimiter(Router router) {
+	public OMNeTLinkMonitor(Router router) {
 		super(router);
-		this.rateLimitedLinks = new HashMap<>();
-		this.rateLimitedIps = new HashMap<>();
-		this.rateLimitedflows = new HashMap<>();
+		this.overUsageLinks = new HashMap<>();
+		EventBroker.getInstance().attachObserver(this);
 	}
 
 	@Override
-	public void limitFlow(Flow flow, double rate) {
-		this.rateLimitedflows.put(flow, rate);
+	public Set<Link> getLinks() {
+		return overUsageLinks.keySet();
 	}
 
 	@Override
-	public void limitIp(Ip ip, double rate) {
-		this.rateLimitedIps.put(ip, rate);
+	public boolean isOverUsage(Link link) {
+		Boolean overUsage = this.overUsageLinks.get(link);
+		if (overUsage == null)
+			overUsage = false;
+		return overUsage;
 	}
 
 	@Override
-	public void limitLink(Link link, double rate) {
-		this.rateLimitedLinks.put(link, rate);
-		notifyObservers(new LimitLinkEvent(link));
+	public void removeLink(Link link) {
+		this.overUsageLinks.remove(link);
 	}
 
 	@Override
-	public void unlimitFlow(Flow flow) {
-		this.rateLimitedflows.remove(flow);
+	public void setOverUsage(Link link, boolean overUsage) {
+		this.overUsageLinks.put(link, overUsage);
+		notifyObservers(link);
 	}
 
 	@Override
-	public void unlimitIp(Ip ip) {
-		this.rateLimitedIps.remove(ip);
-	}
-
-	@Override
-	public void unlimitLink(Link link) {
-		this.rateLimitedLinks.remove(link);
+	public void update(Object o, Object arg) {
+		if (arg instanceof OverUsageEvent) {
+			setOverUsage(((OverUsageEvent) o).getLink(), true);
+		}
 	}
 
 }

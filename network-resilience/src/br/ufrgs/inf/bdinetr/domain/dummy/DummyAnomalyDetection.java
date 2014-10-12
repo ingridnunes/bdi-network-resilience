@@ -28,7 +28,6 @@ import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
 import br.ufrgs.inf.bdinetr.domain.Router;
-import br.ufrgs.inf.bdinetr.domain.AbstractRouterComponent;
 
 /**
  * @author Ingrid Nunes

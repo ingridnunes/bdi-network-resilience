@@ -19,10 +19,7 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.dummy;
-
-import java.util.HashMap;
-import java.util.Map;
+package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import br.ufrgs.inf.bdinetr.domain.Flow;
 import br.ufrgs.inf.bdinetr.domain.Ip;
@@ -32,51 +29,59 @@ import br.ufrgs.inf.bdinetr.domain.RateLimiter;
 import br.ufrgs.inf.bdinetr.domain.Router;
 
 /**
- * @author Ingrid Nunes
+ * @author Alberto Egon and Ingrid Nunes
  */
-public class DummyRateLimiter extends AbstractRouterComponent implements
+public class OMNeTRateLimiter extends OMNeTRouterComponent implements
 		RateLimiter {
 
-	private final Map<Flow, Double> rateLimitedflows;
-	private final Map<Ip, Double> rateLimitedIps;
-	private final Map<Link, Double> rateLimitedLinks;
-
-	public DummyRateLimiter(Router router) {
+	public OMNeTRateLimiter(Router router) {
 		super(router);
-		this.rateLimitedLinks = new HashMap<>();
-		this.rateLimitedIps = new HashMap<>();
-		this.rateLimitedflows = new HashMap<>();
 	}
 
 	@Override
 	public void limitFlow(Flow flow, double rate) {
-		this.rateLimitedflows.put(flow, rate);
+		Object[] params = new Object[5];
+		params[0] = "Inet.sas1.core0.rateLimiter";
+		params[1] = flow.getSrcIp().getAddress();
+		params[2] = flow.getDstIp().getAddress();
+		params[3] = flow.getProtocol();
+		params[4] = new Integer(90); // FIXME
+		invoke("limitflow", params);
 	}
 
 	@Override
 	public void limitIp(Ip ip, double rate) {
-		this.rateLimitedIps.put(ip, rate);
+		Object[] params = new Object[3];
+		params[0] = "Inet.sas1.core0.rateLimiter";
+		params[1] = ip.getAddress();
+		params[2] = new Integer(50); // FIXME
+		invoke("limitip", params);
 	}
 
 	@Override
 	public void limitLink(Link link, double rate) {
-		this.rateLimitedLinks.put(link, rate);
+		Object[] params = new Object[3];
+		params[0] = "Inet.sas1.core0.rateLimiter";
+		params[1] = link.getId();
+		params[2] = new Integer(90); // FIXME
+		invoke("limitlink", params);
+
 		notifyObservers(new LimitLinkEvent(link));
 	}
 
 	@Override
 	public void unlimitFlow(Flow flow) {
-		this.rateLimitedflows.remove(flow);
+		// TODO unsupported by OMNeT
 	}
 
 	@Override
 	public void unlimitIp(Ip ip) {
-		this.rateLimitedIps.remove(ip);
+		// TODO unsupported by OMNeT
 	}
 
 	@Override
 	public void unlimitLink(Link link) {
-		this.rateLimitedLinks.remove(link);
+		// TODO unsupported by OMNeT
 	}
 
 }

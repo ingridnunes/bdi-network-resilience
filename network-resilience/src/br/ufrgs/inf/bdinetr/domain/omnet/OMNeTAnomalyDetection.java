@@ -19,38 +19,44 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain.dummy;
+package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import br.ufrgs.inf.bdinetr.domain.Classifier;
-import br.ufrgs.inf.bdinetr.domain.Flow;
+import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
 import br.ufrgs.inf.bdinetr.domain.Ip;
+import br.ufrgs.inf.bdinetr.domain.Link;
+import br.ufrgs.inf.bdinetr.domain.Observer;
 import br.ufrgs.inf.bdinetr.domain.Router;
+import br.ufrgs.inf.bdinetr.domain.omnet.event.AnomalousEvent;
 
 /**
- * @author Ingrid Nunes
+ * @author Alberto Egon and Ingrid Nunes
  */
-public class DummyClassifier extends AbstractRouterComponent implements Classifier {
+public class OMNeTAnomalyDetection extends OMNeTRouterComponent implements
+		AnomalyDetection, Observer {
 
-	public DummyClassifier(Router router) {
+	public OMNeTAnomalyDetection(Router router) {
 		super(router);
+		EventBroker.getInstance().attachObserver(this);
 	}
 
 	@Override
-	public Set<Flow> classifyFlows(Ip ip) {
-		Set<Flow> flows = new HashSet<>();
-		if (ip.getAddress().equals("victim1")) {
-			flows.add(new Flow(new Ip("DDoS1"), 80, new Ip("victim1"), 80,
-					"http"));
-			flows.add(new Flow(new Ip("DDoS2"), 80, new Ip("victim1"), 80,
-					"http"));
-		} else if (ip.getAddress().equals("victim2")) {
-			flows.add(new Flow(new Ip("DDoS3"), 80, new Ip("victim2"), 80,
-					"http"));
+	public Set<Ip> detectIntrusion(Link link) {
+		Set<Ip> intrusions = new HashSet<>();
+		if (link.getId().equals("AFFECTED_LINK")) {
+			intrusions.add(new Ip("victim1"));
+			intrusions.add(new Ip("victim2"));
 		}
-		return flows;
+		return intrusions;
+	}
+
+	@Override
+	public void update(Object o, Object arg) {
+		if (arg instanceof AnomalousEvent) {
+			// TODO Auto-generated method stub
+		}
 	}
 
 }

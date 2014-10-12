@@ -19,34 +19,22 @@
 // http://inf.ufrgs.br/prosoft/bdi4jade/
 //
 //----------------------------------------------------------------------------
-package br.ufrgs.inf.bdinetr.domain;
+package br.ufrgs.inf.bdinetr.domain.dummy;
 
-import java.util.HashSet;
-import java.util.Set;
+import br.ufrgs.inf.bdinetr.domain.ObservableImpl;
+import br.ufrgs.inf.bdinetr.domain.Router;
+import br.ufrgs.inf.bdinetr.domain.RouterComponent;
 
 /**
  * @author Ingrid Nunes
  */
-public abstract class AbstractRouterComponent implements RouterComponent,
-		Observable {
+public abstract class AbstractRouterComponent extends ObservableImpl implements
+		RouterComponent {
 
-	private final Set<Observer> observers;
 	protected final Router router;
 
 	public AbstractRouterComponent(Router router) {
 		this.router = router;
-		this.observers = new HashSet<>();
-	}
-
-	@Override
-	public void attachObserver(Observer observer) {
-		this.observers.add(observer);
-	}
-
-	protected void notifyObservers(Object arg) {
-		for (Observer observer : observers) {
-			observer.update(this, arg);
-		}
 	}
 
 }

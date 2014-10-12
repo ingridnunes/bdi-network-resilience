@@ -21,7 +21,6 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import bdi4jade.annotation.Parameter;
@@ -136,8 +135,6 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 
 	@bdi4jade.annotation.Plan
 	private Plan limitLinkRate;
-	@bdi4jade.annotation.TransientBeliefSet
-	private final Set<Link> linkEvents;
 	@bdi4jade.annotation.Plan
 	private Plan restoreLinkRate;
 	@bdi4jade.annotation.TransientBelief
@@ -147,7 +144,6 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 			GoalRequestPlan beliefGoalRequestPlan) {
 		this.role = linkMonitor;
 		role.attachObserver(this);
-		this.linkEvents = new HashSet<>();
 
 		setBeliefRevisionStrategy(this);
 		setOptionGenerationFunction(this);
@@ -248,29 +244,24 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 
 	@Override
 	public void reviewBeliefs() {
-		synchronized (linkEvents) {
-			for (Link link : linkEvents) {
-				OverUsage overUsage = new OverUsage(link);
-				if (role.isOverUsage(link)) {
-					Predicate<OverUsage> overUsageBelief = (Predicate<OverUsage>) getBeliefBase()
-							.getBelief(overUsage);
-					if (overUsageBelief == null || !overUsageBelief.getValue()) {
-						belief(overUsage, true);
-						belief(new AnomalousUsage(link), null);
-					}
-				} else {
-					belief(overUsage, null);
+		for (Link link : role.getLinks()) {
+			OverUsage overUsage = new OverUsage(link);
+			if (role.isOverUsage(link)) {
+				Predicate<OverUsage> overUsageBelief = (Predicate<OverUsage>) getBeliefBase()
+						.getBelief(overUsage);
+				if (overUsageBelief == null || !overUsageBelief.getValue()) {
+					belief(overUsage, true);
+					belief(new AnomalousUsage(link), null);
 				}
+			} else {
+				belief(overUsage, null);
+				role.removeLink(link);
 			}
-			linkEvents.clear();
 		}
 	}
 
 	@Override
 	public void update(Object o, Object arg) {
-		synchronized (linkEvents) {
-			this.linkEvents.add((Link) arg);
-		}
 		getMyAgent().restart();
 	}
 

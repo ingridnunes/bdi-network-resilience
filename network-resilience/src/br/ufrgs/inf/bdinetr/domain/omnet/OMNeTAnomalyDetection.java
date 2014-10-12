@@ -22,6 +22,7 @@
 package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import br.ufrgs.inf.bdinetr.domain.AnomalyDetection;
@@ -37,25 +38,43 @@ import br.ufrgs.inf.bdinetr.domain.omnet.event.AnomalousEvent;
 public class OMNeTAnomalyDetection extends OMNeTRouterComponent implements
 		AnomalyDetection, Observer {
 
+	private final Set<AnomalousEvent> events;
+
 	public OMNeTAnomalyDetection(Router router) {
 		super(router);
+		this.events = new HashSet<>();
 		EventBroker.getInstance().attachObserver(this);
 	}
 
 	@Override
 	public Set<Ip> detectIntrusion(Link link) {
-		Set<Ip> intrusions = new HashSet<>();
-		if (link.getId().equals("AFFECTED_LINK")) {
-			intrusions.add(new Ip("victim1"));
-			intrusions.add(new Ip("victim2"));
+		synchronized (events) {
+			while (events.isEmpty()) {
+				try {
+					events.wait();
+				} catch (InterruptedException e) {
+					log.warn(e);
+				}
+			}
+
+			Set<Ip> outliers = new HashSet<>();
+			Iterator<AnomalousEvent> it = events.iterator();
+			while (it.hasNext()) {
+				AnomalousEvent event = it.next();
+				outliers.add(event.getIp());
+				it.remove();
+			}
+			return outliers;
 		}
-		return intrusions;
 	}
 
 	@Override
 	public void update(Object o, Object arg) {
 		if (arg instanceof AnomalousEvent) {
-			// TODO Auto-generated method stub
+			synchronized (events) {
+				events.add((AnomalousEvent) arg);
+				events.notifyAll();
+			}
 		}
 	}
 

@@ -22,6 +22,7 @@
 package br.ufrgs.inf.bdinetr.domain.omnet;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import br.ufrgs.inf.bdinetr.domain.Classifier;
@@ -37,30 +38,43 @@ import br.ufrgs.inf.bdinetr.domain.omnet.event.ThreatEvent;
 public class OMNeTClassifier extends OMNeTRouterComponent implements
 		Classifier, Observer {
 
+	private final Set<ThreatEvent> events;
+
 	public OMNeTClassifier(Router router) {
 		super(router);
+		this.events = new HashSet<>();
 		EventBroker.getInstance().attachObserver(this);
 	}
 
 	@Override
 	public Set<Flow> classifyFlows(Ip ip) {
-		Set<Flow> flows = new HashSet<>();
-		if (ip.getAddress().equals("victim1")) {
-			flows.add(new Flow(new Ip("DDoS1"), 80, new Ip("victim1"), 80,
-					"http"));
-			flows.add(new Flow(new Ip("DDoS2"), 80, new Ip("victim1"), 80,
-					"http"));
-		} else if (ip.getAddress().equals("victim2")) {
-			flows.add(new Flow(new Ip("DDoS3"), 80, new Ip("victim2"), 80,
-					"http"));
+		synchronized (events) {
+			while (events.isEmpty()) {
+				try {
+					events.wait();
+				} catch (InterruptedException e) {
+					log.warn(e);
+				}
+			}
+
+			Set<Flow> flows = new HashSet<>();
+			Iterator<ThreatEvent> it = events.iterator();
+			while (it.hasNext()) {
+				ThreatEvent event = it.next();
+				flows.add(event.getFlow());
+				it.remove();
+			}
+			return flows;
 		}
-		return flows;
 	}
 
 	@Override
 	public void update(Object o, Object arg) {
 		if (arg instanceof ThreatEvent) {
-			// TODO Auto-generated method stub
+			synchronized (events) {
+				events.add((ThreatEvent) arg);
+				events.notifyAll();
+			}
 		}
 	}
 

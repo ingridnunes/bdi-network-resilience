@@ -45,7 +45,7 @@ public class OMNeTRateLimiter extends OMNeTRouterComponent implements
 		params[1] = flow.getSrcIp().getAddress();
 		params[2] = flow.getDstIp().getAddress();
 		params[3] = flow.getProtocol();
-		params[4] = new Integer(90); // FIXME
+		params[4] = rate;
 		invoke("limitflow", params);
 	}
 
@@ -54,7 +54,7 @@ public class OMNeTRateLimiter extends OMNeTRouterComponent implements
 		Object[] params = new Object[3];
 		params[0] = "Inet.sas1.core0.rateLimiter";
 		params[1] = ip.getAddress();
-		params[2] = new Integer(50); // FIXME
+		params[2] = rate;
 		invoke("limitip", params);
 	}
 
@@ -63,7 +63,7 @@ public class OMNeTRateLimiter extends OMNeTRouterComponent implements
 		Object[] params = new Object[3];
 		params[0] = "Inet.sas1.core0.rateLimiter";
 		params[1] = link.getId();
-		params[2] = new Integer(90); // FIXME
+		params[2] = rate;
 		invoke("limitlink", params);
 
 		notifyObservers(new LimitLinkEvent(link));

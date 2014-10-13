@@ -35,11 +35,11 @@ package br.ufrgs.inf.bdinetr.domain;
  */
 public interface RateLimiter extends RouterComponent {
 
-	public void limitFlow(Flow flow, double rate);
+	public void limitFlow(Flow flow, int rate);
 
-	public void limitIp(Ip ip, double rate);
+	public void limitIp(Ip ip, int rate);
 
-	public void limitLink(Link link, double rate);
+	public void limitLink(Link link, int rate);
 
 	public void unlimitFlow(Flow flow);
 

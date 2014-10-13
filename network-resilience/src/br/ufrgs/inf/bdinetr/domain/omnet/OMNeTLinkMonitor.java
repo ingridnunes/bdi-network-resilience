@@ -40,11 +40,13 @@ public class OMNeTLinkMonitor extends OMNeTRouterComponent implements
 		LinkMonitor, Observer {
 
 	private final Map<Link, Boolean> overUsageLinks;
+	private boolean received;
 
 	public OMNeTLinkMonitor(Router router) {
 		super(router);
 		this.overUsageLinks = new HashMap<>();
 		EventBroker.getInstance().addObserver(this);
+		this.received = false; 
 	}
 
 	@Override
@@ -73,9 +75,10 @@ public class OMNeTLinkMonitor extends OMNeTRouterComponent implements
 	}
 
 	@Override
-	public void update(Observable o, Object arg) {
-		if (arg instanceof OverUsageEvent) {
+	public synchronized void update(Observable o, Object arg) {
+		if (arg instanceof OverUsageEvent && !received) {
 			setOverUsage(((OverUsageEvent) arg).getLink(), true);
+			this.received = true;
 		} else if (arg instanceof LimitLinkEvent) {
 			LimitLinkEvent event = (LimitLinkEvent) arg;
 			if (this.isOverUsage(event.getLink())) {

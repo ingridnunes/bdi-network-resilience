@@ -38,9 +38,9 @@ import br.ufrgs.inf.bdinetr.domain.Router;
 public class DummyRateLimiter extends AbstractRouterComponent implements
 		RateLimiter, Observable {
 
-	private final Map<Flow, Double> rateLimitedflows;
-	private final Map<Ip, Double> rateLimitedIps;
-	private final Map<Link, Double> rateLimitedLinks;
+	private final Map<Flow, Integer> rateLimitedflows;
+	private final Map<Ip, Integer> rateLimitedIps;
+	private final Map<Link, Integer> rateLimitedLinks;
 
 	public DummyRateLimiter(Router router) {
 		super(router);
@@ -50,17 +50,17 @@ public class DummyRateLimiter extends AbstractRouterComponent implements
 	}
 
 	@Override
-	public void limitFlow(Flow flow, double rate) {
+	public void limitFlow(Flow flow, int rate) {
 		this.rateLimitedflows.put(flow, rate);
 	}
 
 	@Override
-	public void limitIp(Ip ip, double rate) {
+	public void limitIp(Ip ip, int rate) {
 		this.rateLimitedIps.put(ip, rate);
 	}
 
 	@Override
-	public void limitLink(Link link, double rate) {
+	public void limitLink(Link link, int rate) {
 		this.rateLimitedLinks.put(link, rate);
 		setChanged();
 		notifyObservers(new LimitLinkEvent(link));

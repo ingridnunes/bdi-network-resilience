@@ -49,6 +49,11 @@ public class OMNeTAnomalyDetection extends OMNeTRouterComponent implements
 
 	@Override
 	public Set<Ip> detectIntrusion(Link link) {
+		Object[] params = new Object[2];
+		params[0] = router.getIp().getAddress();
+		params[1] = "on";
+		invoke("togglereport", params);
+
 		synchronized (events) {
 			while (events.isEmpty()) {
 				try {
@@ -70,7 +75,7 @@ public class OMNeTAnomalyDetection extends OMNeTRouterComponent implements
 	}
 
 	@Override
-	public void update(Observable o, Object arg) {
+	public synchronized void update(Observable o, Object arg) {
 		if (arg instanceof AnomalousEvent) {
 			synchronized (events) {
 				events.add((AnomalousEvent) arg);

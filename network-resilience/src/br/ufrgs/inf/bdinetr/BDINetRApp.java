@@ -68,7 +68,7 @@ public class BDINetRApp {
 
 	private static final Set<Link> AFFECTED_LINKS;
 	private static final Network NETWORK;
-	private static final boolean OMNeT = false;
+	private static final boolean OMNeT = true;
 
 	static {
 		PropertyConfigurator.configure(BDINetRApp.class
@@ -79,17 +79,17 @@ public class BDINetRApp {
 
 		if (OMNeT) {
 			AbstractRouterComponentFactory factory = new OMNeTRouterComponentFactory();
-			Ip ip = new Ip("http://localhost:8080/RPC2");
-			NETWORK.addRouter(new Router(ip, "ids_one", Role.ANOMALY_DETECTION
-					.getId(), factory));
-			NETWORK.addRouter(new Router(ip, "linkmonitor_one",
-					Role.LINK_MONITOR.getId(), factory));
-			NETWORK.addRouter(new Router(ip, "classifier_one", Role.CLASSIFIER
-					.getId(), factory));
-			NETWORK.addRouter(new Router(ip, "flowexporter_one",
+			NETWORK.addRouter(new Router(new Ip("Inet.sas1.core0.idsModule"),
+					"ids_one", Role.ANOMALY_DETECTION.getId(), factory));
+			NETWORK.addRouter(new Router(new Ip("Inet.sas1.core0.linkMonitor"),
+					"linkmonitor_one", Role.LINK_MONITOR.getId(), factory));
+			NETWORK.addRouter(new Router(new Ip("Inet.sas1.core0.classifier"),
+					"classifier_one", Role.CLASSIFIER.getId(), factory));
+			NETWORK.addRouter(new Router(
+					new Ip("Inet.sas1.core0.flowExporter"), "flowexporter_one",
 					Role.FLOW_EXPORTER.getId(), factory));
-			NETWORK.addRouter(new Router(ip, "ratelimiter_one",
-					Role.RATE_LIMITER.getId(), factory));
+			NETWORK.addRouter(new Router(new Ip("Inet.sas1.core0.rateLimiter"),
+					"ratelimiter_one", Role.RATE_LIMITER.getId(), factory));
 		} else {
 			AbstractRouterComponentFactory factory = new DummyRouterComponentFactory();
 			NETWORK.addRouter(new Router(new Ip("RouterLM"), Role.LINK_MONITOR

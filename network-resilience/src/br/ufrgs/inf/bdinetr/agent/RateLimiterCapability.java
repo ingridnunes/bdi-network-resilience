@@ -129,9 +129,9 @@ public class RateLimiterCapability extends RouterAgentCapability {
 		}
 	}
 
-	public static final double FLOW_LIMIT_RATE = 90;
-	public static final double IP_LIMIT_RATE = 50;
-	public static final double LINK_LIMIT_RATE = 90;
+	public static final int FLOW_LIMIT_RATE = 90;
+	public static final int IP_LIMIT_RATE = 50;
+	public static final int LINK_LIMIT_RATE = 90;
 	private static final long serialVersionUID = -1705728861020677126L;
 
 	@bdi4jade.annotation.Plan

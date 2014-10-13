@@ -40,9 +40,9 @@ public class OMNeTRateLimiter extends OMNeTRouterComponent implements
 	}
 
 	@Override
-	public void limitFlow(Flow flow, double rate) {
+	public void limitFlow(Flow flow, int rate) {
 		Object[] params = new Object[5];
-		params[0] = "Inet.sas1.core0.rateLimiter";
+		params[0] = router.getIp().getAddress();
 		params[1] = flow.getSrcIp().getAddress();
 		params[2] = flow.getDstIp().getAddress();
 		params[3] = flow.getProtocol();
@@ -51,18 +51,18 @@ public class OMNeTRateLimiter extends OMNeTRouterComponent implements
 	}
 
 	@Override
-	public void limitIp(Ip ip, double rate) {
+	public void limitIp(Ip ip, int rate) {
 		Object[] params = new Object[3];
-		params[0] = "Inet.sas1.core0.rateLimiter";
+		params[0] = router.getIp().getAddress();
 		params[1] = ip.getAddress();
 		params[2] = rate;
 		invoke("limitip", params);
 	}
 
 	@Override
-	public void limitLink(Link link, double rate) {
+	public void limitLink(Link link, int rate) {
 		Object[] params = new Object[3];
-		params[0] = "Inet.sas1.core0.rateLimiter";
+		params[0] = router.getIp().getAddress();
 		params[1] = link.getId();
 		params[2] = rate;
 		invoke("limitlink", params);

@@ -39,6 +39,8 @@ import br.ufrgs.inf.bdinetr.domain.omnet.event.ThreatEvent;
 public class OMNeTClassifier extends OMNeTRouterComponent implements
 		Classifier, Observer {
 
+	private static final long WAITING_TIME = 70000; // 70s
+
 	private final Set<ThreatEvent> events;
 
 	public OMNeTClassifier(Router router) {
@@ -50,13 +52,23 @@ public class OMNeTClassifier extends OMNeTRouterComponent implements
 	@Override
 	public Set<Flow> classifyFlows(Ip ip) {
 		synchronized (events) {
-			while (events.isEmpty()) {
+			long begin = System.currentTimeMillis();
+			long elapsed = System.currentTimeMillis() - begin;
+			while (events.isEmpty() || (elapsed < WAITING_TIME)) {
 				try {
-					events.wait();
+					log.info("Elapsed time: " + elapsed + " - Events empty: "
+							+ events.isEmpty());
+					long timeout = (WAITING_TIME - elapsed) < 0 ? 0
+							: WAITING_TIME - elapsed;
+					events.wait(timeout);
+					elapsed = System.currentTimeMillis() - begin;
 				} catch (InterruptedException e) {
 					log.warn(e);
 				}
 			}
+
+			log.info("Finished receiving Threat events. Elapsed time: "
+					+ elapsed);
 
 			Set<Flow> flows = new HashSet<>();
 			Iterator<ThreatEvent> it = events.iterator();
@@ -70,7 +82,7 @@ public class OMNeTClassifier extends OMNeTRouterComponent implements
 	}
 
 	@Override
-	public void update(Observable o, Object arg) {
+	public synchronized void update(Observable o, Object arg) {
 		if (arg instanceof ThreatEvent) {
 			synchronized (events) {
 				events.add((ThreatEvent) arg);

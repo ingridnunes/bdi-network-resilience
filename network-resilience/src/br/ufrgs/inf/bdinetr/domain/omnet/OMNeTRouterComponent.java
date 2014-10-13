@@ -40,6 +40,8 @@ import br.ufrgs.inf.bdinetr.domain.RouterComponent;
 public abstract class OMNeTRouterComponent extends Observable implements
 		RouterComponent {
 
+	private static final String OMNeT_ADDRESS = "http://localhost:8080/RPC2";
+	
 	private final XmlRpcClient adaptorRPC;
 	protected final Log log;
 	protected final Router router;
@@ -51,7 +53,7 @@ public abstract class OMNeTRouterComponent extends Observable implements
 		XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 
 		try {
-			config.setServerURL(new URL(router.getIp().getAddress()));
+			config.setServerURL(new URL(OMNeT_ADDRESS));
 		} catch (MalformedURLException mue) {
 			mue.printStackTrace();
 		}

@@ -38,7 +38,7 @@ public class OMNeTFlowExporter extends OMNeTRouterComponent implements
 	@Override
 	public void turnFlowExporterOn(Ip ip) {
 		Object[] params = new Object[3];
-		params[0] = "Inet.sas1.core0.flowExporter";
+		params[0] = router.getIp().getAddress();
 		params[1] = new Integer(60);
 		params[2] = new Integer(10);
 		invoke("setthreshold", params);

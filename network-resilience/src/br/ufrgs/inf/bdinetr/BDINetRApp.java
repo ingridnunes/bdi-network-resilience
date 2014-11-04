@@ -66,9 +66,13 @@ import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTRouterComponentFactory;
  */
 public class BDINetRApp {
 
+	enum SimulationType {
+		OMNeT, SIMPLE_NETWORK, COMPLEX_NETWORK
+	};
+
 	private static final Set<Link> AFFECTED_LINKS;
 	private static final Network NETWORK;
-	private static final boolean OMNeT = true;
+	private static final SimulationType SIMULATION_TYPE = SimulationType.SIMPLE_NETWORK;
 
 	static {
 		PropertyConfigurator.configure(BDINetRApp.class
@@ -76,9 +80,11 @@ public class BDINetRApp {
 
 		NETWORK = new Network();
 		AFFECTED_LINKS = new HashSet<>();
+		AbstractRouterComponentFactory factory;
 
-		if (OMNeT) {
-			AbstractRouterComponentFactory factory = new OMNeTRouterComponentFactory();
+		switch (SIMULATION_TYPE) {
+		case OMNeT:
+			factory = new OMNeTRouterComponentFactory();
 			NETWORK.addRouter(new Router(new Ip("Inet.sas1.core0.idsModule"),
 					"ids_one", Role.ANOMALY_DETECTION.getId(), factory));
 			NETWORK.addRouter(new Router(new Ip("Inet.sas1.core0.linkMonitor"),
@@ -90,8 +96,23 @@ public class BDINetRApp {
 					Role.FLOW_EXPORTER.getId(), factory));
 			NETWORK.addRouter(new Router(new Ip("Inet.sas1.core0.rateLimiter"),
 					"ratelimiter_one", Role.RATE_LIMITER.getId(), factory));
-		} else {
-			AbstractRouterComponentFactory factory = new DummyRouterComponentFactory();
+			break;
+		case SIMPLE_NETWORK:
+			factory = new DummyRouterComponentFactory();
+			NETWORK.addRouter(new Router(new Ip("LC+RL"), Role.LINK_MONITOR
+					.getId() | Role.RATE_LIMITER.getId(), factory));
+			NETWORK.addRouter(new Router(new Ip("IPC+RL"),
+					Role.ANOMALY_DETECTION.getId() | Role.RATE_LIMITER.getId(),
+					factory));
+			NETWORK.addRouter(new Router(new Ip("FC+RL"), Role.CLASSIFIER
+					.getId() | Role.RATE_LIMITER.getId(), factory));
+			NETWORK.addRouter(new Router(new Ip("FE"), Role.FLOW_EXPORTER
+					.getId(), factory));
+
+			AFFECTED_LINKS.add(new Link("AFFECTED_LINK"));
+			break;
+		case COMPLEX_NETWORK:
+			factory = new DummyRouterComponentFactory();
 			NETWORK.addRouter(new Router(new Ip("RouterLM"), Role.LINK_MONITOR
 					.getId(), factory));
 			NETWORK.addRouter(new Router(new Ip("RouterRL"), Role.RATE_LIMITER
@@ -106,6 +127,7 @@ public class BDINetRApp {
 					.getId(), factory));
 
 			AFFECTED_LINKS.add(new Link("AFFECTED_LINK"));
+			break;
 		}
 
 		Set<Router> routers = NETWORK.getRouters();

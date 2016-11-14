@@ -67,12 +67,12 @@ import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTRouterComponentFactory;
 public class BDINetRApp {
 
 	enum SimulationType {
-		OMNeT, SIMPLE_NETWORK, COMPLEX_NETWORK
+		OMNeT, SINGLE_AGENT, SIMPLE_NETWORK, COMPLEX_NETWORK
 	};
 
 	private static final Set<Link> AFFECTED_LINKS;
 	private static final Network NETWORK;
-	private static final SimulationType SIMULATION_TYPE = SimulationType.SIMPLE_NETWORK;
+	private static final SimulationType SIMULATION_TYPE = SimulationType.SINGLE_AGENT;
 
 	static {
 		PropertyConfigurator.configure(BDINetRApp.class
@@ -96,6 +96,14 @@ public class BDINetRApp {
 					Role.FLOW_EXPORTER.getId(), factory));
 			NETWORK.addRouter(new Router(new Ip("Inet.sas1.core0.rateLimiter"),
 					"ratelimiter_one", Role.RATE_LIMITER.getId(), factory));
+			break;
+		case SINGLE_AGENT:
+			factory = new DummyRouterComponentFactory();
+			NETWORK.addRouter(new Router(new Ip("SINGLE_AGENT"), Role.LINK_MONITOR
+					.getId() | Role.RATE_LIMITER.getId() | Role.ANOMALY_DETECTION.getId() | Role.CLASSIFIER
+					.getId() | Role.FLOW_EXPORTER
+					.getId(), factory));
+			AFFECTED_LINKS.add(new Link("AFFECTED_LINK"));
 			break;
 		case SIMPLE_NETWORK:
 			factory = new DummyRouterComponentFactory();

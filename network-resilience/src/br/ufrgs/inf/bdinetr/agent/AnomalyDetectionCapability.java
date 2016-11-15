@@ -249,8 +249,8 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 						.getBelief(new Restricted(ip));
 				if ((benign == null || !benign.getValue())
 						&& (restricted == null || !restricted.getValue())) {
-					// Anomalous(l) AND !(not Benign(l)) AND
-					// !(Restricted(l)) --> AttackPrevented(l)
+					// Anomalous(ip) AND !(not Benign(l)) AND
+					// !(Restricted(l)) --> Restricted(ip)
 					goal(goalUpdateSet, new Restricted(ip), true);
 				}
 			}

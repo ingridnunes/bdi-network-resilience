@@ -17,7 +17,6 @@ import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.event.GoalEvent;
 import bdi4jade.event.GoalListener;
 import bdi4jade.extension.palliative.PlanRequiredResource;
-import bdi4jade.extension.palliative.Resource;
 import bdi4jade.extension.palliative.ResourcePreferences;
 import bdi4jade.extension.palliative.goal.ConstrainedGoal;
 import bdi4jade.extension.palliative.goal.ObjectiveFunction;
@@ -25,8 +24,6 @@ import bdi4jade.extension.palliative.graph.AlternativeCauseSet;
 import bdi4jade.extension.palliative.graph.CauseEffectKnowledgeModel;
 import bdi4jade.extension.palliative.graph.CauseEffectRelationship;
 import bdi4jade.extension.palliative.logics.Fact;
-import bdi4jade.extension.palliative.logics.MathExpression;
-import bdi4jade.extension.palliative.logics.MathExpression.Operator;
 import bdi4jade.extension.palliative.logics.UnaryPredicate;
 import bdi4jade.extension.palliative.reasoning.PalliativeOptionGenerationFunction;
 import bdi4jade.extension.palliative.reasoning.PalliativePlanSelectionStrategy;
@@ -76,12 +73,8 @@ public class BDI2DoSCapability extends RouterAgentCapability implements BeliefRe
 
 		public OverUsageGoal(Link link, Boolean value) {
 			super(new PredicateGoal<OverUsage>(new OverUsage(link), false));
-
-			this.addOperationConstraint(new MathExpression<Resource>(Resources.VULNERABILITY, Operator.LESS_THAN, 0.5));
-
 			this.addObjectiveFunction(Resources.TIME, ObjectiveFunction.MINIMIZE);
 			this.addObjectiveFunction(Resources.NETWORK_AVAILABILITY, ObjectiveFunction.MAXIMIZE);
-			this.addObjectiveFunction(Resources.VULNERABILITY, ObjectiveFunction.MINIMIZE);
 		}
 
 	}
@@ -423,7 +416,6 @@ public class BDI2DoSCapability extends RouterAgentCapability implements BeliefRe
 		PlanRequiredResource prr = new PlanRequiredResource();
 		prr.setRequiredResource(Resources.TIME, 5.0);
 		prr.setRequiredResource(Resources.NETWORK_AVAILABILITY, 0.6);
-		prr.setRequiredResource(Resources.VULNERABILITY, 0.3);
 		this.limitLinkRate.putMetadata(PlanRequiredResource.METADATA_NAME, prr);
 		this.restoreLinkRate = new DefaultPlan(
 				GoalTemplateFactory.hasBeliefOfTypeWithValue(AttackPrevented.class, Boolean.FALSE),

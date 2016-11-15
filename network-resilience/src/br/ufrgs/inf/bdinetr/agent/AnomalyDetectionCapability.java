@@ -21,6 +21,7 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -230,7 +231,7 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 	@Override
 	public void generateGoals(GoalUpdateSet goalUpdateSet) {
 		// Anomalous(ip) AND not Restricted(ip) --> goal(Restricted(ip)) AND
-		// goal(?belief(Anomalous(ip))
+		// goal(?Benign(ip)
 		Set<Belief<?, ?>> anomalousIpBeliefs = getBeliefBase()
 				.getBeliefsByType(Anomalous.class);
 		for (Belief<?, ?> belief : anomalousIpBeliefs) {
@@ -274,8 +275,10 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 	}
 
 	@Override
-	protected Class<?> getLowPriorityGoal() {
-		return Benign.class;
+	protected Set<Class<?>> getLowPriorityGoal() {
+		Set<Class<?>> lowPriorityGoals = new HashSet<>();
+		lowPriorityGoals.add(Benign.class);
+		return lowPriorityGoals;
 	}
 
 	@Override

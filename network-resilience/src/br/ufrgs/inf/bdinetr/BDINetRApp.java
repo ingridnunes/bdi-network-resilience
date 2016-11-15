@@ -21,18 +21,6 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr;
 
-import jade.BootProfileImpl;
-import jade.core.Profile;
-import jade.core.ProfileImpl;
-import jade.core.Specifier;
-import jade.core.event.NotificationService;
-import jade.core.messaging.TopicManagementHelper;
-import jade.core.messaging.TopicManagementService;
-import jade.tools.rma.rma;
-import jade.wrapper.AgentContainer;
-import jade.wrapper.AgentController;
-import jade.wrapper.PlatformController;
-
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -60,6 +48,17 @@ import br.ufrgs.inf.bdinetr.domain.Role;
 import br.ufrgs.inf.bdinetr.domain.Router;
 import br.ufrgs.inf.bdinetr.domain.dummy.DummyRouterComponentFactory;
 import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTRouterComponentFactory;
+import jade.BootProfileImpl;
+import jade.core.Profile;
+import jade.core.ProfileImpl;
+import jade.core.Specifier;
+import jade.core.event.NotificationService;
+import jade.core.messaging.TopicManagementHelper;
+import jade.core.messaging.TopicManagementService;
+import jade.tools.rma.rma;
+import jade.wrapper.AgentContainer;
+import jade.wrapper.AgentController;
+import jade.wrapper.PlatformController;
 
 /**
  * @author Ingrid Nunes
@@ -67,12 +66,12 @@ import br.ufrgs.inf.bdinetr.domain.omnet.OMNeTRouterComponentFactory;
 public class BDINetRApp {
 
 	enum SimulationType {
-		OMNeT, SINGLE_AGENT, SIMPLE_NETWORK, COMPLEX_NETWORK
+		OMNeT, SINGLE_AGENT, SIMPLE_NETWORK, COMPLEX_NETWORK, PALLIATIVE_AGENT
 	};
 
 	private static final Set<Link> AFFECTED_LINKS;
 	private static final Network NETWORK;
-	private static final SimulationType SIMULATION_TYPE = SimulationType.SINGLE_AGENT;
+	private static final SimulationType SIMULATION_TYPE = SimulationType.PALLIATIVE_AGENT;
 
 	static {
 		PropertyConfigurator.configure(BDINetRApp.class
@@ -134,6 +133,14 @@ public class BDINetRApp {
 			NETWORK.addRouter(new Router(new Ip("RouterFE"), Role.FLOW_EXPORTER
 					.getId(), factory));
 
+			AFFECTED_LINKS.add(new Link("AFFECTED_LINK"));
+			break;
+		case PALLIATIVE_AGENT:
+			factory = new DummyRouterComponentFactory();
+			NETWORK.addRouterPalliative(new Router(new Ip("PALLIATIVE_AGENT"), Role.LINK_MONITOR
+					.getId() | Role.RATE_LIMITER.getId() | Role.ANOMALY_DETECTION.getId() | Role.CLASSIFIER
+					.getId() | Role.FLOW_EXPORTER
+					.getId(), factory));
 			AFFECTED_LINKS.add(new Link("AFFECTED_LINK"));
 			break;
 		}
@@ -235,8 +242,7 @@ public class BDINetRApp {
 		for (Link link : AFFECTED_LINKS) {
 			for (Router router : NETWORK.getRouters()) {
 				if (router.hasRole(Role.LINK_MONITOR)) {
-					LinkMonitor lm = (LinkMonitor) router
-							.getRole(Role.LINK_MONITOR);
+					LinkMonitor lm = (LinkMonitor) router.getRole(Role.LINK_MONITOR);
 					lm.setOverUsage(link, true);
 				}
 			}

@@ -32,25 +32,31 @@ import br.ufrgs.inf.bdinetr.domain.Router;
 /**
  * @author Ingrid Nunes
  */
-public class DummyAnomalyDetection extends AbstractRouterComponent implements
-		AnomalyDetection {
+public class DummyAnomalyDetection extends AbstractRouterComponent implements AnomalyDetection {
 
 	private boolean first;
+	private boolean mode;
 
 	public DummyAnomalyDetection(Router router) {
 		super(router);
 		this.first = true;
+		this.mode = true;
 	}
 
 	@Override
 	public Set<Ip> detectIntrusion(Link link) {
 		Set<Ip> intrusions = new HashSet<>();
 		if (link.getId().equals("AFFECTED_LINK")) {
-			if (first) {
+			if (mode) {
 				intrusions.add(new Ip("victim1"));
-				first = false;
-			} else {
 				intrusions.add(new Ip("victim2"));
+			} else {
+				if (first) {
+					intrusions.add(new Ip("victim1"));
+					first = false;
+				} else {
+					intrusions.add(new Ip("victim2"));
+				}
 			}
 		}
 		return intrusions;

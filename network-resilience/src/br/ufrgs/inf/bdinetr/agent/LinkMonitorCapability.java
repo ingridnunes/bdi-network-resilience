@@ -21,6 +21,7 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.agent;
 
+import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -54,9 +55,8 @@ import br.ufrgs.inf.bdinetr.domain.predicate.OverUsage;
 /**
  * @author Ingrid Nunes
  */
-public class LinkMonitorCapability extends RouterAgentCapability implements
-		BeliefRevisionStrategy, OptionGenerationFunction, GoalListener,
-		Observer {
+public class LinkMonitorCapability extends RouterAgentCapability
+		implements BeliefRevisionStrategy, OptionGenerationFunction, GoalListener, Observer {
 
 	public class LimitLinkRate extends BeliefGoalPlanBody {
 		private static final long serialVersionUID = -3493377510830902961L;
@@ -67,15 +67,13 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 		@Override
 		public void execute() {
 			if (!subgoalDispatched) {
-				dispatchSubgoalAndListen(new BeliefValueGoal<>(
-						new LinkRateLimited(link), true));
+				dispatchSubgoalAndListen(new BeliefValueGoal<>(new LinkRateLimited(link), true));
 				this.subgoalDispatched = true;
 			} else {
 				GoalEvent event = getGoalEvent();
 				if (event != null) {
 					if (GoalStatus.ACHIEVED.equals(event.getStatus())) {
-						addBelief(((BeliefGoal<?>) event.getGoal())
-								.getOutputBelief());
+						addBelief(((BeliefGoal<?>) event.getGoal()).getOutputBelief());
 						belief(new AttackPrevented(link), true);
 					} else {
 						setEndState(EndState.FAILED);
@@ -104,15 +102,13 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 		@Override
 		public void execute() {
 			if (!subgoalDispatched) {
-				dispatchSubgoalAndListen(new BeliefValueGoal<>(
-						new LinkRateLimited(link), false));
+				dispatchSubgoalAndListen(new BeliefValueGoal<>(new LinkRateLimited(link), false));
 				this.subgoalDispatched = true;
 			} else {
 				GoalEvent event = getGoalEvent();
 				if (event != null) {
 					if (GoalStatus.ACHIEVED.equals(event.getStatus())) {
-						addBelief(((BeliefGoal<?>) event.getGoal())
-								.getOutputBelief());
+						addBelief(((BeliefGoal<?>) event.getGoal()).getOutputBelief());
 						belief(new AttackPrevented(link), false);
 						belief(new AnomalousUsage(link), null);
 					} else {
@@ -142,39 +138,31 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 	@bdi4jade.annotation.TransientBelief
 	private LinkMonitor role;
 
-	public LinkMonitorCapability(LinkMonitor linkMonitor,
-			GoalRequestPlan beliefGoalRequestPlan) {
+	public LinkMonitorCapability(LinkMonitor linkMonitor, GoalRequestPlan beliefGoalRequestPlan) {
 		this.role = linkMonitor;
 		role.addObserver(this);
 
 		setBeliefRevisionStrategy(this);
 		setOptionGenerationFunction(this);
 
-		beliefGoalRequestPlan.addGoalTemplate(GoalTemplateFactory
-				.hasBeliefOfTypeWithValue(LinkRateLimited.class, true), this,
-				Role.RATE_LIMITER, false);
-		beliefGoalRequestPlan.addGoalTemplate(GoalTemplateFactory
-				.hasBeliefOfTypeWithValue(LinkRateLimited.class, false), this,
-				Role.RATE_LIMITER, false);
+		beliefGoalRequestPlan.addGoalTemplate(GoalTemplateFactory.hasBeliefOfTypeWithValue(LinkRateLimited.class, true),
+				this, Role.RATE_LIMITER, false);
 		beliefGoalRequestPlan.addGoalTemplate(
-				GoalTemplateFactory.hasBeliefOfType(AnomalousUsage.class),
-				this, Role.ANOMALY_DETECTION, true);
+				GoalTemplateFactory.hasBeliefOfTypeWithValue(LinkRateLimited.class, false), this, Role.RATE_LIMITER,
+				false);
+		beliefGoalRequestPlan.addGoalTemplate(GoalTemplateFactory.hasBeliefOfType(AnomalousUsage.class), this,
+				Role.ANOMALY_DETECTION, true);
 
 		this.limitLinkRate = new DefaultPlan(
-				GoalTemplateFactory.hasBeliefOfTypeWithValue(
-						AttackPrevented.class, Boolean.TRUE),
-				LimitLinkRate.class);
+				GoalTemplateFactory.hasBeliefOfTypeWithValue(AttackPrevented.class, Boolean.TRUE), LimitLinkRate.class);
 		this.restoreLinkRate = new DefaultPlan(
-				GoalTemplateFactory.hasBeliefOfTypeWithValue(
-						AttackPrevented.class, Boolean.FALSE),
+				GoalTemplateFactory.hasBeliefOfTypeWithValue(AttackPrevented.class, Boolean.FALSE),
 				RestoreLinkRate.class) {
 			@Override
 			public boolean isContextApplicable(Goal goal) {
 				BeliefGoal<AttackPrevented> bg = (BeliefGoal<AttackPrevented>) goal;
 				PredicateBelief<LinkRateLimited> linkRateLimited = (PredicateBelief<LinkRateLimited>) getBeliefBase()
-						.getBelief(
-								new LinkRateLimited(bg.getBeliefName()
-										.getVariable()));
+						.getBelief(new LinkRateLimited(bg.getBeliefName().getVariable()));
 				return (linkRateLimited != null && linkRateLimited.getValue());
 			}
 		};
@@ -182,8 +170,7 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 
 	@Override
 	public void generateGoals(GoalUpdateSet goalUpdateSet) {
-		Set<Belief<?, ?>> overUsageBeliefs = getBeliefBase().getBeliefsByType(
-				OverUsage.class);
+		Set<Belief<?, ?>> overUsageBeliefs = getBeliefBase().getBeliefsByType(OverUsage.class);
 		for (Belief<?, ?> belief : overUsageBeliefs) {
 			PredicateBelief<OverUsage> overUsage = (PredicateBelief<OverUsage>) belief;
 			Link link = overUsage.getName().getVariable();
@@ -199,8 +186,7 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 				PredicateBelief<AttackPrevented> attackPrevented = (PredicateBelief<AttackPrevented>) getBeliefBase()
 						.getBelief(new AttackPrevented(link));
 				if ((anomalousUsage == null || anomalousUsage.getValue())
-						&& (attackPrevented == null || !attackPrevented
-								.getValue())) {
+						&& (attackPrevented == null || !attackPrevented.getValue())) {
 					// OverUsage(l) AND !(not AnomalousUsage(l)) AND
 					// !(AttackPrevented(l)) --> AttackPrevented(l)
 					goal(goalUpdateSet, new AttackPrevented(link), Boolean.TRUE);
@@ -208,28 +194,26 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 			}
 		}
 
-		Set<Belief<?, ?>> attackPreventedBeliefs = getBeliefBase()
-				.getBeliefsByType(AttackPrevented.class);
+		Set<Belief<?, ?>> attackPreventedBeliefs = getBeliefBase().getBeliefsByType(AttackPrevented.class);
 		for (Belief<?, ?> belief : attackPreventedBeliefs) {
 			PredicateBelief<AttackPrevented> attackPrevented = (PredicateBelief<AttackPrevented>) belief;
 			if (attackPrevented.getValue()) {
 				PredicateBelief<AnomalousUsage> anomalousUsage = (PredicateBelief<AnomalousUsage>) getBeliefBase()
-						.getBelief(
-								new AnomalousUsage(attackPrevented.getName()
-										.getVariable()));
+						.getBelief(new AnomalousUsage(attackPrevented.getName().getVariable()));
 				// AttackPrevented(l) AND not AnomalousUsage(l) --> not
 				// AttackPrevented(l)
 				if (anomalousUsage != null && !anomalousUsage.getValue()) {
-					goal(goalUpdateSet, attackPrevented.getName(),
-							Boolean.FALSE);
+					goal(goalUpdateSet, attackPrevented.getName(), Boolean.FALSE);
 				}
 			}
 		}
 	}
 
 	@Override
-	protected Class<?> getLowPriorityGoal() {
-		return AnomalousUsage.class;
+	protected Set<Class<?>> getLowPriorityGoal() {
+		Set<Class<?>> lowPriorityGoals = new HashSet<>();
+		lowPriorityGoals.add(AnomalousUsage.class);
+		return lowPriorityGoals;
 	}
 
 	@Override

@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import bdi4jade.belief.Belief;
-import bdi4jade.belief.Predicate;
+import bdi4jade.belief.PredicateBelief;
 import bdi4jade.belief.TransientPredicate;
 import bdi4jade.core.Capability;
 import bdi4jade.core.GoalUpdateSet;
@@ -46,8 +46,7 @@ import br.ufrgs.inf.bdinetr.domain.Role;
 /**
  * @author Ingrid Nunes
  */
-public abstract class RouterAgentCapability extends Capability implements
-		DeliberationFunction {
+public abstract class RouterAgentCapability extends Capability implements DeliberationFunction {
 
 	public static final String ROLE_BELIEF = "role";
 	private static final long serialVersionUID = -3491170777812144486L;
@@ -63,15 +62,15 @@ public abstract class RouterAgentCapability extends Capability implements
 		log.info("belief added or updated: " + belief);
 	}
 
-	protected Predicate<?> belief(Object proposition, Boolean value) {
+	protected PredicateBelief<?> belief(Object proposition, Boolean value) {
 		if (value == null) {
 			getBeliefBase().removeBelief(proposition);
-			log.info("belief(~" + proposition + "))");
+			log.info("belief(not " + proposition + "))");
 			return null;
 		} else {
-			Predicate<?> predicate = new TransientPredicate(proposition, value);
+			PredicateBelief<?> predicate = new TransientPredicate(proposition, value);
 			getBeliefBase().addOrUpdateBelief(predicate);
-			log.info("belief(" + (value ? "" : "not ") + proposition + ")");
+			log.info("belief(" + predicate + ")");
 			return predicate;
 		}
 	}
@@ -112,13 +111,11 @@ public abstract class RouterAgentCapability extends Capability implements
 		goal(goalUpdateSet, proposition, (GoalListener) null);
 	}
 
-	protected void goal(GoalUpdateSet goalUpdateSet, Object proposition,
-			Boolean value) {
+	protected void goal(GoalUpdateSet goalUpdateSet, Object proposition, Boolean value) {
 		goal(goalUpdateSet, proposition, value, null);
 	}
 
-	protected void goal(GoalUpdateSet goalUpdateSet, Object proposition,
-			Boolean value, GoalListener listener) {
+	protected void goal(GoalUpdateSet goalUpdateSet, Object proposition, Boolean value, GoalListener listener) {
 		Goal goal;
 		if (value == null) {
 			goal = new BeliefNotPresentGoal(proposition);
@@ -135,8 +132,7 @@ public abstract class RouterAgentCapability extends Capability implements
 		}
 	}
 
-	protected void goal(GoalUpdateSet goalUpdateSet, Object proposition,
-			GoalListener listener) {
+	protected void goal(GoalUpdateSet goalUpdateSet, Object proposition, GoalListener listener) {
 		Goal goal = new BeliefPresentGoal(proposition);
 		if (!getMyAgent().hasGoal(goal)) {
 			log.info("goal(?" + proposition + "))");
@@ -148,8 +144,7 @@ public abstract class RouterAgentCapability extends Capability implements
 		if (GoalStatus.WAITING.equals(goalDesc.getStatus())) {
 			if (goalDesc.getGoal() instanceof BeliefGoal) {
 				BeliefGoal<?> bg = (BeliefGoal<?>) goalDesc.getGoal();
-				return bg.getBeliefName().getClass()
-						.equals(getLowPriorityGoal());
+				return bg.getBeliefName().getClass().equals(getLowPriorityGoal());
 			}
 		}
 		return false;

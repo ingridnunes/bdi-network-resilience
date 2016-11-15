@@ -23,7 +23,7 @@ package br.ufrgs.inf.bdinetr.agent;
 
 import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
-import bdi4jade.belief.Predicate;
+import bdi4jade.belief.PredicateBelief;
 import bdi4jade.goal.BeliefGoal;
 import bdi4jade.goal.Goal;
 import bdi4jade.goal.GoalTemplateFactory;
@@ -57,7 +57,7 @@ public class RateLimiterCapability extends RouterAgentCapability {
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(FlowRateLimited flowRateLimited) {
-			this.flow = flowRateLimited.getConcept();
+			this.flow = flowRateLimited.getVariable();
 		}
 	}
 
@@ -74,7 +74,7 @@ public class RateLimiterCapability extends RouterAgentCapability {
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(IpRateLimited ipRateLimited) {
-			this.ip = ipRateLimited.getConcept();
+			this.ip = ipRateLimited.getVariable();
 		}
 	}
 
@@ -91,7 +91,7 @@ public class RateLimiterCapability extends RouterAgentCapability {
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(LinkRateLimited linkRateLimited) {
-			this.link = linkRateLimited.getConcept();
+			this.link = linkRateLimited.getVariable();
 		}
 	}
 
@@ -108,7 +108,7 @@ public class RateLimiterCapability extends RouterAgentCapability {
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(IpRateLimited ipRateLimited) {
-			this.ip = ipRateLimited.getConcept();
+			this.ip = ipRateLimited.getVariable();
 		}
 	}
 
@@ -125,7 +125,7 @@ public class RateLimiterCapability extends RouterAgentCapability {
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(LinkRateLimited linkRateLimited) {
-			this.link = linkRateLimited.getConcept();
+			this.link = linkRateLimited.getVariable();
 		}
 	}
 
@@ -160,7 +160,7 @@ public class RateLimiterCapability extends RouterAgentCapability {
 				RestoreLinkRate.class) {
 			public boolean isContextApplicable(Goal goal) {
 				BeliefGoal<LinkRateLimited> bg = (BeliefGoal<LinkRateLimited>) goal;
-				Predicate<LinkRateLimited> rateLimited = (Predicate<LinkRateLimited>) getBeliefBase()
+				PredicateBelief<LinkRateLimited> rateLimited = (PredicateBelief<LinkRateLimited>) getBeliefBase()
 						.getBelief(bg.getBeliefName());
 				return (rateLimited != null && rateLimited.getValue());
 			};
@@ -175,7 +175,7 @@ public class RateLimiterCapability extends RouterAgentCapability {
 				RestoreIPRatePlan.class) {
 			public boolean isContextApplicable(Goal goal) {
 				BeliefGoal<IpRateLimited> bg = (BeliefGoal<IpRateLimited>) goal;
-				Predicate<IpRateLimited> rateLimited = (Predicate<IpRateLimited>) getBeliefBase()
+				PredicateBelief<IpRateLimited> rateLimited = (PredicateBelief<IpRateLimited>) getBeliefBase()
 						.getBelief(bg.getBeliefName());
 				return rateLimited != null && rateLimited.getValue();
 			};

@@ -25,7 +25,7 @@ import java.util.Set;
 
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.DerivedPredicate;
-import bdi4jade.belief.Predicate;
+import bdi4jade.belief.PredicateBelief;
 import br.ufrgs.inf.bdinetr.domain.predicate.Benign;
 import br.ufrgs.inf.bdinetr.domain.predicate.Threat;
 
@@ -43,10 +43,10 @@ public class BenignBelief extends DerivedPredicate<Benign> {
 		Set<Belief<?, ?>> threatBeliefs = getMainBeliefBase().getBeliefsByType(
 				Threat.class);
 		for (Belief<?, ?> belief : threatBeliefs) {
-			Predicate<Threat> threat = (Predicate<Threat>) belief;
+			PredicateBelief<Threat> threat = (PredicateBelief<Threat>) belief;
 			assert threat.getValue();
-			if (getName().getConcept().equals(
-					threat.getName().getConcept().getDstIp())) {
+			if (getName().getVariable().equals(
+					threat.getName().getVariable().getDstIp())) {
 				exists = true;
 				break;
 			}

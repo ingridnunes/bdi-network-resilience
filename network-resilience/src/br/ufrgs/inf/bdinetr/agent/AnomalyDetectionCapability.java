@@ -28,7 +28,7 @@ import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.BeliefSet;
-import bdi4jade.belief.Predicate;
+import bdi4jade.belief.PredicateBelief;
 import bdi4jade.belief.TransientBeliefSet;
 import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.event.GoalEvent;
@@ -86,7 +86,7 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(AnomalousUsage anomalousUsage) {
-			this.link = anomalousUsage.getConcept();
+			this.link = anomalousUsage.getVariable();
 		}
 	}
 
@@ -136,7 +136,7 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(Restricted restricted) {
-			this.ip = restricted.getConcept();
+			this.ip = restricted.getVariable();
 		}
 	}
 
@@ -174,7 +174,7 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(Restricted restricted) {
-			this.ip = restricted.getConcept();
+			this.ip = restricted.getVariable();
 		}
 	}
 
@@ -218,10 +218,10 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 			@Override
 			public boolean isContextApplicable(Goal goal) {
 				BeliefGoal<Restricted> bg = (BeliefGoal<Restricted>) goal;
-				Predicate<IpRateLimited> ipRateLimited = (Predicate<IpRateLimited>) getBeliefBase()
+				PredicateBelief<IpRateLimited> ipRateLimited = (PredicateBelief<IpRateLimited>) getBeliefBase()
 						.getBelief(
 								new IpRateLimited(bg.getBeliefName()
-										.getConcept()));
+										.getVariable()));
 				return (ipRateLimited != null && ipRateLimited.getValue());
 			}
 		};
@@ -234,10 +234,10 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 		Set<Belief<?, ?>> anomalousIpBeliefs = getBeliefBase()
 				.getBeliefsByType(Anomalous.class);
 		for (Belief<?, ?> belief : anomalousIpBeliefs) {
-			Predicate<Anomalous> anomalous = (Predicate<Anomalous>) belief;
-			Ip ip = anomalous.getName().getConcept();
+			PredicateBelief<Anomalous> anomalous = (PredicateBelief<Anomalous>) belief;
+			Ip ip = anomalous.getName().getVariable();
 			if (anomalous.getValue()) {
-				Predicate<Benign> benign = (Predicate<Benign>) getBeliefBase()
+				PredicateBelief<Benign> benign = (PredicateBelief<Benign>) getBeliefBase()
 						.getBelief(new Benign(ip));
 				if (benign == null) {
 					// Anomalous(ip) AND ~Benign(ip) -->
@@ -245,7 +245,7 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 					goal(goalUpdateSet, new Benign(ip), this);
 				}
 
-				Predicate<Restricted> restricted = (Predicate<Restricted>) getBeliefBase()
+				PredicateBelief<Restricted> restricted = (PredicateBelief<Restricted>) getBeliefBase()
 						.getBelief(new Restricted(ip));
 				if ((benign == null || !benign.getValue())
 						&& (restricted == null || !restricted.getValue())) {
@@ -259,11 +259,11 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 		Set<Belief<?, ?>> restrictedBeliefs = getBeliefBase().getBeliefsByType(
 				Restricted.class);
 		for (Belief<?, ?> belief : restrictedBeliefs) {
-			Predicate<Restricted> restricted = (Predicate<Restricted>) belief;
+			PredicateBelief<Restricted> restricted = (PredicateBelief<Restricted>) belief;
 			if (restricted.getValue()) {
-				Predicate<Benign> benign = (Predicate<Benign>) getBeliefBase()
+				PredicateBelief<Benign> benign = (PredicateBelief<Benign>) getBeliefBase()
 						.getBelief(
-								new Benign(restricted.getName().getConcept()));
+								new Benign(restricted.getName().getVariable()));
 				if (benign != null && benign.getValue()) {
 					// Restricted(l) AND Benign(l) --> not
 					// Restricted(l)
@@ -301,10 +301,10 @@ public class AnomalyDetectionCapability extends RouterAgentCapability implements
 			if (overUsageCause.getValue().isEmpty()) {
 				removeBelief(overUsageCause);
 			}
-			Predicate<AnomalousUsage> anomalousUsage = (Predicate<AnomalousUsage>) getBeliefBase()
+			PredicateBelief<AnomalousUsage> anomalousUsage = (PredicateBelief<AnomalousUsage>) getBeliefBase()
 					.getBelief(
 							new AnomalousUsage(overUsageCause.getName()
-									.getConcept()));
+									.getVariable()));
 			if (anomalousUsage != null
 					&& (anomalousUsage.getValue() == null || !anomalousUsage
 							.getValue())) {

@@ -28,7 +28,7 @@ import java.util.Set;
 import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
 import bdi4jade.belief.Belief;
-import bdi4jade.belief.Predicate;
+import bdi4jade.belief.PredicateBelief;
 import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.event.GoalEvent;
 import bdi4jade.event.GoalListener;
@@ -91,7 +91,7 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(AttackPrevented attackPrevented) {
-			this.link = attackPrevented.getConcept();
+			this.link = attackPrevented.getVariable();
 		}
 	}
 
@@ -129,7 +129,7 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(AttackPrevented attackPrevented) {
-			this.link = attackPrevented.getConcept();
+			this.link = attackPrevented.getVariable();
 		}
 	}
 
@@ -171,10 +171,10 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 			@Override
 			public boolean isContextApplicable(Goal goal) {
 				BeliefGoal<AttackPrevented> bg = (BeliefGoal<AttackPrevented>) goal;
-				Predicate<LinkRateLimited> linkRateLimited = (Predicate<LinkRateLimited>) getBeliefBase()
+				PredicateBelief<LinkRateLimited> linkRateLimited = (PredicateBelief<LinkRateLimited>) getBeliefBase()
 						.getBelief(
 								new LinkRateLimited(bg.getBeliefName()
-										.getConcept()));
+										.getVariable()));
 				return (linkRateLimited != null && linkRateLimited.getValue());
 			}
 		};
@@ -185,10 +185,10 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 		Set<Belief<?, ?>> overUsageBeliefs = getBeliefBase().getBeliefsByType(
 				OverUsage.class);
 		for (Belief<?, ?> belief : overUsageBeliefs) {
-			Predicate<OverUsage> overUsage = (Predicate<OverUsage>) belief;
-			Link link = overUsage.getName().getConcept();
+			PredicateBelief<OverUsage> overUsage = (PredicateBelief<OverUsage>) belief;
+			Link link = overUsage.getName().getVariable();
 			if (overUsage.getValue()) {
-				Predicate<AnomalousUsage> anomalousUsage = (Predicate<AnomalousUsage>) getBeliefBase()
+				PredicateBelief<AnomalousUsage> anomalousUsage = (PredicateBelief<AnomalousUsage>) getBeliefBase()
 						.getBelief(new AnomalousUsage(link));
 				if (anomalousUsage == null) {
 					// OverUsage(l) AND ~AnomalousUsage(l) -->
@@ -196,7 +196,7 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 					goal(goalUpdateSet, new AnomalousUsage(link), this);
 				}
 
-				Predicate<AttackPrevented> attackPrevented = (Predicate<AttackPrevented>) getBeliefBase()
+				PredicateBelief<AttackPrevented> attackPrevented = (PredicateBelief<AttackPrevented>) getBeliefBase()
 						.getBelief(new AttackPrevented(link));
 				if ((anomalousUsage == null || anomalousUsage.getValue())
 						&& (attackPrevented == null || !attackPrevented
@@ -211,12 +211,12 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 		Set<Belief<?, ?>> attackPreventedBeliefs = getBeliefBase()
 				.getBeliefsByType(AttackPrevented.class);
 		for (Belief<?, ?> belief : attackPreventedBeliefs) {
-			Predicate<AttackPrevented> attackPrevented = (Predicate<AttackPrevented>) belief;
+			PredicateBelief<AttackPrevented> attackPrevented = (PredicateBelief<AttackPrevented>) belief;
 			if (attackPrevented.getValue()) {
-				Predicate<AnomalousUsage> anomalousUsage = (Predicate<AnomalousUsage>) getBeliefBase()
+				PredicateBelief<AnomalousUsage> anomalousUsage = (PredicateBelief<AnomalousUsage>) getBeliefBase()
 						.getBelief(
 								new AnomalousUsage(attackPrevented.getName()
-										.getConcept()));
+										.getVariable()));
 				// AttackPrevented(l) AND not AnomalousUsage(l) --> not
 				// AttackPrevented(l)
 				if (anomalousUsage != null && !anomalousUsage.getValue()) {
@@ -249,7 +249,7 @@ public class LinkMonitorCapability extends RouterAgentCapability implements
 		for (Link link : role.getLinks()) {
 			OverUsage overUsage = new OverUsage(link);
 			if (role.isOverUsage(link)) {
-				Predicate<OverUsage> overUsageBelief = (Predicate<OverUsage>) getBeliefBase()
+				PredicateBelief<OverUsage> overUsageBelief = (PredicateBelief<OverUsage>) getBeliefBase()
 						.getBelief(overUsage);
 				if (overUsageBelief == null || !overUsageBelief.getValue()) {
 					belief(overUsage, true);

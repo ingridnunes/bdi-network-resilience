@@ -27,7 +27,7 @@ import java.util.Set;
 import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
 import bdi4jade.belief.Belief;
-import bdi4jade.belief.Predicate;
+import bdi4jade.belief.PredicateBelief;
 import bdi4jade.core.GoalUpdateSet;
 import bdi4jade.event.GoalEvent;
 import bdi4jade.goal.BeliefGoal;
@@ -94,7 +94,7 @@ public class ClassifierCapability extends RouterAgentCapability implements
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(Benign benign) {
-			this.ip = benign.getConcept();
+			this.ip = benign.getVariable();
 		}
 	}
 
@@ -131,7 +131,7 @@ public class ClassifierCapability extends RouterAgentCapability implements
 
 		@Parameter(direction = Direction.IN)
 		public void setBeliefName(Threat threat) {
-			this.flow = threat.getConcept();
+			this.flow = threat.getVariable();
 		}
 	}
 
@@ -166,7 +166,7 @@ public class ClassifierCapability extends RouterAgentCapability implements
 				LimitFlowRatePlan.class) {
 			public boolean isContextApplicable(Goal goal) {
 				BeliefNotPresentGoal<Threat> bg = (BeliefNotPresentGoal<Threat>) goal;
-				Predicate<Threat> threat = (Predicate<Threat>) getBeliefBase()
+				PredicateBelief<Threat> threat = (PredicateBelief<Threat>) getBeliefBase()
 						.getBelief(bg.getBeliefName());
 				return (threat != null && threat.getValue());
 			};
@@ -179,7 +179,7 @@ public class ClassifierCapability extends RouterAgentCapability implements
 		Set<Belief<?, ?>> threatBeliefs = getBeliefBase().getBeliefsByType(
 				Threat.class);
 		for (Belief<?, ?> belief : threatBeliefs) {
-			Predicate<Threat> threat = (Predicate<Threat>) belief;
+			PredicateBelief<Threat> threat = (PredicateBelief<Threat>) belief;
 			if (threat.getValue()) {
 				goal(goalUpdateSet, threat.getName(), (Boolean) null);
 			}
@@ -197,7 +197,7 @@ public class ClassifierCapability extends RouterAgentCapability implements
 				Benign.class);
 		Iterator<Belief<?, ?>> it = benignBeliefs.iterator();
 		while (it.hasNext()) {
-			Predicate<Benign> benignBelief = (Predicate<Benign>) it.next();
+			PredicateBelief<Benign> benignBelief = (PredicateBelief<Benign>) it.next();
 			if (benignBelief.getValue() == null || benignBelief.getValue()) {
 				removeBelief(benignBelief);
 			}

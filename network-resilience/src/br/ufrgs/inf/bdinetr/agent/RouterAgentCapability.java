@@ -101,7 +101,7 @@ public abstract class RouterAgentCapability extends Capability implements Delibe
 		}
 	}
 
-	protected Set<Class<?>> getLowPriorityGoal() {
+	protected Class<?> getLowPriorityGoal() {
 		return null;
 	}
 
@@ -144,11 +144,7 @@ public abstract class RouterAgentCapability extends Capability implements Delibe
 		if (GoalStatus.WAITING.equals(goalDesc.getStatus())) {
 			if (goalDesc.getGoal() instanceof BeliefGoal) {
 				BeliefGoal<?> bg = (BeliefGoal<?>) goalDesc.getGoal();
-				for (Class<?> goalClass : getLowPriorityGoal()) {
-					if (bg.getBeliefName().getClass().equals(goalClass)) {
-						return true;
-					}
-				}
+				return bg.getBeliefName().getClass().equals(getLowPriorityGoal());
 			}
 		}
 		return false;

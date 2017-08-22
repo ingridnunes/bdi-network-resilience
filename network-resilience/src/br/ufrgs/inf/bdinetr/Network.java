@@ -28,15 +28,13 @@ import java.util.Set;
 
 import br.ufrgs.inf.bdinetr.agent.RouterAgent;
 import br.ufrgs.inf.bdinetr.domain.Router;
-import br.ufrgs.inf.bdinetr.palliative.BDI2DoSAgent;
-import jade.core.Agent;
 
 /**
  * @author Ingrid Nunes
  */
 public class Network {
 
-	private final Map<Router, Agent> routerAgents;
+	private final Map<Router, RouterAgent> routerAgents;
 
 	public Network() {
 		this.routerAgents = new HashMap<>();
@@ -46,15 +44,11 @@ public class Network {
 		this.routerAgents.put(router, new RouterAgent(router));
 	}
 
-	public void addRouterPalliative(Router router) {
-		this.routerAgents.put(router, new BDI2DoSAgent(router));
-	}
-
-	public Agent getAgent(Router router) {
+	public RouterAgent getAgent(Router router) {
 		return routerAgents.get(router);
 	}
 
-	public Collection<Agent> getRouterAgents() {
+	public Collection<RouterAgent> getRouterAgents() {
 		return routerAgents.values();
 	}
 

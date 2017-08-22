@@ -158,10 +158,10 @@ public class ClassifierCapability extends RouterAgentCapability implements
 				GoalTemplateFactory.goalOfType(FlowExport.class), this,
 				Role.FLOW_EXPORTER, false);
 
-		this.analyseIpFlows = new DefaultPlan(
+		analyseIpFlows = new DefaultPlan(
 				GoalTemplateFactory.hasBeliefOfType(Benign.class),
 				AnalyseIPFlows.class);
-		this.limitFlowRate = new DefaultPlan(
+		limitFlowRate = new DefaultPlan(
 				GoalTemplateFactory.hasNoBeliefOfType(Threat.class),
 				LimitFlowRatePlan.class) {
 			public boolean isContextApplicable(Goal goal) {

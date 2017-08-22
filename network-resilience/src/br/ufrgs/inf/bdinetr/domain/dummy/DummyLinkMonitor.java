@@ -44,7 +44,7 @@ public class DummyLinkMonitor extends AbstractRouterComponent implements
 	public DummyLinkMonitor(Router router) {
 		super(router);
 		this.overUsageLinks = new HashMap<>();
-		this.first = false;
+		this.first = true;
 	}
 
 	@Override

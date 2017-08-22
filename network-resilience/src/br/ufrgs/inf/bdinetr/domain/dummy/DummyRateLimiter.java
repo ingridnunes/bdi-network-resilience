@@ -37,8 +37,6 @@ import br.ufrgs.inf.bdinetr.domain.Router;
  */
 public class DummyRateLimiter extends AbstractRouterComponent implements
 		RateLimiter, Observable {
-	
-	public static final long DELAY = 2;
 
 	private final Map<Flow, Integer> rateLimitedflows;
 	private final Map<Ip, Integer> rateLimitedIps;
@@ -54,19 +52,16 @@ public class DummyRateLimiter extends AbstractRouterComponent implements
 	@Override
 	public void limitFlow(Flow flow, int rate) {
 		this.rateLimitedflows.put(flow, rate);
-		delay(DELAY);
 	}
 
 	@Override
 	public void limitIp(Ip ip, int rate) {
 		this.rateLimitedIps.put(ip, rate);
-		delay(DELAY);
 	}
 
 	@Override
 	public void limitLink(Link link, int rate) {
 		this.rateLimitedLinks.put(link, rate);
-		delay(DELAY);
 		setChanged();
 		notifyObservers(new LimitLinkEvent(link));
 	}

@@ -33,8 +33,6 @@ import br.ufrgs.inf.bdinetr.domain.Router;
  * @author Ingrid Nunes
  */
 public class DummyClassifier extends AbstractRouterComponent implements Classifier {
-	
-	public static final long DELAY = 30;
 
 	public DummyClassifier(Router router) {
 		super(router);
@@ -52,7 +50,6 @@ public class DummyClassifier extends AbstractRouterComponent implements Classifi
 			flows.add(new Flow(new Ip("DDoS3"), 80, new Ip("victim2"), 80,
 					"http"));
 		}
-		delay(DELAY);
 		return flows;
 	}
 

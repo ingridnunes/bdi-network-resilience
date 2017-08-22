@@ -29,20 +29,13 @@ import br.ufrgs.inf.bdinetr.domain.RouterComponent;
 /**
  * @author Ingrid Nunes
  */
-public abstract class AbstractRouterComponent extends Observable implements RouterComponent {
+public abstract class AbstractRouterComponent extends Observable implements
+		RouterComponent {
 
 	protected final Router router;
 
 	public AbstractRouterComponent(Router router) {
 		this.router = router;
-	}
-
-	protected synchronized void delay(long sec) {
-		try {
-			Thread.sleep(sec * 1000);
-		} catch (InterruptedException e) {
-			// TODO: handle exception
-		}
 	}
 
 }

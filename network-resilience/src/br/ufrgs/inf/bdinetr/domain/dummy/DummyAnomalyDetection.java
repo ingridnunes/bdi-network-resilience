@@ -33,8 +33,6 @@ import br.ufrgs.inf.bdinetr.domain.Router;
  * @author Ingrid Nunes
  */
 public class DummyAnomalyDetection extends AbstractRouterComponent implements AnomalyDetection {
-	
-	public static final long DELAY = 10;
 
 	private boolean first;
 	private boolean mode;
@@ -61,7 +59,6 @@ public class DummyAnomalyDetection extends AbstractRouterComponent implements An
 				}
 			}
 		}
-		delay(DELAY);
 		return intrusions;
 	}
 

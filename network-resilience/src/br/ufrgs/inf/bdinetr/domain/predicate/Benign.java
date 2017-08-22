@@ -21,7 +21,6 @@
 //----------------------------------------------------------------------------
 package br.ufrgs.inf.bdinetr.domain.predicate;
 
-import bdi4jade.extension.palliative.logics.UnaryPredicate;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 
 /**

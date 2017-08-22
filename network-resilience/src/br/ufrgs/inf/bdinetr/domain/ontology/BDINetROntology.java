@@ -28,8 +28,6 @@ import jade.content.schema.ConceptSchema;
 import jade.content.schema.ObjectSchema;
 import jade.content.schema.PredicateSchema;
 import jade.content.schema.PrimitiveSchema;
-import bdi4jade.extension.palliative.logics.BinaryPredicate;
-import bdi4jade.extension.palliative.logics.UnaryPredicate;
 import br.ufrgs.inf.bdinetr.domain.Flow;
 import br.ufrgs.inf.bdinetr.domain.Ip;
 import br.ufrgs.inf.bdinetr.domain.Link;
@@ -40,6 +38,7 @@ import br.ufrgs.inf.bdinetr.domain.predicate.Anomalous;
 import br.ufrgs.inf.bdinetr.domain.predicate.AnomalousUsage;
 import br.ufrgs.inf.bdinetr.domain.predicate.AttackPrevented;
 import br.ufrgs.inf.bdinetr.domain.predicate.Benign;
+import br.ufrgs.inf.bdinetr.domain.predicate.BinaryPredicate;
 import br.ufrgs.inf.bdinetr.domain.predicate.FlowExport;
 import br.ufrgs.inf.bdinetr.domain.predicate.FlowRateLimited;
 import br.ufrgs.inf.bdinetr.domain.predicate.IpRateLimited;
@@ -47,6 +46,7 @@ import br.ufrgs.inf.bdinetr.domain.predicate.LinkRateLimited;
 import br.ufrgs.inf.bdinetr.domain.predicate.OverUsage;
 import br.ufrgs.inf.bdinetr.domain.predicate.Restricted;
 import br.ufrgs.inf.bdinetr.domain.predicate.Threat;
+import br.ufrgs.inf.bdinetr.domain.predicate.UnaryPredicate;
 
 /**
  * @author Ingrid Nunes

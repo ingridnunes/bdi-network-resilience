@@ -11,7 +11,7 @@ import bdi4jade.belief.AbstractBeliefSet;
 import bdi4jade.belief.Belief;
 import bdi4jade.belief.BeliefSet;
 import bdi4jade.belief.PersistentBelief;
-import bdi4jade.belief.PredicateBelief;
+import bdi4jade.belief.Predicate;
 import bdi4jade.belief.TransientBelief;
 import bdi4jade.belief.TransientBeliefSet;
 import bdi4jade.belief.TransientPredicate;
@@ -58,7 +58,7 @@ public class BDI4JADEOntology extends Ontology implements BDI4JADEVocabulary {
 			
 			add(new PredicateSchema(BELIEF), Belief.class);
 			add(new PredicateSchema(BELIEF_SET), BeliefSet.class);
-			add(new PredicateSchema(PROPOSITIONAL_BELIEF), PredicateBelief.class);
+			add(new PredicateSchema(PROPOSITIONAL_BELIEF), Predicate.class);
 
 			add(new PredicateSchema(ABSTRACT_BELIEF), AbstractBelief.class);
 			add(new PredicateSchema(ABSTRACT_BELIEF_SET), AbstractBeliefSet.class);

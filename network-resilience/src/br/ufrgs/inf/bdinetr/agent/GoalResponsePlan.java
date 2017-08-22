@@ -33,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
 
 import bdi4jade.annotation.Parameter;
 import bdi4jade.annotation.Parameter.Direction;
-import bdi4jade.belief.PredicateBelief;
+import bdi4jade.belief.Predicate;
 import bdi4jade.core.Capability;
 import bdi4jade.event.BeliefEvent;
 import bdi4jade.event.BeliefEvent.Action;
@@ -66,7 +66,7 @@ public class GoalResponsePlan extends DefaultPlan {
 		private Boolean lastValue;
 		private MessageTemplate mt;
 		private Capability partCapability;
-		private PredicateBelief<?> predicate;
+		private Predicate<?> predicate;
 		private GoalRequest<?> request;
 		private long responseTime;
 		private State state;
@@ -81,7 +81,7 @@ public class GoalResponsePlan extends DefaultPlan {
 			if (GoalStatus.ACHIEVED.equals(event.getStatus())) {
 				reply.setPerformative(ACLMessage.INFORM);
 				if (goal instanceof BeliefGoal) {
-					predicate = (PredicateBelief<?>) partCapability.getBeliefBase()
+					predicate = (Predicate<?>) partCapability.getBeliefBase()
 							.getBelief(((BeliefGoal<?>) goal).getBeliefName());
 					GoalResponse response = new GoalResponse();
 					response.setPredicate(predicate.getName());

@@ -41,7 +41,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import bdi4jade.belief.PredicateBelief;
+import bdi4jade.belief.Predicate;
 import bdi4jade.belief.TransientPredicate;
 import bdi4jade.core.BDIAgent;
 import bdi4jade.core.Capability;
@@ -83,7 +83,7 @@ public class GoalRequestPlan extends DefaultPlan {
 						GoalResponse<?> response = (GoalResponse<?>) myAgent
 								.getContentManager().extractContent(reply);
 
-						PredicateBelief<?> predicate = new TransientPredicate(
+						Predicate<?> predicate = new TransientPredicate(
 								response.getPredicate(), response.getValue());
 						((BeliefGoal) getGoal()).setOutputBelief(predicate);
 
@@ -273,11 +273,11 @@ public class GoalRequestPlan extends DefaultPlan {
 		private static final long serialVersionUID = 1328980796345824527L;
 
 		private Capability capability;
-		private PredicateBelief<?> predicate;
+		private Predicate<?> predicate;
 		private boolean done;
 
 		public ReceiveUpdatesBehavior(Agent agent, MessageTemplate mt,
-				Capability capability, PredicateBelief<?> predicate) {
+				Capability capability, Predicate<?> predicate) {
 			super(agent, mt, INFINITE, new DataStore(),
 					ReceiveUpdatesBehavior.class.getSimpleName());
 			this.capability = capability;

@@ -38,7 +38,7 @@ public class AnomalousUsageBelief extends DerivedPredicate<AnomalousUsage> {
 	@Override
 	protected Boolean evaluate() {
 		BeliefSet<OverUsageCause, Ip> overUsageCauseBeliefs = (BeliefSet<OverUsageCause, Ip>) getMainBeliefBase()
-				.getBelief(new OverUsageCause(getName().getVariable()));
+				.getBelief(new OverUsageCause(getName().getConcept()));
 		return overUsageCauseBeliefs == null ? false : !overUsageCauseBeliefs
 				.getValue().isEmpty();
 	}

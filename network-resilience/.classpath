@@ -14,6 +14,6 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/jade-4.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/bdi4jade"/>
+	<classpathentry kind="lib" path="lib/bdi4jade.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
